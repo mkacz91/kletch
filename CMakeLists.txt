@@ -22,6 +22,12 @@ if (NOT SDL_FOUND)
   return()
 endif (NOT SDL_FOUND)
 
+find_package(OpenGL)
+if (NOT OPENGL_FOUND)
+  message(WARNING "Could not find OpenGL. Target 'kletch' won't be created.")
+  return()
+endif (NOT OPENGL_FOUND)
+
 set(KLETCH_SOURCES
   src/kletch.cpp
 )
@@ -33,5 +39,10 @@ endif (APPLE)
 add_executable(kletch ${KLETCH_SOURCES})
 set_property(TARGET kletch PROPERTY CXX_STANDARD 14)
 set_property(TARGET kletch PROPERTY CXX_STANDARD_REQUIRED ON)
-target_link_libraries(kletch libkletch ${SDL_LIBRARY})
+target_link_libraries(kletch
+  libkletch
+  ${SDL_LIBRARY}
+  ${OPENGL_gl_LIBRARY}
+)
 target_include_directories(kletch PUBLIC ${SDL_INCLUDE_DIR})
+target_include_directories(kletch PUBLIC ${OPENGL_INCLUDE_DIR})

@@ -1,8 +1,11 @@
 #include "prefix.h"
-#include "SDL.h"
+#include <SDL.h>
+#include "gl.h"
 
 #include "hello.h"
 using namespace kletch;
+
+void draw();
 
 int main(int argc, char** argv)
 {
@@ -15,8 +18,16 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    SDL_Surface* window = SDL_SetVideoMode(800, 600, 0, SDL_SWSURFACE);
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+    Uint32 video_flags = SDL_OPENGL | SDL_RESIZABLE;
+    SDL_Surface* window = SDL_SetVideoMode(800, 600, 0, video_flags);
     if (window == nullptr)
     {
         cerr << "Unable to create window: " << SDL_GetError() << endl;
@@ -26,6 +37,7 @@ int main(int argc, char** argv)
 
     SDL_Event e;
     bool running = true;
+    bool redraw = true;
     while (running && SDL_WaitEvent(&e))
     {
         switch (e.type) {
@@ -34,12 +46,28 @@ int main(int argc, char** argv)
                 running = false;
             break;
 
+        case SDL_VIDEORESIZE:
+            window = SDL_SetVideoMode(e.resize.w, e.resize.h, 0, video_flags);
+            redraw = true;
+            break;
+
         case SDL_QUIT:
             running = false;
             break;
         }
+
+        if (running && redraw)
+            draw();
+        redraw = false;
     }
 
     SDL_Quit();
     return 0;
+}
+
+void draw()
+{
+    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    SDL_GL_SwapBuffers();
 }
