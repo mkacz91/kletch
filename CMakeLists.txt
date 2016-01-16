@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 cmake_policy(SET CMP0004 OLD)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 project(Kletch)
 
@@ -28,6 +29,12 @@ if (NOT OPENGL_FOUND)
   return()
 endif (NOT OPENGL_FOUND)
 
+find_package(AntTweakBar)
+if (NOT ANTTWEAKBAR_FOUND)
+  message(WARNING "Could not find AntTweakBar. Target 'kletch' won't be created.")
+  return()
+endif (NOT ANTTWEAKBAR_FOUND)
+
 set(KLETCH_SOURCES
   src/kletch.cpp
 )
@@ -43,6 +50,8 @@ target_link_libraries(kletch
   libkletch
   ${SDL_LIBRARY}
   ${OPENGL_gl_LIBRARY}
+  ${ANTTWEAKBAR_LIBRARY}
 )
 target_include_directories(kletch PUBLIC ${SDL_INCLUDE_DIR})
 target_include_directories(kletch PUBLIC ${OPENGL_INCLUDE_DIR})
+target_include_directories(kletch PUBLIC ${ANTTWEAKBAR_INCLUDE_DIR})

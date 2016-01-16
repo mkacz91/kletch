@@ -1,6 +1,7 @@
 #include "prefix.h"
 #include <SDL.h>
 #include "gl.h"
+#include <AntTweakBar.h>
 
 #include "hello.h"
 using namespace kletch;
@@ -35,25 +36,38 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    TwInit(TW_OPENGL, NULL);
+    TwWindowSize(window->w, window->h);
+    TwBar* twbar = TwNewBar("Hello AntTweakBar!");
+    bool b = true;
+    TwAddVarRW(twbar, "b", TW_TYPE_BOOLCPP, &b, "");
+
     SDL_Event e;
     bool running = true;
     bool redraw = true;
     while (running && SDL_WaitEvent(&e))
     {
-        switch (e.type) {
-        case SDL_KEYDOWN:
-            if (e.key.keysym.sym == SDLK_ESCAPE)
-                running = false;
-            break;
-
-        case SDL_VIDEORESIZE:
-            window = SDL_SetVideoMode(e.resize.w, e.resize.h, 0, video_flags);
+        if (TwEventSDL(&e, SDL_MAJOR_VERSION, SDL_MINOR_VERSION))
+        {
             redraw = true;
-            break;
+        }
+        else
+        {
+            switch (e.type) {
+            case SDL_KEYDOWN:
+                if (e.key.keysym.sym == SDLK_ESCAPE)
+                    running = false;
+                break;
 
-        case SDL_QUIT:
-            running = false;
-            break;
+            case SDL_VIDEORESIZE:
+                window = SDL_SetVideoMode(e.resize.w, e.resize.h, 0, video_flags);
+                redraw = true;
+                break;
+
+            case SDL_QUIT:
+                running = false;
+                break;
+            }
         }
 
         if (running && redraw)
@@ -67,7 +81,8 @@ int main(int argc, char** argv)
 
 void draw()
 {
-    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+    TwDraw();
     SDL_GL_SwapBuffers();
 }
