@@ -1,5 +1,4 @@
-#include "prefix_headers.h"
-#include "prefix_usings.h"
+#include "prefix.h"
 
 #include "hello.h"
 using namespace kletch;
