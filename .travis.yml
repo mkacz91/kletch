@@ -19,15 +19,11 @@ install:
   - ../cmake/bin/cmake /usr/src/gtest
   - make
   - sudo cp *.a /usr/lib
-  - ls /usr/lib
-  - ls /usr/include
   - cd ..
-
-  - export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr
 
 script:
   - mkdir build
   - cd build
-  - ../cmake/bin/cmake -DBUILD_DEMO=0 -DBUILD_TEST=1 ..
+  - ../cmake/bin/cmake -DCMAKE_PREFIX_PATH=/usr -DBUILD_DEMO=0 -DBUILD_TEST=1 ..
   - make
   - ./kletch_test
