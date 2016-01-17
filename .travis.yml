@@ -9,7 +9,7 @@ before_install:
 install:
   - mkdir cmake
   - cd cmake
-  - wget https://cmake.org/files/v3.4/cmake-3.4.1-Linux-x86_64.sh
+  - wget --no-check-certificate http://cmake.org/files/v3.4/cmake-3.4.1-Linux-x86_64.sh
   - sh cmake-3.4.1-Linux-x86_64.sh --exclude-subdir --skip-license
   - cd ..
 
