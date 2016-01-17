@@ -1,7 +1,4 @@
-#include "libkletch_prefix.h"
-#include <SDL.h>
-#include "gl.h"
-#include <AntTweakBar.h>
+#include "kletch_prefix.h"
 
 #include "hello.h"
 using namespace kletch;
