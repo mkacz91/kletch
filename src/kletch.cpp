@@ -1,4 +1,4 @@
-#include "prefix.h"
+#include "libkletch_prefix.h"
 #include <SDL.h>
 #include "gl.h"
 #include <AntTweakBar.h>

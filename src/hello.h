@@ -1,7 +1,7 @@
 #ifndef KLETCH_HELLO_H
 #define KLETCH_HELLO_H
 
-#include "prefix.h"
+#include "libkletch_prefix.h"
 
 namespace kletch {
 
