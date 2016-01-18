@@ -40,15 +40,17 @@ if (BUILD_DEMO)
   add_executable(kletch ${KLETCH_SOURCES})
   set_property(TARGET kletch PROPERTY CXX_STANDARD 11)
   set_property(TARGET kletch PROPERTY CXX_STANDARD_REQUIRED ON)
+  set_property(TARGET kletch PROPERTY INCLUDE_DIRECTORIES
+    ${SDL_INCLUDE_DIR}
+    ${OPENGL_INCLUDE_DIR}
+    ${ANTTWEAKBAR_INCLUDE_DIR}
+  )
   target_link_libraries(kletch
     libkletch
     ${SDL_LIBRARY}
     ${OPENGL_gl_LIBRARY}
     ${ANTTWEAKBAR_LIBRARY}
   )
-  target_include_directories(kletch PUBLIC ${SDL_INCLUDE_DIR})
-  target_include_directories(kletch PUBLIC ${OPENGL_INCLUDE_DIR})
-  target_include_directories(kletch PUBLIC ${ANTTWEAKBAR_INCLUDE_DIR})
 endif (BUILD_DEMO)
 
 # Executable 'kletch_test'
@@ -94,6 +96,13 @@ if (BUILD_TEST)
   add_executable(kletch_test ${KLETCH_TEST_SOURCES})
   set_property(TARGET kletch_test PROPERTY CXX_STANDARD 11)
   set_property(TARGET kletch_test PROPERTY CXX_STANDARD_REQUIRED ON)
-  target_link_libraries(kletch_test libkletch gtest ${CMAKE_THREAD_LIBS_INIT})
-  target_include_directories(kletch_test PUBLIC ${GTEST_INCLUDE_DIR})
+  set_property(TARGET kletch_test PROPERTY INCLUDE_DIRECTORIES
+    ${GTEST_INCLUDE_DIR}
+  )
+  target_link_libraries(
+    kletch_test
+    libkletch
+    gtest
+    ${CMAKE_THREAD_LIBS_INIT}
+  )
 endif (BUILD_TEST)
