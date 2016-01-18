@@ -1,4 +1,9 @@
+build/
+
+# In case for some reason we are building in the project directory
 kletch
+kletch_test
+gtest
 
 # C++
 # ==============================================================================
