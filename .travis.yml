@@ -7,16 +7,10 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - mkdir cmake
-  - cd cmake
-  - wget --no-check-certificate http://cmake.org/files/v3.4/cmake-3.4.1-Linux-x86_64.sh
-  - sh cmake-3.4.1-Linux-x86_64.sh --exclude-subdir --skip-license
-  - cd ..
-
   - sudo apt-get install -y libgtest-dev
   - mkdir gtest_build
   - cd gtest_build
-  - ../cmake/bin/cmake /usr/src/gtest
+  - cmake /usr/src/gtest
   - make
   - sudo cp *.a /usr/lib
   - cd ..
@@ -24,6 +18,6 @@ install:
 script:
   - mkdir build
   - cd build
-  - ../cmake/bin/cmake -DCMAKE_PREFIX_PATH:PATH=/usr -DGTEST_ROOT:PATH=/usr -DBUILD_DEMO=0 -DBUILD_TEST=1 ..
+  - cmake -DCMAKE_PREFIX_PATH:PATH=/usr -DGTEST_ROOT:PATH=/usr -DBUILD_DEMO=0 -DBUILD_TEST=1 ..
   - make
   - ./kletch_test
