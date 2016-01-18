@@ -72,9 +72,6 @@ if (BUILD_TEST)
     URL https://github.com/google/googletest/archive/release-1.7.0.zip
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
     INSTALL_COMMAND ""
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
   )
   ExternalProject_Get_Property(gtest_external SOURCE_DIR BINARY_DIR)
   set(GTEST_SRC_DIR ${SOURCE_DIR})
