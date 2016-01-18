@@ -72,6 +72,7 @@ if (BUILD_TEST)
     URL https://github.com/google/googletest/archive/release-1.7.0.zip
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
     INSTALL_COMMAND ""
+    LOG_DOWNLOAD ON
   )
   ExternalProject_Get_Property(gtest_external SOURCE_DIR BINARY_DIR)
   set(GTEST_SRC_DIR ${SOURCE_DIR})
@@ -83,13 +84,16 @@ if (BUILD_TEST)
 
   # Create the include directory now because otherwise the
   # INTERFACE_INCLUDE_DIRECTORIES property complains
-  file(MAKE_DIRECTORY ${GTEST_INCLUDE_DIR})
+  # file(MAKE_DIRECTORY ${GTEST_INCLUDE_DIR})
 
   set_target_properties(gtest PROPERTIES
     IMPORTED_LOCATION "${GTEST_BIN_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
-    INTERFACE_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIR}
+  # INTERFACE_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIR}
     INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
   )
+  # The INTERFACE_INCLUDE_DIRECTORIES property does not work on Travis CI.
+  # Just screw it.
+  include_directories(${GTEST_INCLUDE_DIR})
 
   set(KLETCH_TEST_SOURCES
     test/hello_test.cpp
