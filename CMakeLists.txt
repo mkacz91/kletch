@@ -82,18 +82,9 @@ if (BUILD_TEST)
   add_library(gtest IMPORTED STATIC GLOBAL)
   add_dependencies(gtest gtest_external)
 
-  # Create the include directory now because otherwise the
-  # INTERFACE_INCLUDE_DIRECTORIES property complains
-  # file(MAKE_DIRECTORY ${GTEST_INCLUDE_DIR})
-
   set_target_properties(gtest PROPERTIES
     IMPORTED_LOCATION "${GTEST_BIN_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}"
-  # INTERFACE_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIR}
-    INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
   )
-  # The INTERFACE_INCLUDE_DIRECTORIES property does not work on Travis CI.
-  # Just screw it.
-  include_directories(${GTEST_INCLUDE_DIR})
 
   set(KLETCH_TEST_SOURCES
     test/hello_test.cpp
@@ -103,5 +94,6 @@ if (BUILD_TEST)
   add_executable(kletch_test ${KLETCH_TEST_SOURCES})
   set_property(TARGET kletch_test PROPERTY CXX_STANDARD 11)
   set_property(TARGET kletch_test PROPERTY CXX_STANDARD_REQUIRED ON)
-  target_link_libraries(kletch_test libkletch gtest)
+  target_link_libraries(kletch_test libkletch gtest ${CMAKE_THREAD_LIBS_INIT})
+  target_include_directories(kletch_test PUBLIC ${GTEST_INCLUDE_DIR})
 endif (BUILD_TEST)
