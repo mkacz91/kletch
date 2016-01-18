@@ -14,7 +14,7 @@ set(LIBKLETCH_SOURCES
 
 add_library(libkletch ${LIBKLETCH_SOURCES})
 set_property(TARGET libkletch PROPERTY OUTPUT_NAME kletch)
-set_property(TARGET libkletch PROPERTY CXX_STANDARD 14)
+set_property(TARGET libkletch PROPERTY CXX_STANDARD 11)
 set_property(TARGET libkletch PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Demo executable 'kletch'
@@ -38,7 +38,7 @@ if (BUILD_DEMO)
   endif (APPLE)
 
   add_executable(kletch ${KLETCH_SOURCES})
-  set_property(TARGET kletch PROPERTY CXX_STANDARD 14)
+  set_property(TARGET kletch PROPERTY CXX_STANDARD 11)
   set_property(TARGET kletch PROPERTY CXX_STANDARD_REQUIRED ON)
   target_link_libraries(kletch
     libkletch
@@ -100,7 +100,7 @@ if (BUILD_TEST)
   )
 
   add_executable(kletch_test ${KLETCH_TEST_SOURCES})
-  set_property(TARGET kletch_test PROPERTY CXX_STANDARD 14)
+  set_property(TARGET kletch_test PROPERTY CXX_STANDARD 11)
   set_property(TARGET kletch_test PROPERTY CXX_STANDARD_REQUIRED ON)
   target_link_libraries(kletch_test libkletch gtest)
 endif (BUILD_TEST)

@@ -4,8 +4,6 @@
 #include <iostream>
 #include <string>
 
-#include "../gsl/include/gsl.h"
-
 namespace kletch {
 
 using std::cin;
