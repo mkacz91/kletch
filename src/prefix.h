@@ -1,5 +1,5 @@
-#ifndef KLETCH_LIBKLETCH_PREFIX_H
-#define KLETCH_LIBKLETCH_PREFIX_H
+#ifndef KLETCH_PREFIX_H
+#define KLETCH_PREFIX_H
 
 #include <iostream>
 #include <string>
@@ -16,4 +16,4 @@ using std::string;
 
 } // namespace kletch
 
-#endif // KLETCH_LIBKLETCH_PREFIX_H
+#endif // KLETCH_PREFIX_H

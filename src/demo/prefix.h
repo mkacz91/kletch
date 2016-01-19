@@ -1,7 +1,7 @@
-#ifndef KLETCH_KLETCH_PREFIX_H
-#define KLETCH_KLETCH_PREFIX_H
+#ifndef KLETCH_DEMO_PREFIX_H
+#define KLETCH_DEMO_PREFIX_H
 
-#include "libkletch_prefix.h"
+#include "../prefix.h"
 
 #include <SDL.h>
 #ifdef __APPLE__
@@ -11,4 +11,4 @@
 #endif
 #include <AntTweakBar.h>
 
-#endif // KLETCH_KLETCH_PREFIX_H
+#endif // KLETCH_DEMO_PREFIX_H

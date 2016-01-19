@@ -1,2 +1,2 @@
 #include <gtest/gtest.h>
-#include "../src/libkletch_prefix.h"
+#include "../src/prefix.h"

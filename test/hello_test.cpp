@@ -1,6 +1,6 @@
 #include "prefix.h"
 
-#include "../src/hello.h"
+#include <lib/hello.h>
 using namespace kletch;
 
 TEST (HelloTest, Hello) {

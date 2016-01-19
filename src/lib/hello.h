@@ -1,7 +1,7 @@
-#ifndef KLETCH_HELLO_H
-#define KLETCH_HELLO_H
+#ifndef KLETCH_LIB_HELLO_H
+#define KLETCH_LIB_HELLO_H
 
-#include "libkletch_prefix.h"
+#include "prefix.h"
 
 namespace kletch {
 
@@ -13,4 +13,4 @@ public:
 
 } // namespace kletch
 
-#endif // KLETCH_HELLO_H
+#endif // KLETCH_LIB_HELLO_H

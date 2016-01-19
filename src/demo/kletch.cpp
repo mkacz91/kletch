@@ -1,6 +1,6 @@
-#include "kletch_prefix.h"
+#include "prefix.h"
 
-#include "hello.h"
+#include <lib/hello.h>
 using namespace kletch;
 
 void draw();
