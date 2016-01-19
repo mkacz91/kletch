@@ -99,8 +99,8 @@ if (BUILD_TEST)
   set_property(TARGET kletch_test PROPERTY INCLUDE_DIRECTORIES
     ${GTEST_INCLUDE_DIR}
   )
-  target_link_libraries(
-    kletch_test
+  message(STATUS "GTEST_INCLUDE_DIR=${GTEST_INCLUDE_DIR}")
+  target_link_libraries(kletch_test
     libkletch
     gtest
     ${CMAKE_THREAD_LIBS_INIT}
