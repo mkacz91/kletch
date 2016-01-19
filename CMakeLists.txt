@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 cmake_policy(SET CMP0004 OLD)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules)
 
@@ -100,7 +100,7 @@ if (BUILD_TEST)
     ${GTEST_INCLUDE_DIR}
   )
   message(STATUS "GTEST_INCLUDE_DIR=${GTEST_INCLUDE_DIR}")
-  target_link_libraries(kletch_test
+  include_directories(kletch_test
     libkletch
     gtest
     ${CMAKE_THREAD_LIBS_INIT}
