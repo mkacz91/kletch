@@ -5,7 +5,7 @@ using namespace kletch;
 
 TEST(FresnelTest, eval_c)
 {
-    // Evaluete values taken from WolframAlpha
+    // Values taken from WolframAlpha
     real values[][2] = {
         {rl(0.0), rl(0.0000000000000000000000000000)},
         {rl(0.1), rl(0.0999975326270850680504666909)},

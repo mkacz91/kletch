@@ -1,5 +1,9 @@
 message(STATUS "Creating library target: libkletch")
 
+include_directories(
+  ../
+)
+
 file(GLOB LIBKLETCH_SOURCES *.cpp)
 
 add_library(libkletch ${LIBKLETCH_SOURCES})

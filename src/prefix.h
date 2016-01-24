@@ -3,7 +3,8 @@
 
 #include <iostream>
 #include <string>
-#include <cmath>
+
+#include "math/math.h"
 
 namespace kletch {
 
@@ -14,17 +15,6 @@ using std::endl;
 using std::flush;
 
 using std::string;
-
-using std::sin;
-using std::cos;
-
-#ifdef KLETCH_USE_DOUBLES
-    typedef double real;
-#   define rl(number) (number)
-#else
-    typedef float real;
-#   define rl(number) (number##f)
-#endif
 
 } // namespace kletch
 

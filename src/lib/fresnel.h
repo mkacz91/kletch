@@ -12,6 +12,10 @@ public:
 
     static real eval_s(real s);
 
+    static vec2r eval(real s);
+
+    static vec2r eval(real theta0, real kappa0, real a, real s);
+
 private:
     static constexpr real PI = rl(3.14159265359);
     static constexpr real PI_OVER_2 = rl(1.57079632679);
@@ -30,6 +34,13 @@ inline real Fresnel::eval_c(real s)
 inline real Fresnel::eval_s(real s)
 {
     return rl(0.5) - eval_r(s) * cos(PI_OVER_2 * (eval_a(s) - s * s));
+}
+
+inline vec2r Fresnel::eval(real s)
+{
+    real r = eval_r(s);
+    real u = PI_OVER_2 * (eval_a(s) - s * s);
+    return vec2r(rl(0.5) - r * sin(u), rl(0.5) - r * cos(u));
 }
 
 inline real Fresnel::eval_a(real s)
