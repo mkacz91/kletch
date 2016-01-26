@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <cassert>
 
 #include "math/math.h"
 
@@ -15,6 +16,7 @@ using std::endl;
 using std::flush;
 
 using std::string;
+using std::to_string;
 
 } // namespace kletch
 
