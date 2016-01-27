@@ -118,6 +118,13 @@ int init_sdl()
     }
 
     cout << "SDL initialization complete" << endl;
+    cout << "OpenGL Platform:"
+        << "\n    OpenGL Version: " << (const char*)glGetString(GL_VERSION)
+        << "\n    GLSL Version:   " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)
+        << "\n    Vendor:         " << (const char*)glGetString(GL_VENDOR)
+        << "\n    Renderer:       " << (const char*)glGetString(GL_RENDERER)
+        << endl;
+
     return 0;
 }
 
@@ -219,8 +226,18 @@ int main_loop()
         {
             if (initial_demo_index >= 0 && initial_demo_index < demos.size())
                 demos[initial_demo_index]->clean_up(true);
+
             if (demo_index >= 0 && demo_index < demos.size())
-                demos[demo_index]->init(window);
+            {
+                try { demos[demo_index]->init(window); }
+                catch (const std::exception& ex)
+                {
+                    // Ignore and hope for the best
+                    cerr << "Couldn't initialize demo '" << demos[demo_index]->display_name()
+                        << "': " << ex.what() << endl;
+                    demo_index = -1;
+                }
+            }
         }
 
         // Handle most basic high priority events

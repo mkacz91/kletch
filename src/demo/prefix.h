@@ -11,4 +11,6 @@
 #endif
 #include <AntTweakBar.h>
 
+#include "gl_utils.h"
+
 #endif // KLETCH_DEMO_PREFIX_H

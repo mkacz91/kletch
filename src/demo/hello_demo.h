@@ -19,7 +19,12 @@ public:
 protected:
     virtual void init() override;
 
-    virtual void clean_up() override;
+    virtual void clean_up() noexcept override;
+
+private:
+    GLuint m_program;
+    GLint m_position_attrib;
+    GLuint m_vertices;
 };
 
 } // namespace kletch

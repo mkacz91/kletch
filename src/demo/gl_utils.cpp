@@ -71,7 +71,9 @@ GLuint link_program(const string& vertex_shader_filename, const string& fragment
     {
         vertex_shader = load_vertex_shader(vertex_shader_filename);
         fragment_shader = load_fragment_shader(fragment_shader_filename);
-        return link_program(vertex_shader, fragment_shader);
+        GLuint program = link_program(vertex_shader, fragment_shader);
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
     }
     catch (...)
     {

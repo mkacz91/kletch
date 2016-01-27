@@ -3,8 +3,13 @@
 
 #include "prefix.h"
 #include <exception>
+#include <vector>
 
 namespace kletch {
+
+template <typename T>
+int byte_size(const std::vector<T>& xs) { return xs.size() * sizeof(T); }
+
 namespace gl {
 
 class exception : public std::exception

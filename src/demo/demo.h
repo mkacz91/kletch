@@ -32,7 +32,7 @@ protected:
     Demo(const string& display_name) : m_display_name(display_name) { }
 
     virtual void init() = 0;
-    virtual void clean_up() = 0;
+    virtual void clean_up() noexcept = 0;
 
 private:
     const string m_display_name;

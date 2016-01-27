@@ -1,4 +1,5 @@
 build/
+buildf/
 
 # In case for some reason we are building in the project directory
 kletch

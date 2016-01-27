@@ -11,6 +11,10 @@ include_directories(
   ${ANTTWEAKBAR_INCLUDE_DIR}
 )
 
+add_executable(resgen resgen.cpp)
+set_property(TARGET resgen PROPERTY CXX_STANDARD 11)
+set_property(TARGET resgen PROPERTY CXX_STANDARD_REQUIRED ON)
+
 file(GLOB KLETCH_SOURCES *.cpp)
 
 if (APPLE)
