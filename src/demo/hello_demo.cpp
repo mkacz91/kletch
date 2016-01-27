@@ -2,6 +2,16 @@
 
 namespace kletch {
 
+void HelloDemo::render()
+{
+
+}
+
+void HelloDemo::handle_event(const DemoEvent& e)
+{
+
+}
+
 void HelloDemo::init()
 {
 
@@ -10,16 +20,6 @@ void HelloDemo::init()
 void HelloDemo::clean_up()
 {
 
-}
-
-void HelloDemo::render()
-{
-
-}
-
-bool HelloDemo::handle_event(const DemoEvent& e)
-{
-    return false;
 }
 
 } // anamespace keltch

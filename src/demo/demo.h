@@ -10,20 +10,33 @@ namespace kletch {
 class Demo
 {
 public:
+    const string& display_name() const noexcept { return m_display_name; }
+
     void init(SDL_Surface* canvas);
     void clean_up(bool);
 
-    SDL_Surface* canvas() { return m_canvas; }
-    int width() const { return m_canvas->w; }
-    int height() const { return m_canvas->h; }
+    SDL_Surface* canvas() noexcept { return m_canvas; }
+    int width() const noexcept { return m_canvas->w; }
+    int height() const noexcept{ return m_canvas->h; }
+    bool active() const noexcept { return m_canvas != nullptr; }
+
+    virtual void render() = 0;
+    virtual void handle_event(const DemoEvent& e) { } // Do nothing
+
+    virtual ~Demo() noexcept
+    {
+        assert(!active());
+    }
+
+protected:
+    Demo(const string& display_name) : m_display_name(display_name) { }
 
     virtual void init() = 0;
     virtual void clean_up() = 0;
-    virtual void redraw() = 0;
-    virtual bool handle_event(const DemoEvent& e) { } // Do nothing
 
 private:
-    SDL_Surface* m_canvas;
+    const string m_display_name;
+    SDL_Surface* m_canvas = nullptr;
 };
 
 } // namespace kletch

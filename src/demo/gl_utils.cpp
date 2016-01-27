@@ -23,10 +23,11 @@ GLuint load_shader(const string& filename, GLenum shader_type)
 
     // Upload source
     std::ostringstream sout;
-    sout << fin << endl;
+    sout << fin.rdbuf() << endl;
     string source = sout.str();
+    const char* c_source = source.c_str();
     int source_length = source.length();
-    glShaderSource(shader, 1, &source.c_str(), &source_length);
+    glShaderSource(shader, 1, &c_source, &source_length);
 
     // Compile
     glGetError();
@@ -35,7 +36,7 @@ GLuint load_shader(const string& filename, GLenum shader_type)
     {
         const int max_log_length = 255;
         char log[max_log_length + 1];
-        glGetShaderInfoLog(shader, max_log_length, nullptr, &log);
+        glGetShaderInfoLog(shader, max_log_length, nullptr, (char*)&log);
         glDeleteShader(shader);
         throw exception("Shader compilation error, file '" + filename + "': " + log);
     }
@@ -58,7 +59,7 @@ string shader_filename(GLuint shader)
 {
     auto match = shader_filenames.find(shader);
     if (match != shader_filenames.end())
-        return *match;
+        return match->second;
     return to_string(shader);
 }
 
@@ -74,7 +75,7 @@ GLuint link_program(const string& vertex_shader_filename, const string& fragment
     }
     catch (...)
     {
-        glDeleteSahder(vertex_shader);
+        glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
         throw;
     }
@@ -94,20 +95,20 @@ GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
     if (error != GL_NO_ERROR)
     {
         glDeleteProgram(program);
-        throw exeption(
+        throw exception(
             "Unable to attach shaders: " + error_string(error) +
             ", shaders: " + shader_filename(vertex_shader) + ", " +
             shader_filename(fragment_shader)
         );
     }
 
-    glCompileProgram(program);
+    glLinkProgram(program);
     error = glGetError();
     if (error != GL_NO_ERROR)
     {
         const int max_log_length = 255;
         char log[max_log_length + 1];
-        glGetProgramInfoLog(program, max_log_length, nullptr, &log);
+        glGetProgramInfoLog(program, max_log_length, nullptr, (char*)&log);
         glDeleteProgram(program);
         throw exception(
             "Unable to link program, shaders: " + shader_filename(vertex_shader) + ", " +

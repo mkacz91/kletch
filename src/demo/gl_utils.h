@@ -7,14 +7,14 @@
 namespace kletch {
 namespace gl {
 
-public class exception : public std::exception
+class exception : public std::exception
 {
 public:
     exception(const string& what) : m_what(what) { }
-    virtual const char* what() override { return m_what.c_str(); }
+    virtual const char* what() const noexcept override { return m_what.c_str(); }
 private:
     string m_what;
-}
+};
 
 GLuint load_vertex_shader(const string& filename);
 

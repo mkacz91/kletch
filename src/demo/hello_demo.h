@@ -10,13 +10,16 @@ namespace kletch {
 class HelloDemo : public Demo
 {
 public:
-    virtual void init() override;
-
-    virtual void clean_up() override;
+    HelloDemo() : Demo("Hello") { }
 
     virtual void render() override;
 
     virtual void handle_event(const DemoEvent& e) override;
+
+protected:
+    virtual void init() override;
+
+    virtual void clean_up() override;
 };
 
 } // namespace kletch

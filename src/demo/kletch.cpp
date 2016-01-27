@@ -1,12 +1,20 @@
 #include "prefix.h"
+#include <vector>
+#include <sstream>
 
-#include <lib/hello.h>
+#include <lib/kletch.h>
 using namespace kletch;
 
+#include "demo.h"
+#include "hello_demo.h"
+
 SDL_Surface* window;
+Uint32 video_flags;
+
 TwBar* twbar;
-int demo_index = -1;
+
 std::vector<unique_ptr<Demo>> demos;
+int demo_index = -1;
 
 int init(int argc, char** argv);
 int main_loop();
@@ -74,11 +82,6 @@ int init(int argc, char** argv)
         return init_demos_result;
     }
 
-
-    bool b = true;
-    TwAddVarRW(twbar, "b", TW_TYPE_BOOLCPP, &b, "");
-
-    SDL_Quit();
     return 0;
 }
 
@@ -105,8 +108,8 @@ int init_sdl()
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    Uint32 video_flags = SDL_OPENGL | SDL_RESIZABLE;
-    SDL_Surface* window = SDL_SetVideoMode(800, 600, 0, video_flags);
+    video_flags = SDL_OPENGL | SDL_RESIZABLE;
+    window = SDL_SetVideoMode(800, 600, 0, video_flags);
     if (window == nullptr)
     {
         cerr << "Unable to create window: " << SDL_GetError() << endl;
@@ -114,6 +117,7 @@ int init_sdl()
         return 1;
     }
 
+    cout << "SDL initialization complete" << endl;
     return 0;
 }
 
@@ -127,13 +131,19 @@ void quit_sdl()
 
 int init_twbar()
 {
-    assert(window != nullptr);
+    //assert(window != nullptr);
 
-    TwInit(TW_OPENGL, NULL);
+    if (TwInit(TW_OPENGL, NULL) == 0)
+    {
+        cerr << "Unable to initialize AntTweakBar: " << TwGetLastError() << endl;
+        return 1;
+    }
+
     TwWindowSize(window->w, window->h);
-    TwBar* twbar = TwNewBar("Kletch");
+    twbar = TwNewBar("Kletch");
 
-    
+    cout << "AntTweakBar initialization complete" << endl;
+    return 0;
 }
 
 void quit_twbar()
@@ -144,23 +154,37 @@ void quit_twbar()
     twbar = nullptr;
 }
 
-void quit_twbar()
-{
-    TwTerminate();
-}
-
 void draw()
 {
-    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    if (demo_index >= 0 && demo_index < demos.size())
+    {
+        demos[demo_index]->render();
+    }
+    else
+    {
+        glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
     TwDraw();
+
     SDL_GL_SwapBuffers();
 }
 
-void init_demos()
+int init_demos()
 {
     demos.emplace_back(new HelloDemo);
     // Add more demos here
+
+    // Greate AntTweakBar combo box
+    std::ostringstream enum_string;
+    for (auto& demo : demos)
+        enum_string << demo->display_name() << ",";
+    TwType demo_twtype = TwDefineEnumFromString("DemoEnum", enum_string.str().c_str());
+    TwAddVarRW(twbar, "Demo", demo_twtype, &demo_index, nullptr);
+
+    cout << "Demos initialization complete" << endl;
+    return 0;
 }
 
 void quit_demos()
@@ -169,22 +193,38 @@ void quit_demos()
         demos[demo_index]->clean_up(true);
 }
 
-
-void main_loop(SDL_Surface* window, TwBar* twbar)
+int main_loop()
 {
     assert(window != nullptr);
     assert(twbar != nullptr);
 
-    DemoEvent e;
+    DemoEvent de;
+    SDL_Event& e = de.sdl_event();
     bool running = true;
     bool redraw = true;
     while (running && SDL_WaitEvent(&e))
     {
-        if (TwEventSDL(&e, SDL_MAJOR_VERSION, SDL_MINOR_VERSION))
+        bool handled = false;
+        int initial_demo_index = demo_index;
+
+        // Let AntTweakBar handle the event
+        if (running && !handled)
         {
-            redraw = true;
+            handled = TwEventSDL(&e, SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+            redraw = redraw || handled;
         }
-        else
+
+        // Exchange demo if it was changed
+        if (initial_demo_index != demo_index)
+        {
+            if (initial_demo_index >= 0 && initial_demo_index < demos.size())
+                demos[initial_demo_index]->clean_up(true);
+            if (demo_index >= 0 && demo_index < demos.size())
+                demos[demo_index]->init(window);
+        }
+
+        // Handle most basic high priority events
+        if (running && !handled)
         {
             switch (e.type) {
             case SDL_KEYDOWN:
@@ -203,8 +243,20 @@ void main_loop(SDL_Surface* window, TwBar* twbar)
             }
         }
 
+        // Let demo handle the event
+        if (running && !handled && demo_index >= 0 && demo_index < demos.size())
+        {
+            de.reset();
+            demos[demo_index]->handle_event(de);
+            handled = de.handled();
+            redraw = redraw || de.redraw_requested();
+            running = !de.quit_requested();
+        }
+
         if (running && redraw)
             draw();
         redraw = false;
     }
+
+    return 0;
 }
