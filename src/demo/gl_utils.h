@@ -21,15 +21,15 @@ private:
     string m_what;
 };
 
-GLuint load_vertex_shader(const string& filename);
+GLuint load_vertex_shader(const Resource& r);
 
-GLuint load_fragment_shader(const string& filename);
+GLuint load_fragment_shader(const Resource& r);
 
-string shader_filename(GLuint shader);
+string shader_name(GLuint shader);
 
 GLuint link_program(GLuint vertex_shader, GLuint fragment_shader);
 
-GLuint link_program(const string& vertex_shader_filename, const string& fragment_shader_filename);
+GLuint link_program(const Resource& vertex_shader_r, const Resource& fragment_shader_r);
 
 string error_string(GLenum);
 

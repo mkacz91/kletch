@@ -22,7 +22,7 @@ void HelloDemo::init()
 {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
-    m_program = gl::link_program("shaders/hello_vx.glsl", "shaders/hello_ft.glsl");
+    m_program = gl::link_program(res::shaders::hello_ft_glsl, res::shaders::hello_vx_glsl);
     glUseProgram(m_program);
     m_position_attrib = glGetAttribLocation(m_program, "position");
 

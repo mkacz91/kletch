@@ -7,29 +7,17 @@
 namespace kletch {
 namespace gl {
 
-std::unordered_map<GLuint, string> shader_filenames;
+std::unordered_map<GLuint, string> shader_names;
 
-GLuint load_shader(const string& filename, GLenum shader_type)
+GLuint load_shader(const Resource& r, GLenum shader_type)
 {
-    // Open file
-    std::ifstream fin(filename);
-    if (!fin.is_open())
-        throw exception("Unable to open file: " + filename);
-
     // Create shader object
     GLuint shader = glCreateShader(shader_type);
     if (shader == 0)
         throw exception("Unable to create new shader");
 
-    // Upload source
-    std::ostringstream sout;
-    sout << fin.rdbuf() << endl;
-    string source = sout.str();
-    const char* c_source = source.c_str();
-    int source_length = source.length();
-    glShaderSource(shader, 1, &c_source, &source_length);
-
-    // Compile
+    // Upload source and compile
+    glShaderSource(shader, 1, &r.value, &r.length);
     glGetError();
     glCompileShader(shader);
     if (glGetError() != GL_NO_ERROR)
@@ -38,42 +26,43 @@ GLuint load_shader(const string& filename, GLenum shader_type)
         char log[max_log_length + 1];
         glGetShaderInfoLog(shader, max_log_length, nullptr, (char*)&log);
         glDeleteShader(shader);
-        throw exception("Shader compilation error, file '" + filename + "': " + log);
+        throw exception("Shader '" + r.name + "', compilation error: " + log);
     }
 
-    shader_filenames[shader] = filename;
+    shader_names[shader] = r.name;
     return shader;
 }
 
-GLuint load_vertex_shader(const string& filename)
+GLuint load_vertex_shader(const Resource& r)
 {
-    return load_shader(filename, GL_VERTEX_SHADER);
+    return load_shader(r, GL_VERTEX_SHADER);
 }
 
-GLuint load_fragment_shader(const string& filename)
+GLuint load_fragment_shader(const Resource& r)
 {
-    return load_shader(filename, GL_FRAGMENT_SHADER);
+    return load_shader(r, GL_FRAGMENT_SHADER);
 }
 
-string shader_filename(GLuint shader)
+string shader_name(GLuint shader)
 {
-    auto match = shader_filenames.find(shader);
-    if (match != shader_filenames.end())
+    auto match = shader_names.find(shader);
+    if (match != shader_names.end())
         return match->second;
     return to_string(shader);
 }
 
-GLuint link_program(const string& vertex_shader_filename, const string& fragment_shader_filename)
+GLuint link_program(const Resource& vertex_shader_r, const Resource& fragment_shader_r)
 {
     GLuint vertex_shader = 0;
     GLuint fragment_shader = 0;
     try
     {
-        vertex_shader = load_vertex_shader(vertex_shader_filename);
-        fragment_shader = load_fragment_shader(fragment_shader_filename);
+        vertex_shader = load_vertex_shader(vertex_shader_r);
+        fragment_shader = load_fragment_shader(fragment_shader_r);
         GLuint program = link_program(vertex_shader, fragment_shader);
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
+        return program;
     }
     catch (...)
     {
@@ -98,9 +87,8 @@ GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
     {
         glDeleteProgram(program);
         throw exception(
-            "Unable to attach shaders: " + error_string(error) +
-            ", shaders: " + shader_filename(vertex_shader) + ", " +
-            shader_filename(fragment_shader)
+            "Unable to attach shaders '" + shader_name(vertex_shader) + "', '" +
+            shader_name(fragment_shader) + "': "+ error_string(error)
         );
     }
 
@@ -113,8 +101,8 @@ GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
         glGetProgramInfoLog(program, max_log_length, nullptr, (char*)&log);
         glDeleteProgram(program);
         throw exception(
-            "Unable to link program, shaders: " + shader_filename(vertex_shader) + ", " +
-            shader_filename(fragment_shader) + ", log: " + log
+            "Unable to link shaders '" + shader_name(vertex_shader) + "', '" +
+            shader_name(fragment_shader) + "': " + log
         );
     }
 
