@@ -13,7 +13,7 @@ public:
     const string& display_name() const noexcept { return m_display_name; }
 
     void init(SDL_Surface* canvas);
-    void clean_up(bool);
+    void close(bool);
 
     SDL_Surface* canvas() noexcept { return m_canvas; }
     int width() const noexcept { return m_canvas->w; }
@@ -32,7 +32,7 @@ protected:
     Demo(const string& display_name) : m_display_name(display_name) { }
 
     virtual void init() = 0;
-    virtual void clean_up() noexcept = 0;
+    virtual void close() noexcept = 0;
 
 private:
     const string m_display_name;

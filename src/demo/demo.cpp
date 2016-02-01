@@ -5,15 +5,19 @@ namespace kletch {
 void Demo::init(SDL_Surface* canvas)
 {
     assert(canvas != nullptr);
+    cout << "Initializing demo " << squote(display_name()) << "..." << endl;
     m_canvas = canvas;
     init();
+    cout << "Done initializing demo " << squote(display_name()) << endl;
 }
 
-void Demo::clean_up(bool)
+void Demo::close(bool)
 {
-    clean_up();
+    cout << "Closing demo " << squote(display_name()) << "..." << endl;
+    close();
     assert(m_canvas != nullptr);
     m_canvas = nullptr;
+    cout << "Done closing demo " << squote(display_name()) << "..." << endl;
 }
 
 } // namespace kletch

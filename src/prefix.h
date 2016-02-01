@@ -5,6 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 #include "math/math.h"
 
@@ -22,6 +23,8 @@ using std::flush;
 
 using std::string;
 using std::to_string;
+inline string quote(const string& s) { return "\"" + s + "\""; }
+inline string squote(const string& s) { return "'" + s + "'"; }
 
 } // namespace kletch
 

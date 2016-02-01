@@ -21,15 +21,17 @@ private:
     string m_what;
 };
 
-GLuint load_vertex_shader(const Resource& r);
+GLuint load_vertex_shader(const string& resname);
 
-GLuint load_fragment_shader(const Resource& r);
+GLuint load_fragment_shader(const string& resname);
 
 string shader_name(GLuint shader);
 
 GLuint link_program(GLuint vertex_shader, GLuint fragment_shader);
 
-GLuint link_program(const Resource& vertex_shader_r, const Resource& fragment_shader_r);
+GLuint link_program(const string& vertex_shader_resname, const string& fragment_shader_resname);
+
+GLint get_attrib_location(GLuint program, const char* name);
 
 string error_string(GLenum);
 

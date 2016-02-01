@@ -1,24 +1,60 @@
 message(STATUS "Creating demo executable target: kletch")
 
+find_package(SDL REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(AntTweakBar REQUIRED)
+
+# Executable 'resemb'
+
 add_executable(resemb resemb.cpp)
 set_property(TARGET resemb PROPERTY CXX_STANDARD 11)
 set_property(TARGET resemb PROPERTY CXX_STANDARD_REQUIRED ON)
 
-file(GLOB KLETCH_SHADERS shaders/*.glsl)
+# Generated embedded resource files
+
 set(GEN_DIR "${CMAKE_BINARY_DIR}/gen")
-set(RESEMB_SHADERS_ARGS
-  "--prefix" "${CMAKE_CURRENT_SOURCE_DIR}/"
-  "${GEN_DIR}/shaders.h"
-  "${GEN_DIR}/shaders.cpp"
+
+file(GLOB KLETCH_SHADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" shaders/*.glsl)
+file(MAKE_DIRECTORY "${GEN_DIR}/shaders")
+
+set(RES_SUMMARY_H "${GEN_DIR}/summary.h")
+set(RES_SUMMARY_CPP "${GEN_DIR}/summary.cpp")
+file(WRITE "${RES_SUMMARY_H}"
+  "namespace kletch {\n"
+  "extern void add_resource(const char*, const char*);\n"
+  "namespace gen {\n"
 )
-list(APPEND RESEMB_SHADERS_ARGS ${KLETCH_SHADERS})
+file(WRITE "${RES_SUMMARY_CPP}"
+  "#inclde \"summary.h\"\n"
+  "namespace kletch { \n"
+  "void init_resources() {\n"
+)
 
-file(MAKE_DIRECTORY "${GEN_DIR}")
-add_custom_target(resemb_shaders resemb ${RESEMB_SHADERS_ARGS})
+set(RES_INDEX 0)
+foreach(RES_IN ${KLETCH_SHADERS})
+  string(RANDOM RES_VARNAME)
+  set(RES_VARNAME "r_${RES_VARNAME}_${RES_INDEX}")
+  set(RES "${GEN_DIR}/${RES_IN}.cpp")
+  list(APPEND KLETCH_RESOURCES "${RES}")
 
-find_package(SDL REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(AntTweakBar REQUIRED)
+  add_custom_command(
+    OUTPUT "${RES}"
+    COMMAND resemb "${CMAKE_CURRENT_SOURCE_DIR}" "${GEN_DIR}" "${RES_IN}"
+    MAIN_DEPENDENCY "${RES_IN}"
+    DEPENDS resemb
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+  )
+
+  file(APPEND "${RES_SUMMARY_H}" "extern const char* ${RES_VARNAME};\n")
+  file(APPEND "${RES_SUMMARY_CPP}" "add_resource(\"${RES_IN}\", gen::${RES_VARNAME});\n")
+
+  math(EXPR RES_INDEX "${RES_INDEX} + 1")
+endforeach(RES_IN)
+
+file(APPEND "${RES_SUMMARY_H}" "}\n}\n")
+file(APPEND "${RES_SUMMARY_CPP}" "}\n}\n")
+
+# Executable 'kletch'
 
 include_directories(
   ../
@@ -28,7 +64,7 @@ include_directories(
   ${ANTTWEAKBAR_INCLUDE_DIR}
 )
 
-file(GLOB KLETCH_SOURCES *.cpp)
+file(GLOB KLETCH_SOURCES *.cpp *.h)
 file(GLOB KLETCH_SOURCE_EXCLUDES resemb.cpp)
 list(REMOVE_ITEM KLETCH_SOURCES ${KLETCH_SOURCE_EXCLUDES})
 
@@ -36,10 +72,9 @@ if (APPLE)
   list(APPEND KLETCH_SOURCES SDLMain/SDLMain.m)
 endif (APPLE)
 
-add_executable(kletch ${KLETCH_SOURCES})
+add_executable(kletch ${KLETCH_SOURCES} ${KLETCH_RESOURCES})
 set_property(TARGET kletch PROPERTY CXX_STANDARD 11)
 set_property(TARGET kletch PROPERTY CXX_STANDARD_REQUIRED ON)
-add_dependencies(kletch resemb_shaders)
 target_link_libraries(kletch
   libkletch
   ${SDL_LIBRARY}

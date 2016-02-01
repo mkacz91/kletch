@@ -19,7 +19,7 @@ public:
 protected:
     virtual void init() override;
 
-    virtual void clean_up() noexcept override;
+    virtual void close() noexcept override;
 
 private:
     GLuint m_program;

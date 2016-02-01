@@ -1,5 +1,4 @@
 #include "hello_demo.h"
-#include "gl_utils.h"
 
 #include <vector>
 
@@ -22,9 +21,9 @@ void HelloDemo::init()
 {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
-    m_program = gl::link_program(res::shaders::hello_ft_glsl, res::shaders::hello_vx_glsl);
+    m_program = gl::link_program("shaders/hello_vx.glsl", "shaders/hello_ft.glsl");
     glUseProgram(m_program);
-    m_position_attrib = glGetAttribLocation(m_program, "position");
+    m_position_attrib = gl::get_attrib_location(m_program, "position");
 
     glGenBuffers(1, &m_vertices);
     glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
@@ -39,7 +38,7 @@ void HelloDemo::init()
     glVertexAttribPointer(m_position_attrib, 2, GL_FLOAT, false, 0, 0);
 }
 
-void HelloDemo::clean_up() noexcept
+void HelloDemo::close() noexcept
 {
     glDeleteBuffers(1, &m_vertices);
     m_vertices = 0;

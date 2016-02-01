@@ -197,7 +197,7 @@ int init_demos()
 void quit_demos()
 {
     if (demo_index >= 0 && demo_index < demos.size())
-        demos[demo_index]->clean_up(true);
+        demos[demo_index]->close(true);
 }
 
 int main_loop()
@@ -225,19 +225,10 @@ int main_loop()
         if (initial_demo_index != demo_index)
         {
             if (initial_demo_index >= 0 && initial_demo_index < demos.size())
-                demos[initial_demo_index]->clean_up(true);
+                demos[initial_demo_index]->close(true);
 
             if (demo_index >= 0 && demo_index < demos.size())
-            {
-                try { demos[demo_index]->init(window); }
-                catch (const std::exception& ex)
-                {
-                    // Ignore and hope for the best
-                    cerr << "Couldn't initialize demo '" << demos[demo_index]->display_name()
-                        << "': " << ex.what() << endl;
-                    demo_index = -1;
-                }
-            }
+                demos[demo_index]->init(window);
         }
 
         // Handle most basic high priority events
