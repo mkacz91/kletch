@@ -9,15 +9,27 @@ using std::vector;
 void HelloDemo::render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    //glUseProgram(m_program);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
+    //glEnableVertexAttribArray(m_position_attrib);
+    glVertexAttribPointer(m_position_attrib, 2, GL_FLOAT, false, 0, 0);
+
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    //glDisableVertexAttribArray(m_position_attrib);
 }
 
 void HelloDemo::handle_event(const DemoEvent& e)
 {
-
+    if (e.type() == SDL_VIDEORESIZE)
+    {
+        close();
+        open();
+    }
 }
 
-void HelloDemo::init()
+void HelloDemo::open()
 {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
@@ -34,8 +46,6 @@ void HelloDemo::init()
     };
     glBufferData(GL_ARRAY_BUFFER, byte_size(vertices), vertices.data(), GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(m_position_attrib);
-    glVertexAttribPointer(m_position_attrib, 2, GL_FLOAT, false, 0, 0);
 }
 
 void HelloDemo::close() noexcept

@@ -17,7 +17,7 @@ public:
     virtual void handle_event(const DemoEvent& e) override;
 
 protected:
-    virtual void init() override;
+    virtual void open() override;
 
     virtual void close() noexcept override;
 

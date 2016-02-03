@@ -9,6 +9,11 @@ namespace gl {
 
 std::unordered_map<GLuint, string> shader_names;
 
+void shader_source(GLuint shader, const char* source, int length)
+{
+
+}
+
 GLuint load_shader(const string& resname, GLenum shader_type)
 {
     const Resource& r = get_resource(resname);
@@ -20,9 +25,13 @@ GLuint load_shader(const string& resname, GLenum shader_type)
 
     // Upload source and compile
     glShaderSource(shader, 1, &r.value, &r.length);
-    glGetError();
     glCompileShader(shader);
-    if (glGetError() != GL_NO_ERROR)
+
+    // TODO: Do this only in DEBUG
+
+    int compile_status;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
+    if (compile_status != GL_TRUE)
     {
         const int max_log_length = 255;
         char log[max_log_length + 1];
@@ -76,17 +85,16 @@ GLuint link_program(const string& vertex_shader_resname, const string& fragment_
 
 GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
 {
+    // Create program
     GLuint program = glCreateProgram();
     if (program == 0)
         throw exception("Unable to create new program");
 
-    GLenum error = glGetError();
-
-    glAttachShader(program, vertex_shader);
-    glAttachShader(program, fragment_shader);
-    error = glGetError();
-    if (error != GL_NO_ERROR)
-    {
+    // Attach shaders
+    gl_if_error (
+        glAttachShader(program, vertex_shader);
+        glAttachShader(program, fragment_shader);
+    ) {
         glDeleteProgram(program);
         throw exception(
             "Unable to attach shaders " + squote(shader_name(vertex_shader)) + ", " +
@@ -94,9 +102,11 @@ GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
         );
     }
 
+    // Link program
     glLinkProgram(program);
-    error = glGetError();
-    if (error != GL_NO_ERROR)
+    int link_status;
+    glGetProgramiv(program, GL_LINK_STATUS, &link_status);
+    if (link_status != GL_TRUE)
     {
         const int max_log_length = 255;
         char log[max_log_length + 1];
@@ -113,10 +123,7 @@ GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
 
 GLint get_attrib_location(GLuint program, const char* name)
 {
-    glGetError();
-    GLint location = glGetAttribLocation(program, name);
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR)
+    gl_if_error (GLint location = glGetAttribLocation(program, name))
     {
         throw exception(
             error_string(error) + " during glGetAttribLocation(" +

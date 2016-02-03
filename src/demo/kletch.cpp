@@ -26,30 +26,12 @@ void quit();
 int main(int argc, char** argv)
 {
     int init_result = init(argc, argv);
-
-    int main_loop_result = 2;
-    if (init_result == 0)
-    {
-        try
-        {
-            main_loop_result = main_loop();
-        }
-        // If any exceptions reach up here, we don't bother cleaning up
-        catch (const std::exception& e)
-        {
-            cerr << e.what() << endl;
-            return 1;
-        }
-        catch (...)
-        {
-            cerr << "Unknown exception caught" << endl;
-            return 1;
-        }
-    }
-    else
-    {
+    if (init_result != 0)
         return init_result;
-    }
+
+    int main_loop_result = main_loop();
+    if (main_loop_result != 0)
+        return main_loop_result;
 
     quit();
     return main_loop_result;
@@ -66,6 +48,8 @@ void quit_demos();
 
 int init(int argc, char** argv)
 {
+    cout << "Initializing ...\n" << endl;
+
     int init_sdl_result = init_sdl();
     if (init_sdl_result != 0)
         return init_sdl_result;
@@ -86,6 +70,10 @@ int init(int argc, char** argv)
     }
 
     init_resources();
+    cout << "Resource initialization complete" << endl;
+
+    cout << "\nIitialization complete\n" << endl;
+
     return 0;
 }
 
@@ -142,7 +130,7 @@ void quit_sdl()
 
 int init_twbar()
 {
-    //assert(window != nullptr);
+    assert(window != nullptr);
 
     if (TwInit(TW_OPENGL, NULL) == 0)
     {
@@ -232,7 +220,7 @@ int main_loop()
                 demos[initial_demo_index]->close(true);
 
             if (demo_index >= 0 && demo_index < demos.size())
-                demos[demo_index]->init(window);
+                demos[demo_index]->open(window);
         }
 
         // Handle most basic high priority events
