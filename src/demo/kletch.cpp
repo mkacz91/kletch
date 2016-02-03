@@ -3,6 +3,9 @@
 #include <sstream>
 
 #include <lib/kletch.h>
+namespace kletch {
+    extern void init_resources();
+}
 using namespace kletch;
 
 #include "demo.h"
@@ -82,6 +85,7 @@ int init(int argc, char** argv)
         return init_demos_result;
     }
 
+    init_resources();
     return 0;
 }
 

@@ -26,8 +26,6 @@ int main(int argc, char** argv)
     string suffix = argv[3];
     string varname = argv[4];
 
-    cout << in_prefix << endl << out_prefix << endl << suffix << endl;
-
     string in_path = in_prefix + suffix;
     std::ifstream in(in_path);
     if (!in)
@@ -64,7 +62,7 @@ int main(int argc, char** argv)
     }
 
     out << "\\n\"; } }";
-    out.clos();
+    out.close();
 
     return 0;
 }

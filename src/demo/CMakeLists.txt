@@ -19,13 +19,15 @@ file(MAKE_DIRECTORY "${GEN_DIR}/shaders")
 
 set(RES_SUMMARY_H "${GEN_DIR}/summary.h")
 set(RES_SUMMARY_CPP "${GEN_DIR}/summary.cpp")
+set(KLETCH_RESOURCES "${RES_SUMMARY_CPP}")
+
 file(WRITE "${RES_SUMMARY_H}"
   "namespace kletch {\n"
   "extern void add_resource(const char*, const char*);\n"
   "namespace gen {\n"
 )
 file(WRITE "${RES_SUMMARY_CPP}"
-  "#inclde \"summary.h\"\n"
+  "#include \"summary.h\"\n"
   "namespace kletch { \n"
   "void init_resources() {\n"
 )
@@ -39,7 +41,7 @@ foreach(RES_IN ${KLETCH_SHADERS})
 
   add_custom_command(
     OUTPUT "${RES}"
-    COMMAND resemb "${CMAKE_CURRENT_SOURCE_DIR}" "${GEN_DIR}" "${RES_IN}"
+    COMMAND resemb "${CMAKE_CURRENT_SOURCE_DIR}" "${GEN_DIR}" "${RES_IN}" "${RES_VARNAME}"
     MAIN_DEPENDENCY "${RES_IN}"
     DEPENDS resemb
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
