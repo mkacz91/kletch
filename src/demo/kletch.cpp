@@ -157,6 +157,7 @@ void draw()
 {
     if (demo_index >= 0 && demo_index < demos.size())
     {
+        gl::ContextGuard();
         demos[demo_index]->render();
     }
     else
