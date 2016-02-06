@@ -1,4 +1,5 @@
 #include "prefix.h"
+
 #include <vector>
 #include <sstream>
 
@@ -9,12 +10,14 @@ namespace kletch {
 using namespace kletch;
 
 #include "demo.h"
+#include "gl_context_snapshot.h"
 #include "hello_demo.h"
 
+gl::ContextSnapshot demo_snapshot;
+gl::ContextSnapshot twbar_snapshot;
 SDL_Surface* window;
-Uint32 video_flags;
-
 TwBar* twbar;
+Uint32 video_flags;
 
 std::vector<unique_ptr<Demo>> demos;
 int demo_index = -1;
@@ -117,6 +120,9 @@ int init_sdl()
         << "\n    Renderer:       " << (const char*)glGetString(GL_RENDERER)
         << endl;
 
+    demo_snapshot.capture();
+    twbar_snapshot.capture();
+
     return 0;
 }
 
@@ -149,6 +155,7 @@ void quit_twbar()
 {
     assert(twbar != nullptr);
 
+    twbar_snapshot.restore();
     TwTerminate();
     twbar = nullptr;
 }
@@ -157,8 +164,9 @@ void draw()
 {
     if (demo_index >= 0 && demo_index < demos.size())
     {
-        gl::ContextGuard();
+        demo_snapshot.restore();
         demos[demo_index]->render();
+        demo_snapshot.capture();
     }
     else
     {
@@ -166,7 +174,9 @@ void draw()
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
+    twbar_snapshot.restore();
     TwDraw();
+    twbar_snapshot.capture();
 
     SDL_GL_SwapBuffers();
 }
@@ -190,7 +200,10 @@ int init_demos()
 void quit_demos()
 {
     if (demo_index >= 0 && demo_index < demos.size())
+    {
+        demo_snapshot.restore();
         demos[demo_index]->close(true);
+    }
 }
 
 int main_loop()
@@ -217,11 +230,13 @@ int main_loop()
         // Exchange demo if it was changed
         if (initial_demo_index != demo_index)
         {
+            demo_snapshot.restore();
             if (initial_demo_index >= 0 && initial_demo_index < demos.size())
                 demos[initial_demo_index]->close(true);
 
             if (demo_index >= 0 && demo_index < demos.size())
                 demos[demo_index]->open(window);
+            demo_snapshot.capture();
         }
 
         // Handle most basic high priority events
@@ -254,7 +269,7 @@ int main_loop()
             running = !de.quit_requested();
         }
 
-        if (running && redraw)
+        //if (running && redraw)
             draw();
         redraw = false;
     }

@@ -1,5 +1,6 @@
 build/
 buildf/
+buildf_xcode/
 
 # In case for some reason we are building in the project directory
 kletch

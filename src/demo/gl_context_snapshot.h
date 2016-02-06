@@ -6,11 +6,11 @@
 namespace kletch {
 namespace gl {
 
-class ContextGuard
+class ContextSnapshot
 {
 public:
-    ContextGuard();
-    ~ContextGuard();
+    void capture();
+    void restore() const;
 
 private:
     static const int MAX_VERTEX_ATTRIBS = 8;

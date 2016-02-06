@@ -48,5 +48,3 @@ string error_string(GLenum);
 } // namespace kletch
 
 #endif // KLETCH_DEMO_GL_UTILS
-
-#include "gl_context_guard.h"

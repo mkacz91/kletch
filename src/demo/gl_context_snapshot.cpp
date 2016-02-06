@@ -1,9 +1,9 @@
-#include "gl_context_guard.h"
+#include "gl_context_snapshot.h"
 
 namespace kletch {
 namespace gl {
 
-ContextGuard::ContextGuard()
+void ContextSnapshot::capture()
 {
     glGetIntegerv(GL_CURRENT_PROGRAM, &m_current_program);
     glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &m_array_buffer_binding);
@@ -22,11 +22,11 @@ ContextGuard::ContextGuard()
     }
 }
 
-ContextGuard::~ContextGuard()
+void ContextSnapshot::restore() const
 {
-    for (int i = 1; i <= MAX_VERTEX_ATTRIBS; ++i)
+    for (int i = MAX_VERTEX_ATTRIBS; i >= 1; --i)
     {
-        VertexAttrib& va = m_vertex_attribs[i];
+        const VertexAttrib& va = m_vertex_attribs[i];
         glBindBuffer(GL_ARRAY_BUFFER, va.binding);
         glVertexAttribPointer(
             i,
