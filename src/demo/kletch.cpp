@@ -269,7 +269,7 @@ int main_loop()
             running = !de.quit_requested();
         }
 
-        //if (running && redraw)
+        if (running && redraw)
             draw();
         redraw = false;
     }
