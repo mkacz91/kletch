@@ -10,6 +10,12 @@ namespace kletch {
 template <typename T>
 int byte_size(const std::vector<T>& xs) { return xs.size() * sizeof(T); }
 
+template <typename T>
+void glBufferData(GLenum target, const std::vector<T>& data, GLenum usage = GL_STATIC_DRAW)
+{
+    ::glBufferData(target, byte_size(data), data.data(), usage);
+}
+
 namespace gl {
 
 class exception : public std::exception

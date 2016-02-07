@@ -36,7 +36,7 @@ void HelloDemo::open()
          0,  1,
          1, -1
     };
-    glBufferData(GL_ARRAY_BUFFER, byte_size(vertices), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
     glEnableVertexAttribArray(m_position_attrib);
@@ -47,9 +47,6 @@ void HelloDemo::close() noexcept
 {
     glDeleteBuffers(1, &m_vertices);
     m_vertices = 0;
-
-    glDisableVertexAttribArray(m_position_attrib);
-    m_position_attrib = -1;
 
     glDeleteProgram(m_program);
     m_program = 0;

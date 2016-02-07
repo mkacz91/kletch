@@ -9,6 +9,7 @@ namespace kletch {
 }
 using namespace kletch;
 
+#include "aimer_demo.h"
 #include "demo.h"
 #include "gl_context_snapshot.h"
 #include "hello_demo.h"
@@ -184,6 +185,7 @@ void draw()
 int init_demos()
 {
     demos.emplace_back(new HelloDemo);
+    demos.emplace_back(new AimerDemo);
     // Add more demos here
 
     // Greate AntTweakBar combo box

@@ -9,11 +9,6 @@ namespace gl {
 
 std::unordered_map<GLuint, string> shader_names;
 
-void shader_source(GLuint shader, const char* source, int length)
-{
-
-}
-
 GLuint load_shader(const string& resname, GLenum shader_type)
 {
     const Resource& r = get_resource(resname);
