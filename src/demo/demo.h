@@ -17,7 +17,7 @@ public:
 
     SDL_Surface* canvas() noexcept { return m_canvas; }
     int width() const noexcept { return m_canvas->w; }
-    int height() const noexcept{ return m_canvas->h; }
+    int height() const noexcept { return m_canvas->h; }
     bool active() const noexcept { return m_canvas != nullptr; }
 
     virtual void render() = 0;

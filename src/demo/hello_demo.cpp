@@ -9,7 +9,8 @@ using std::vector;
 void HelloDemo::render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    m_camera.draw_grid();
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void HelloDemo::handle_event(const DemoEvent& e)
@@ -19,6 +20,8 @@ void HelloDemo::handle_event(const DemoEvent& e)
         close();
         open();
     }
+
+    m_camera.handle_event(e);
 }
 
 void HelloDemo::open()
@@ -39,12 +42,17 @@ void HelloDemo::open()
     glBufferData(GL_ARRAY_BUFFER, vertices);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
-    glEnableVertexAttribArray(m_position_attrib);
     glVertexAttribPointer(m_position_attrib, 2, GL_FLOAT, false, 0, 0);
+
+    m_camera.open_grid();
+    m_camera.size.x = width();
+    m_camera.size.y = height();
 }
 
 void HelloDemo::close() noexcept
 {
+    m_camera.close_grid();
+
     glDeleteBuffers(1, &m_vertices);
     m_vertices = 0;
 

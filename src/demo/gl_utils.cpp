@@ -116,6 +116,25 @@ GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
     return program;
 }
 
+GLint get_uniform_location(GLuint program, const char* name)
+{
+    gl_if_error (GLint location = glGetUniformLocation(program, name))
+    {
+        throw exception(
+            error_string(error) + "during glGetUniformLocation(" +
+            to_string(program) + ", " + quote(name) + ")"
+        );
+    }
+    if (location < 0)
+    {
+        throw exception(
+            "glGetUniformLocation(" + to_string(program) + ", " + quote(name) +
+            ") returned " + to_string(location)
+        );
+    }
+    return location;
+}
+
 GLint get_attrib_location(GLuint program, const char* name)
 {
     gl_if_error (GLint location = glGetAttribLocation(program, name))

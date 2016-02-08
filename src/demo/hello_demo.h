@@ -4,6 +4,7 @@
 #include "prefix.h"
 
 #include "demo.h"
+#include "camera2.h"
 
 namespace kletch {
 
@@ -22,6 +23,8 @@ protected:
     virtual void close() noexcept override;
 
 private:
+    Camera2 m_camera;
+
     GLuint m_program;
     GLint m_position_attrib;
     GLuint m_vertices;

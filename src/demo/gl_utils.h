@@ -30,11 +30,21 @@ private:
 #define gl_if_error(call) \
     glGetError(); \
     call; \
-    for (GLenum error = glGetError(); error != GL_NO_ERROR; error = GL_NO_ERROR) \
+    for (GLenum error = glGetError(); error != GL_NO_ERROR; error = GL_NO_ERROR)
 
 #define gl_error_guard(call) \
     gl_if_error (call) \
         throw ::kletch::gl::exception(::kletch::gl::error_string(error) + " during " + #call);
+
+template <typename T>
+GLuint create_buffer(GLenum target, const std::vector<T>& data, GLenum usage = GL_STATIC_DRAW)
+{
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(target, buffer);
+    glBufferData(target, data, usage);
+    return buffer;
+}
 
 GLuint load_vertex_shader(const string& resname);
 
@@ -45,6 +55,8 @@ string shader_name(GLuint shader);
 GLuint link_program(GLuint vertex_shader, GLuint fragment_shader);
 
 GLuint link_program(const string& vertex_shader_resname, const string& fragment_shader_resname);
+
+GLint get_uniform_location(GLuint program, const char* name);
 
 GLint get_attrib_location(GLuint program, const char* name);
 

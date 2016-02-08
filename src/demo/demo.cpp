@@ -17,7 +17,7 @@ void Demo::close(bool)
     close();
     assert(m_canvas != nullptr);
     m_canvas = nullptr;
-    cout << "Done closing demo " << squote(display_name()) << "..." << endl;
+    cout << "Done closing demo " << squote(display_name()) << endl;
 }
 
 } // namespace kletch
