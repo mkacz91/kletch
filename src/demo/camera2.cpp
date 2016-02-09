@@ -6,7 +6,7 @@ void Camera2::set_uniform(int location)
 {
     glUniform4f(
         location,
-        translation.x, translation.y * size.y / size.x,
+        translation.x, translation.y,
         2 * scale.x / size.x , 2 * scale.y / size.y
     );
 }
@@ -22,13 +22,14 @@ vec2f Camera2::to_world(const vec2i& canvas_pos) const
 vec2i Camera2::to_canvas(const vec2f& world_pos) const
 {
     return vec2i(
-        size.x / 2 + world_pos.x * scale.x + translation.x,
-        size.y / 2 + (world_pos.y * scale.y + translation.y) * size.y / size.x
+        (world_pos.x + translation.x) * scale.x + size.x / 2,
+        size.y / 2 - (world_pos.y + translation.y) * scale.y
     );
 }
 
 void Camera2::handle_event(const DemoEvent& e)
 {
+    vec2i ggg;
     switch (e.type()) {
     case SDL_MOUSEBUTTONDOWN:
         if (e.button().button == SDL_BUTTON_LEFT)
@@ -49,7 +50,9 @@ void Camera2::handle_event(const DemoEvent& e)
         break;
 
     case SDL_MOUSEMOTION:
-        cout << to_world(e.motion().x, e.motion().y) << endl;
+        ggg = vec2i(e.motion().x, e.motion().y);
+        cout << to_world(ggg) << " " << scale << endl;
+        cout << ggg - to_canvas(to_world(ggg)) << endl;
         if (m_dragging)
         {
             vec2i u(e.motion().x - m_grab_position.x, m_grab_position.y - e.motion().y);
