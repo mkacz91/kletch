@@ -29,28 +29,46 @@ vec2f Camera2::to_canvas(const vec2f& world_pos) const
 
 void Camera2::handle_event(const DemoEvent& e)
 {
-    vec2f ggg;
     switch (e.type()) {
     case SDL_MOUSEBUTTONDOWN:
-        if (e.button().button == SDL_BUTTON_LEFT)
+    {
+        switch (e.button().button) {
+        case SDL_BUTTON_LEFT:
         {
             m_grab_position = vec2i(e.button().x, e.button().y);
             m_translation_at_grab = translation;
             m_dragging = true;
             e.mark_handled();
+            break;
         }
+        case SDL_BUTTON_WHEELUP:
+        {
+            scale *= 1.1f;
+            e.mark_handled();
+            e.request_redraw();
+            break;
+        }
+        case SDL_BUTTON_WHEELDOWN:
+        {
+            scale /= 1.1f;
+            e.mark_handled();
+            e.request_redraw();
+            break;
+        }}
         break;
-
+    }
     case SDL_MOUSEBUTTONUP:
+    {
         if (e.button().button == SDL_BUTTON_LEFT)
         {
             m_dragging = false;
             e.mark_handled();
         }
         break;
-
+    }
     case SDL_MOUSEMOTION:
-        ggg = vec2f(e.motion().x, e.motion().y);
+    {
+        vec2f ggg = vec2f(e.motion().x, e.motion().y);
         cout << to_world(ggg) << " " << scale << endl;
         cout << ggg - to_canvas(to_world(ggg)) << endl;
         if (m_dragging)
@@ -62,12 +80,13 @@ void Camera2::handle_event(const DemoEvent& e)
             e.mark_handled();
         }
         break;
-
+    }
     case SDL_VIDEORESIZE:
+    {
         size.x = e.resize().w;
         size.y = e.resize().h;
         break;
-    }
+    }}
 }
 
 void Camera2::open_grid()
