@@ -9,7 +9,7 @@ using std::vector;
 void HelloDemo::render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    m_camera.draw_grid();
+    m_camera.render_grid();
     //glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 

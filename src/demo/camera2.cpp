@@ -11,7 +11,7 @@ void Camera2::set_uniform(int location)
     );
 }
 
-vec2f Camera2::to_world(const vec2i& canvas_pos) const
+vec2f Camera2::to_world(const vec2f& canvas_pos) const
 {
     return vec2f(
         (canvas_pos.x - size.x / 2) / scale.x - translation.x,
@@ -19,9 +19,9 @@ vec2f Camera2::to_world(const vec2i& canvas_pos) const
     );
 }
 
-vec2i Camera2::to_canvas(const vec2f& world_pos) const
+vec2f Camera2::to_canvas(const vec2f& world_pos) const
 {
-    return vec2i(
+    return vec2f(
         (world_pos.x + translation.x) * scale.x + size.x / 2,
         size.y / 2 - (world_pos.y + translation.y) * scale.y
     );
@@ -29,7 +29,7 @@ vec2i Camera2::to_canvas(const vec2f& world_pos) const
 
 void Camera2::handle_event(const DemoEvent& e)
 {
-    vec2i ggg;
+    vec2f ggg;
     switch (e.type()) {
     case SDL_MOUSEBUTTONDOWN:
         if (e.button().button == SDL_BUTTON_LEFT)
@@ -50,7 +50,7 @@ void Camera2::handle_event(const DemoEvent& e)
         break;
 
     case SDL_MOUSEMOTION:
-        ggg = vec2i(e.motion().x, e.motion().y);
+        ggg = vec2f(e.motion().x, e.motion().y);
         cout << to_world(ggg) << " " << scale << endl;
         cout << ggg - to_canvas(to_world(ggg)) << endl;
         if (m_dragging)
@@ -91,7 +91,7 @@ void Camera2::close_grid()
     glDeleteProgram(m_grid_program); m_grid_program = 0;
 }
 
-void Camera2::draw_grid()
+void Camera2::render_grid()
 {
     if (m_grid_program == 0)
     {
@@ -99,6 +99,9 @@ void Camera2::draw_grid()
             "Camera2::draw_grid() must occur between open_grid() and close_grid()"
         );
     }
+
+    if (size.x < 1 || size.y < 1)
+        return;
 
     glUseProgram(m_grid_program);
     glBindBuffer(GL_ARRAY_BUFFER, m_grid_vertices);

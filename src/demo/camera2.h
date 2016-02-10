@@ -16,17 +16,17 @@ public:
 
     void set_uniform(int location);
 
-    vec2f to_world(const vec2i& canvas_pos) const;
-    vec2f to_world(int cx, int cy) const { return to_world(vec2i(cx, cy)); }
+    vec2f to_world(const vec2f& canvas_pos) const;
+    vec2f to_world(float cx, float cy) const { return to_world(vec2f(cx, cy)); }
 
-    vec2i to_canvas(const vec2f& world_pos) const;
-    vec2i to_canvas(float wx, float wy) const { return to_canvas(vec2f(wx, wy)); }
+    vec2f to_canvas(const vec2f& world_pos) const;
+    vec2f to_canvas(float wx, float wy) const { return to_canvas(vec2f(wx, wy)); }
 
     void handle_event(const DemoEvent& e);
 
     void open_grid();
     void close_grid();
-    void draw_grid();
+    void render_grid();
 
 private:
     bool m_dragging = false;
