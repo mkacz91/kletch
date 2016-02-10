@@ -54,7 +54,7 @@ private:
     std::vector<ControlPoint> m_points;
 
     const Camera2* m_camera = nullptr;
-    float m_point_radius = 7;
+    float m_point_radius = 10;
 
     GLuint m_point_vertices = 0;
     GLuint m_point_program = 0;

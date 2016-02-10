@@ -2,7 +2,7 @@
 
 namespace kletch {
 
-const int ControlPointOverlay::CIRCLE_SEGMENT_COUNT = 24;
+const int ControlPointOverlay::CIRCLE_SEGMENT_COUNT = 12;
 const int ControlPointOverlay::POINT_VERTEX_COUNT = CIRCLE_SEGMENT_COUNT + 5;
 const float ControlPointOverlay::TAU = 6.28318530718f;
 
