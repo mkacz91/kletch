@@ -5,6 +5,8 @@
 #include <exception>
 #include <vector>
 
+#include "int_range.h"
+
 namespace kletch {
 
 template <typename T>
@@ -14,6 +16,16 @@ template <typename T>
 void glBufferData(GLenum target, const std::vector<T>& data, GLenum usage = GL_STATIC_DRAW)
 {
     ::glBufferData(target, byte_size(data), data.data(), usage);
+}
+
+inline void glDrawArrays(GLenum target, GLint first, GLint count)
+{
+    ::glDrawArrays(target, first, count);
+}
+
+inline void glDrawArrays(GLenum target, const int_range& vertex_range)
+{
+    ::glDrawArrays(target, vertex_range.first, vertex_range.count);
 }
 
 namespace gl {

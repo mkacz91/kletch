@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
+#include <tuple>
 
 #include "math/math.h"
 
@@ -25,6 +26,11 @@ using std::string;
 using std::to_string;
 inline string quote(const string& s) { return "\"" + s + "\""; }
 inline string squote(const string& s) { return "'" + s + "'"; }
+
+using std::tuple;
+using std::tie;
+using std::make_tuple;
+using std::get;
 
 } // namespace kletch
 

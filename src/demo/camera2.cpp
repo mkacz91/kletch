@@ -27,6 +27,11 @@ vec2f Camera2::to_canvas(const vec2f& world_pos) const
     );
 }
 
+vec2f Camera2::to_ndc(const vec2f& world_pos) const
+{
+    return 2 * (world_pos + translation) * scale / size;
+}
+
 vec2f Camera2::to_canvas_vector(const vec2f& world_vector) const
 {
     return vec2f(world_vector.x * scale.x, -world_vector.y * scale.y);

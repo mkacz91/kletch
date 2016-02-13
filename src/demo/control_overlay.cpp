@@ -3,21 +3,30 @@
 namespace kletch {
 
 const int ControlOverlay::CIRCLE_SEGMENT_COUNT = 12;
-const int ControlOverlay::POINT_VERTEX_COUNT = CIRCLE_SEGMENT_COUNT + 5;
 const float ControlOverlay::TAU = 6.28318530718f;
+const int_range ControlOverlay::POINT_VERTEX_RANGE = { 0, CIRCLE_SEGMENT_COUNT + 5 };
+const int_range ControlOverlay::VECTOR_EDGE_VERTEX_RANGE
+    = { ControlOverlay::POINT_VERTEX_RANGE.end(), 2 };
+const int_range ControlOverlay::VECTOR_CAP_VERTEX_RANGE
+    = { ControlOverlay::VECTOR_EDGE_VERTEX_RANGE.end(), 3 };
 
-vec2f* ControlOverlay::new_point()
+int ControlOverlay::add_point(vec2f* point)
 {
-    vec2f* point = new vec2f(0);
-    m_points.emplace_back(point);
-    return point;
+    m_points.push_back(point);
+    return m_points.size() - 1;
+}
+
+int ControlOverlay::add_vector(vec2f* start, vec2f* end)
+{
+    m_vectors.emplace_back(start, end);
+    return m_vectors.size() - 1;
 }
 
 int ControlOverlay::point_index(const vec2f* point) const
 {
     for (int i = 0; i < m_points.size(); ++i)
     {
-        if (m_points[i].get() == point)
+        if (m_points[i] == point)
             return i;
     }
 
@@ -29,12 +38,14 @@ void ControlOverlay::render()
     if (m_point_program == 0)
         return;
 
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertices);
+
+    // Render points
     glUseProgram(m_point_program);
-    glBindBuffer(GL_ARRAY_BUFFER, m_point_vertices);
     glVertexAttribPointer(m_point_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(m_point_position_attrib);
 
-    for (const auto& point : m_points)
+    for (vec2f* point : m_points)
     {
         vec2f canvas_pos = m_camera->to_canvas(*point);
         vec2f translation = 2 * canvas_pos / m_camera->size - 1;
@@ -43,46 +54,111 @@ void ControlOverlay::render()
             translation.x, -translation.y,
             scale.x, scale.y
         );
-        if (m_selected_points.count(point.get()))
+        if (m_selected_points.count(point))
             glUniform4f(m_point_color_uniform, 1, 0, 0, 1);
-        else if (m_highlighted_point == point.get())
+        else if (m_highlighted_point == point)
             glUniform4f(m_point_color_uniform, 1, 1, 0, 1);
         else
             glUniform4f(m_point_color_uniform, 0, 0, 0, 1);
-        glDrawArrays(GL_LINE_STRIP, 0, POINT_VERTEX_COUNT);
+        glDrawArrays(GL_LINE_STRIP, POINT_VERTEX_RANGE);
     }
 
     glDisableVertexAttribArray(m_point_position_attrib);
+
+    // Render vector edges
+    glUseProgram(m_vector_edge_program);
+    glVertexAttribPointer(m_vector_edge_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(m_vector_edge_position_attrib);
+
+    for (auto& v : m_vectors)
+    {
+        vec2f p0 = m_camera->to_ndc(*get<0>(v));
+        vec2f p1 = m_camera->to_ndc(*get<1>(v));
+        glUniform4f(m_vector_edge_transform_uniform, p0.x, p0.y, p1.x, p1.y);
+        glUniform4f(m_vector_edge_color_uniform, 0, 0, 0, 1);
+        glDrawArrays(GL_LINES, VECTOR_EDGE_VERTEX_RANGE);
+    }
+
+    glDisableVertexAttribArray(m_vector_edge_position_attrib);
+
+    // Render vector caps
+    glUseProgram(m_vector_cap_program);
+    glVertexAttribPointer(m_vector_cap_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(m_vector_cap_position_attrib);
+
+    for (auto& v : m_vectors)
+    {
+        // TODO
+    }
+
+    glDisableVertexAttribArray(m_vector_cap_position_attrib);
 }
 
 void ControlOverlay::open()
 {
     glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
-    std::vector<vec2f> point_vertices;
+
+    // Initialize vertex buffer
+
+    std::vector<vec2f> vertices;
+
+    // Point circle
     for (int i = 0; i <= CIRCLE_SEGMENT_COUNT; ++i)
     {
         float angle = TAU * i / CIRCLE_SEGMENT_COUNT;
-        point_vertices.emplace_back(cos(angle), sin(angle));
+        vertices.emplace_back(cos(angle), sin(angle));
     }
-    point_vertices.emplace_back(-1,  0);
-    point_vertices.emplace_back( 0,  0);
-    point_vertices.emplace_back( 0,  1);
-    point_vertices.emplace_back( 0, -1);
 
-    glGenBuffers(1, &m_point_vertices);
-    glBindBuffer(GL_ARRAY_BUFFER, m_point_vertices);
-    glBufferData(GL_ARRAY_BUFFER, point_vertices);
+    // Point cross
+    vertices.emplace_back(-1,  0);
+    vertices.emplace_back( 0,  0);
+    vertices.emplace_back( 0,  1);
+    vertices.emplace_back( 0, -1);
 
+    // Vector edge
+    vertices.emplace_back(0, 0);
+    vertices.emplace_back(1, 1);
+
+    // Vector cap
+    vertices.emplace_back( 0.0f,  0.0f);
+    vertices.emplace_back(-1.0f,  0.3f);
+    vertices.emplace_back(-1.0f, -0.3f);
+
+    m_vertices = gl::create_buffer(GL_ARRAY_BUFFER, vertices);
+
+    // Initialize shader programs
+
+    // Point program
     m_point_program = gl::link_program("shaders/aimer_point_vx.glsl", "shaders/uniform_ft.glsl");
-    m_point_transform_uniform = glGetUniformLocation(m_point_program, "transform");
-    m_point_color_uniform = glGetUniformLocation(m_point_program, "color");
-    m_point_position_attrib = glGetAttribLocation(m_point_program, "position");
+    m_point_transform_uniform = gl::get_uniform_location(m_point_program, "transform");
+    m_point_color_uniform = gl::get_uniform_location(m_point_program, "color");
+    m_point_position_attrib = gl::get_attrib_location(m_point_program, "position");
+
+    // Vector edge program
+    m_vector_edge_program = gl::link_program(
+        "shaders/control_overlay_vector_edge_vx.glsl",
+        "shaders/uniform_ft.glsl"
+    );
+    m_vector_edge_transform_uniform = gl::get_uniform_location(m_vector_edge_program, "transform");
+    m_vector_edge_color_uniform = gl::get_uniform_location(m_vector_edge_program, "color");
+    m_vector_edge_position_attrib = gl::get_attrib_location(m_vector_edge_program, "position");
+
+    // Vectro cap program
+    m_vector_cap_program = gl::link_program(
+        "shaders/control_overlay_vector_cap_vx.glsl",
+        "shaders/uniform_ft.glsl"
+    );
+    m_vector_cap_transform_uniform = gl::get_uniform_location(m_vector_cap_program, "transform");
+    m_vector_cap_color_uniform = gl::get_uniform_location(m_vector_cap_program, "color");
+    m_vector_cap_position_attrib = gl::get_attrib_location(m_vector_cap_program, "position");
 }
 
 void ControlOverlay::close()
 {
+    glDeleteProgram(m_vector_cap_program); m_vector_cap_program = 0;
+    glDeleteProgram(m_vector_edge_program); m_vector_edge_program = 0;
     glDeleteProgram(m_point_program); m_point_program = 0;
-    glDeleteBuffers(1, &m_point_vertices); m_point_vertices = 0;
+    glDeleteBuffers(1, &m_vertices); m_vertices = 0;
 }
 
 vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)
@@ -93,7 +169,7 @@ vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)
     {
         vec2f r = m_camera->to_canvas_vector(world_pos - *point);
         if (r.length_sq() <= threshold)
-            return point.get();
+            return point;
     }
     return nullptr;
 }

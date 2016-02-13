@@ -5,14 +5,14 @@ namespace kletch {
 
 AimerDemo::AimerDemo() : Demo("Clothoid Aim")
 {
-    m_points.set_camera(&m_camera);
+    m_control_overlay.set_camera(&m_camera);
 }
 
 void AimerDemo::render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    m_camera.render_grid();
-    m_points.render();
+    //m_camera.render_grid();
+    m_control_overlay.render();
 }
 
 void AimerDemo::handle_event(const DemoEvent& e)
@@ -26,29 +26,31 @@ void AimerDemo::handle_event(const DemoEvent& e)
     m_camera.handle_event(e);
     if (e.handled())
         return;
-    m_points.handle_event(e);
+    m_control_overlay.handle_event(e);
     if (e.handled())
         return;
 }
 
 void AimerDemo::open()
 {
-    glClearColor(1, 1, 1, 0);
+    glClearColor(0.9f, 0.9f, 0.9f, 0);
     m_camera.open_grid();
-    m_points.open();
+    m_control_overlay.open();
 
     m_camera.size.x = width();
     m_camera.size.y = height();
 
-    *m_points.new_point() = vec2f(0.5f, 0.3f);
-    *m_points.new_point() = vec2f(-1, -1);
+    m_control_overlay.add_point(&m_origin);
+    m_control_overlay.add_point(&m_target);
+    m_control_overlay.add_point(&m_tangent_tip);
+    m_control_overlay.add_vector(&m_origin, &m_tangent_tip);
 }
 
 void AimerDemo::close() noexcept
 {
-    m_points.clear_points();
+    m_control_overlay.clear_points();
 
-    m_points.close();
+    m_control_overlay.close();
     m_camera.close_grid();
 }
 
