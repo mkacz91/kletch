@@ -17,7 +17,7 @@ int ControlPointOverlay::point_index(const vec2f* point) const
 {
     for (int i = 0; i < m_points.size(); ++i)
     {
-        if (m_points[i].position.get() == point)
+        if (m_points[i].get() == point)
             return i;
     }
 
@@ -34,16 +34,21 @@ void ControlPointOverlay::render()
     glVertexAttribPointer(m_point_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(m_point_position_attrib);
 
-    for (const ControlPoint& point : m_points)
+    for (const auto& point : m_points)
     {
-        vec2f canvas_pos = m_camera->to_canvas(*point.position);
+        vec2f canvas_pos = m_camera->to_canvas(*point);
         vec2f translation = 2 * canvas_pos / m_camera->size - 1;
         vec2f scale = 2 * m_point_radius / m_camera->size;
         glUniform4f(m_point_transform_uniform,
             translation.x, -translation.y,
             scale.x, scale.y
         );
-        glUniform4f(m_point_color_uniform, 0, 1, 0, 1);
+        if (m_selected_points.count(point.get()))
+            glUniform4f(m_point_color_uniform, 1, 0, 0, 1);
+        else if (m_highlighted_point == point.get())
+            glUniform4f(m_point_color_uniform, 1, 1, 0, 1);
+        else
+            glUniform4f(m_point_color_uniform, 0, 0, 0, 1);
         glDrawArrays(GL_LINE_STRIP, 0, POINT_VERTEX_COUNT);
     }
 
@@ -80,7 +85,74 @@ void ControlPointOverlay::close()
     glDeleteBuffers(1, &m_point_vertices); m_point_vertices = 0;
 }
 
+vec2f* ControlPointOverlay::pick_point(const vec2i& canvas_pos)
+{
+    vec2f world_pos = m_camera->to_world(canvas_pos);
+    float threshold = sq(m_point_radius);
+    for (auto& point : m_points)
+    {
+        vec2f r = m_camera->to_canvas_vector(world_pos - *point);
+        if (r.length_sq() <= threshold)
+            return point.get();
+    }
+    return nullptr;
+}
+
 void ControlPointOverlay::handle_event(const DemoEvent& e)
+{
+    switch (e.type()) {
+    case SDL_MOUSEBUTTONDOWN:
+    {
+        if (e.button().button == SDL_BUTTON_LEFT)
+        {
+            vec2f* point = pick_point(e.button().x, e.button().y);
+            if (point != nullptr)
+            {
+                m_selected_points.insert(point);
+                m_prev_mouse_world_pos = m_camera->to_world(e.button().x, e.button().y);
+                e.request_redraw();
+                e.mark_handled();
+            }
+        }
+        break;
+    }
+    case SDL_MOUSEBUTTONUP:
+    {
+        if (!m_selected_points.empty() && e.button().button == SDL_BUTTON_LEFT)
+        {
+            m_selected_points.clear();
+            m_highlighted_point = pick_point(e.button().x, e.button().y);
+            e.mark_handled();
+            e.request_redraw();
+        }
+        break;
+    }
+    case SDL_MOUSEMOTION:
+    {
+        if (!m_selected_points.empty())
+        {
+            vec2f mouse_world_pos = m_camera->to_world(e.button().x, e.button().y);
+            vec2f translation = mouse_world_pos - m_prev_mouse_world_pos;
+            for (vec2f* point : m_selected_points)
+                *point += translation;
+            m_prev_mouse_world_pos = mouse_world_pos;
+            e.mark_handled();
+            e.request_redraw();
+        }
+        else
+        {
+            vec2f* point = pick_point(e.button().x, e.button().y);
+            if (point != m_highlighted_point)
+            {
+                m_highlighted_point = point;
+                e.request_redraw();
+            }
+        }
+        break;
+    }};
+}
+
+void ControlPointOverlay::highlight_points(const vec2i& canvas_pos)
 {
 
 }

@@ -27,13 +27,18 @@ vec2f Camera2::to_canvas(const vec2f& world_pos) const
     );
 }
 
+vec2f Camera2::to_canvas_vector(const vec2f& world_vector) const
+{
+    return vec2f(world_vector.x * scale.x, -world_vector.y * scale.y);
+}
+
 void Camera2::handle_event(const DemoEvent& e)
 {
     switch (e.type()) {
     case SDL_MOUSEBUTTONDOWN:
     {
         switch (e.button().button) {
-        case SDL_BUTTON_LEFT:
+        case SDL_BUTTON_RIGHT:
         {
             m_grab_position = vec2i(e.button().x, e.button().y);
             m_translation_at_grab = translation;
@@ -59,7 +64,7 @@ void Camera2::handle_event(const DemoEvent& e)
     }
     case SDL_MOUSEBUTTONUP:
     {
-        if (e.button().button == SDL_BUTTON_LEFT)
+        if (e.button().button == SDL_BUTTON_RIGHT)
         {
             m_dragging = false;
             e.mark_handled();
@@ -68,9 +73,6 @@ void Camera2::handle_event(const DemoEvent& e)
     }
     case SDL_MOUSEMOTION:
     {
-        vec2f ggg = vec2f(e.motion().x, e.motion().y);
-        cout << to_world(ggg) << " " << scale << endl;
-        cout << ggg - to_canvas(to_world(ggg)) << endl;
         if (m_dragging)
         {
             vec2i u(e.motion().x - m_grab_position.x, m_grab_position.y - e.motion().y);

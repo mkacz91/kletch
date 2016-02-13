@@ -41,6 +41,7 @@ void AimerDemo::open()
     m_camera.size.y = height();
 
     *m_points.new_point() = vec2f(0.5f, 0.3f);
+    *m_points.new_point() = vec2f(-1, -1);
 }
 
 void AimerDemo::close() noexcept

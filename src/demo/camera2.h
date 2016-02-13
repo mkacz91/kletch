@@ -22,6 +22,9 @@ public:
     vec2f to_canvas(const vec2f& world_pos) const;
     vec2f to_canvas(float wx, float wy) const { return to_canvas(vec2f(wx, wy)); }
 
+    vec2f to_canvas_vector(const vec2f& world_vector) const;
+    vec2f to_canvas_vector(float wvx, float wvy) { return to_canvas_vector(vec2f(wvx, wvy)); }
+
     void handle_event(const DemoEvent& e);
 
     void open_grid();
