@@ -4,7 +4,7 @@
 #include "prefix.h"
 
 #include "camera2.h"
-#include "control_point_overlay.h"
+#include "control_overlay.h"
 #include "demo.h"
 
 namespace kletch {
@@ -23,7 +23,7 @@ protected:
 
 private:
     Camera2 m_camera;
-    ControlPointOverlay m_points;
+    ControlOverlay m_points;
 };
 
 } // namespace kletch

@@ -1,19 +1,19 @@
-#include "control_point_overlay.h"
+#include "control_overlay.h"
 
 namespace kletch {
 
-const int ControlPointOverlay::CIRCLE_SEGMENT_COUNT = 12;
-const int ControlPointOverlay::POINT_VERTEX_COUNT = CIRCLE_SEGMENT_COUNT + 5;
-const float ControlPointOverlay::TAU = 6.28318530718f;
+const int ControlOverlay::CIRCLE_SEGMENT_COUNT = 12;
+const int ControlOverlay::POINT_VERTEX_COUNT = CIRCLE_SEGMENT_COUNT + 5;
+const float ControlOverlay::TAU = 6.28318530718f;
 
-vec2f* ControlPointOverlay::new_point()
+vec2f* ControlOverlay::new_point()
 {
     vec2f* point = new vec2f(0);
     m_points.emplace_back(point);
     return point;
 }
 
-int ControlPointOverlay::point_index(const vec2f* point) const
+int ControlOverlay::point_index(const vec2f* point) const
 {
     for (int i = 0; i < m_points.size(); ++i)
     {
@@ -21,10 +21,10 @@ int ControlPointOverlay::point_index(const vec2f* point) const
             return i;
     }
 
-    throw std::invalid_argument("Given point is not member of this ControlPointOverlay");
+    throw std::invalid_argument("Given point is not member of this ControlOverlay");
 }
 
-void ControlPointOverlay::render()
+void ControlOverlay::render()
 {
     if (m_point_program == 0)
         return;
@@ -55,7 +55,7 @@ void ControlPointOverlay::render()
     glDisableVertexAttribArray(m_point_position_attrib);
 }
 
-void ControlPointOverlay::open()
+void ControlOverlay::open()
 {
     glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
     std::vector<vec2f> point_vertices;
@@ -79,13 +79,13 @@ void ControlPointOverlay::open()
     m_point_position_attrib = glGetAttribLocation(m_point_program, "position");
 }
 
-void ControlPointOverlay::close()
+void ControlOverlay::close()
 {
     glDeleteProgram(m_point_program); m_point_program = 0;
     glDeleteBuffers(1, &m_point_vertices); m_point_vertices = 0;
 }
 
-vec2f* ControlPointOverlay::pick_point(const vec2i& canvas_pos)
+vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)
 {
     vec2f world_pos = m_camera->to_world(canvas_pos);
     float threshold = sq(m_point_radius);
@@ -98,7 +98,7 @@ vec2f* ControlPointOverlay::pick_point(const vec2i& canvas_pos)
     return nullptr;
 }
 
-void ControlPointOverlay::handle_event(const DemoEvent& e)
+void ControlOverlay::handle_event(const DemoEvent& e)
 {
     switch (e.type()) {
     case SDL_MOUSEBUTTONDOWN:
@@ -152,7 +152,7 @@ void ControlPointOverlay::handle_event(const DemoEvent& e)
     }};
 }
 
-void ControlPointOverlay::highlight_points(const vec2i& canvas_pos)
+void ControlOverlay::highlight_points(const vec2i& canvas_pos)
 {
 
 }

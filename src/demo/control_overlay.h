@@ -1,5 +1,5 @@
-#ifndef KLETCH_DEMO_CONTROL_POINT_OVERLAY_H
-#define KLETCH_DEMO_CONTROL_POINT_OVERLAY_H
+#ifndef KLETCH_DEMO_CONTROL_OVERLAY_H
+#define KLETCH_DEMO_CONTROL_OVERLAY_H
 
 #include "prefix.h"
 #include <unordered_set>
@@ -9,7 +9,7 @@
 
 namespace kletch {
 
-class ControlPointOverlay
+class ControlOverlay
 {
 public:
     const Camera2* camera() const { return m_camera; }
@@ -60,4 +60,4 @@ private:
 
 } // namespace kletch
 
-#endif // KLETCH_DEMO_CONTROL_POINT_OVERLAY_H
+#endif // KLETCH_DEMO_CONTROL_OVERLAY_H
