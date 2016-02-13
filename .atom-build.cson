@@ -1,0 +1,4 @@
+cmd: 'unbuffer make kletch'
+name: 'kletch'
+cwd: '{PROJECT_PATH}/buildf'
+errorMatch: '\n(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'
