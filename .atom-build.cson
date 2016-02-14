@@ -3,6 +3,10 @@ name: 'kletch'
 cwd: '{PROJECT_PATH}/buildf'
 errorMatch: '\n(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'
 targets:
+  'cmake':
+    cmd: 'unbuffer cmake ..'
+    cwd: '{PROJECT_PATH}/buildf'
+    keymap: 'shift-f5'
   'kletch-run':
     cmd: 'unbuffer make kletch && unbuffer ./kletch'
     cwd: '{PROJECT_PATH}/buildf'
