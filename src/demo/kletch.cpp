@@ -231,6 +231,35 @@ int main_loop()
             redraw = redraw || handled;
         }
 
+        // Handle most basic high priority events
+        if (running && !handled)
+        {
+            switch (e.type) {
+            case SDL_KEYDOWN:
+            {
+                auto key = e.key.keysym.sym;
+                if (key == SDLK_ESCAPE)
+                    running = false;
+                else if (SDLK_1 <= key && key <= SDLK_9 && key - SDLK_1 < demos.size())
+                {
+                    demo_index = key - SDLK_1;
+                    redraw = true;
+                }
+                break;
+            }
+            case SDL_VIDEORESIZE:
+            {
+                window = SDL_SetVideoMode(e.resize.w, e.resize.h, 0, video_flags);
+                redraw = true;
+                break;
+            }
+            case SDL_QUIT:
+            {
+                running = false;
+                break;
+            }}
+        }
+
         // Exchange demo if it was changed
         if (initial_demo_index != demo_index)
         {
@@ -241,26 +270,6 @@ int main_loop()
             if (demo_index >= 0 && demo_index < demos.size())
                 demos[demo_index]->open(window);
             demo_snapshot.capture();
-        }
-
-        // Handle most basic high priority events
-        if (running && !handled)
-        {
-            switch (e.type) {
-            case SDL_KEYDOWN:
-                if (e.key.keysym.sym == SDLK_ESCAPE)
-                    running = false;
-                break;
-
-            case SDL_VIDEORESIZE:
-                window = SDL_SetVideoMode(e.resize.w, e.resize.h, 0, video_flags);
-                redraw = true;
-                break;
-
-            case SDL_QUIT:
-                running = false;
-                break;
-            }
         }
 
         // Let demo handle the event

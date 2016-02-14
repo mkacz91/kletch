@@ -2,3 +2,9 @@ cmd: 'unbuffer make kletch'
 name: 'kletch'
 cwd: '{PROJECT_PATH}/buildf'
 errorMatch: '\n(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'
+targets:
+  'kletch-run':
+    cmd: 'unbuffer make kletch && unbuffer ./kletch'
+    cwd: '{PROJECT_PATH}/buildf'
+    keymap: 'f5'
+    errorMatch: '\n(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'
