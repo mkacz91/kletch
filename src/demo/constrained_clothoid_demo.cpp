@@ -6,6 +6,7 @@ ConstrainedClothoidDemo::ConstrainedClothoidDemo(const string& display_name) :
     Demo(display_name)
 {
     m_control_overlay.set_camera(&m_camera);
+    update_local_arc();
 }
 
 void ConstrainedClothoidDemo::render()
@@ -13,26 +14,14 @@ void ConstrainedClothoidDemo::render()
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Draw arc
-
-    float dx = abs(m_local_arc_end.x), dy = abs(m_local_arc_end.y);
-    float arc_radius = 0.5f * (sq(dx) / dy + dy);
-    float arc_angle_span = atan2(dx, arc_radius - dy);
-    float arc_angle0 = -1.57079632679f;
-    float arc_angle1 = arc_angle0 - arc_angle_span;
-    vec2f arc_center = vec2f(0, arc_radius);
-    if (m_local_arc_end.y < 0)
-    {
-        arc_center.y = -arc_center.y;
-        arc_angle0 = -arc_angle0;
-        arc_angle1 = -arc_angle1;
-    }
-    arc_center = from_tangent_coords(arc_center);
-    float tangent_angle = (m_tangent_tip - m_origin).angle();
-
     glUseProgram(m_arc_program);
     m_camera.set_uniform(m_arc_transform_uniform);
-    glUniform3f(m_arc_center_r_uniform, arc_center.x, arc_center.y, arc_radius);
-    glUniform2f(m_arc_angle_uniform, arc_angle0 + tangent_angle, arc_angle1 + tangent_angle);
+    vec2f arc_center = from_tangent_coords(m_local_arc_center);
+    glUniform3f(m_arc_center_r_uniform, arc_center.x, arc_center.y, m_arc_radius);
+    glUniform2f(m_arc_angle_uniform,
+        m_local_arc_angle0 + m_tangent_angle,
+        m_local_arc_angle1 + m_tangent_angle
+    );
     glBindBuffer(GL_ARRAY_BUFFER, m_arc_vertices);
     glVertexAttribPointer(m_arc_param_attrib, 1, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(m_arc_param_attrib);
@@ -65,9 +54,12 @@ void ConstrainedClothoidDemo::handle_event(const DemoEvent& e)
         if (origin != m_origin)
             m_tangent_tip = tangent_tip + m_origin - origin;
         if (tangent_tip != m_tangent_tip)
-            update_arc_end();
+        {
+            m_tangent_angle = (m_tangent_tip - m_origin).angle();
+            update_arc();
+        }
         else if (arc_end != m_arc_end)
-            update_local_arc_end();
+            update_local_arc();
         return;
     }
 }
@@ -123,17 +115,31 @@ void ConstrainedClothoidDemo::close() noexcept
     m_camera.close_grid();
 }
 
-void ConstrainedClothoidDemo::update_local_arc_end()
+void ConstrainedClothoidDemo::update_local_arc()
 {
     m_local_arc_end = to_tangent_coords(m_arc_end);
     if (m_local_arc_end.x > 0)
     {
         m_local_arc_end.x = 0;
-        update_arc_end();
+        update_arc();
+        return;
+    }
+
+    float dx = abs(m_local_arc_end.x), dy = abs(m_local_arc_end.y);
+    m_arc_radius = 0.5f * (sq(dx) / dy + dy);
+    float arc_angle_span = atan2(dx, m_arc_radius - dy);
+    m_local_arc_angle0 = -1.57079632679f;
+    m_local_arc_angle1 = m_local_arc_angle0 - arc_angle_span;
+    m_local_arc_center = vec2f(0, m_arc_radius);
+    if (m_local_arc_end.y < 0)
+    {
+        m_local_arc_center.y = -m_local_arc_center.y;
+        m_local_arc_angle0 = -m_local_arc_angle0;
+        m_local_arc_angle1 = -m_local_arc_angle1;
     }
 }
 
-void ConstrainedClothoidDemo::update_arc_end()
+void ConstrainedClothoidDemo::update_arc()
 {
     m_arc_end = from_tangent_coords(m_local_arc_end);
 }

@@ -15,7 +15,11 @@ void AimerDemo::handle_event(const DemoEvent& e)
 {
     ConstrainedClothoidDemo::handle_event(e);
     if (e.handled())
+    {
+        //m_aim_result = m_aimer.aim(m_origin, m_target)
         return;
+
+    }
 }
 
 void AimerDemo::open()

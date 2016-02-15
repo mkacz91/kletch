@@ -18,6 +18,10 @@ public:
 protected:
     virtual void open() override;
     virtual void close() noexcept override;
+
+private:
+    //ClothoidAimer m_aimer;
+    //ClothoidAimer.Result m_aim_result;
 };
 
 } // namespace kletch
