@@ -35,8 +35,19 @@ public:
     void translate(const vec2f& translation);
     void translate(float tx, float ty) { translate(vec2f(tx, ty)); }
 
-    void handle_event(const DemoEvent& e);
+    vec2f canvas_to_ndc(int x, int y) const;
+    vec2f canvas_to_ndc(const vec2i& p) const { return canvas_to_ndc(p.x, p.y); }
 
+    vec2f canvas_to_ndc_vec(int x, int y) const;
+    vec2f canvas_to_ndc_vec(const vec2i& v) const { return canvas_to_ndc_vec(v.x, v.y); }
+
+    vec2f canvas_to_world(int x, int y) const;
+    vec2f canvas_to_world(const vec2i& p) const { return canvas_to_world(p.x, p.y); }
+
+    vec2f canvas_to_world_vec(int x, int y) const;
+    vec2f canvas_to_world_vec(const vec2i& v) const { return canvas_to_world_vec(v.x, v.y); }
+
+    void handle_event(const DemoEvent& e);
     void open_grid();
     void close_grid();
     void render_grid();
@@ -44,8 +55,8 @@ public:
 private:
     mutable bool m_projection_matrix_valid = false;
     mutable bool m_inverse_projection_matrix_valid = false;
-    mutable mat3f m_projection_matrix = mat3f::EYE;
-    mutable mat3f m_inverse_projection_matrix = mat3f::EYE;
+    mutable mat3f m_projection_matrix;
+    mutable mat3f m_inverse_projection_matrix;
     mutable bool m_view_matrix_valid = false;
     mutable bool m_inverse_view_matrix_valid = false;
     mutable mat3f m_view_matrix;
@@ -57,8 +68,8 @@ private:
 
     vec2i m_size = vec2i(2, 2);
     vec2f m_translation;
-    float m_scale;
-    float m_rotation;
+    float m_scale = 1;
+    float m_rotation = 0;
 
     bool m_dragging = false;
     vec2i m_grab_position = 0;
@@ -158,11 +169,25 @@ inline void Camera2::translate(const vec2f& translation)
     invalidate_view_matrix();
 }
 
+inline vec2f Camera2::canvas_to_ndc(int x, int y) const
+{
+    return vec2f(
+        2.0f * x / m_size.x - 1.0f,
+        -2.0f * y / m_size.y - 1.0f
+    );
+}
+
+inline vec2f Camera2::canvas_to_ndc_vec(int x, int y) const
+{
+    return vec2f(2.0f * x / m_size.x, -2.0f * y / m_size.y);
+}
+
 inline void Camera2::invalidate_projection_matrix()
 {
     m_projection_matrix_valid = false;
     m_inverse_projection_matrix_valid = false;
     m_matrix_valid = false;
+    m_inverse_matrix_valid = false;
 }
 
 inline void Camera2::invalidate_view_matrix()
@@ -170,6 +195,7 @@ inline void Camera2::invalidate_view_matrix()
     m_view_matrix_valid = false;
     m_inverse_view_matrix_valid = false;
     m_matrix_valid = false;
+    m_inverse_matrix_valid = false;
 }
 
 } // namespace kletch

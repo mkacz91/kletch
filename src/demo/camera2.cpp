@@ -2,6 +2,16 @@
 
 namespace kletch {
 
+vec2f Camera2::canvas_to_world(int x, int y) const
+{
+    return inverse_matrix().transform(canvas_to_ndc(x, y));
+}
+
+vec2f Camera2::canvas_to_world_vec(int x, int y) const
+{
+    return inverse_matrix().transform_vector(canvas_to_ndc_vec(x, y));
+}
+
 void Camera2::handle_event(const DemoEvent& e)
 {
     switch (e.type()) {
@@ -45,13 +55,38 @@ void Camera2::handle_event(const DemoEvent& e)
     {
         if (m_dragging)
         {
-            vec2i u(e.motion().x - m_grab_position.x, m_grab_position.y - e.motion().y);
+            vec2i position = vec2i(e.motion().x, e.motion().y);
+            cout << "projection: " << projection_matrix() << " " << inverse_projection_matrix() << " " << projection_matrix() * inverse_projection_matrix() << endl;
+            cout << "view: " << view_matrix() * inverse_view_matrix() << endl;
+            cout << "matrix: " << matrix() * inverse_matrix() << endl;
             set_translation(
-                m_translation_at_grab.x + u.x / m_scale,
-                m_translation_at_grab.y + u.y / m_scale
+                m_translation_at_grab +
+                canvas_to_world_vec(position - m_grab_position)
             );
             e.request_redraw();
             e.mark_handled();
+        }
+        break;
+    }
+    case SDL_KEYDOWN:
+    {
+        switch (e.key().keysym.sym)
+        {
+        case SDLK_q:
+        {
+            rotate(0.1f);
+            e.request_redraw();
+            e.mark_handled();
+            break;
+        }
+        case SDLK_e:
+        {
+            rotate(-0.1f);
+            e.request_redraw();
+            e.mark_handled();
+            break;
+        }
+        default: break;
         }
         break;
     }
@@ -97,9 +132,6 @@ void Camera2::render_grid()
 
     glUseProgram(m_grid_program);
     glBindBuffer(GL_ARRAY_BUFFER, m_grid_vertices);
-    cout << projection_matrix() << endl;
-    cout << view_matrix() << endl;
-    cout << matrix() << endl;
     glUniformMatrix3fv(m_grid_matrix_uniform, matrix());
     glUniform4f(m_grid_color_uniform, 1, 0, 0, 1);
     glVertexAttribPointer(m_grid_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -112,8 +144,7 @@ void Camera2::ensure_projection_matrix_valid() const
 {
     if (m_projection_matrix_valid)
         return;
-    m_projection_matrix.a11 = 2.0f / m_size.x;
-    m_projection_matrix.a22 = 2.0f / m_size.y;
+    m_projection_matrix = mat3f::create_scale(float(m_size.y) / float(m_size.x), 1.0f);
     m_projection_matrix_valid = true;
 }
 
@@ -121,8 +152,7 @@ void Camera2::ensure_inverse_projection_matrix_valid() const
 {
     if (m_inverse_projection_matrix_valid)
         return;
-    m_inverse_projection_matrix.a11 = 0.5f * m_size.x;
-    m_inverse_projection_matrix.a22 = 0.5f * m_size.y;
+    m_inverse_projection_matrix = mat3f::create_scale(float(m_size.x) / float(m_size.y), 1.0f);
     m_inverse_projection_matrix_valid = true;
 }
 
@@ -132,9 +162,9 @@ void Camera2::ensure_view_matrix_valid() const
         return;
     m_view_matrix = mat3f::EYE;
     m_view_matrix
+        .translate(m_translation)
         .rotate(m_rotation)
-        .scale(m_scale, m_scale)
-        .translate(m_translation);
+        .scale(m_scale, m_scale);
     m_view_matrix_valid = true;
 }
 
@@ -144,9 +174,9 @@ void Camera2::ensure_inverse_view_matrix_valid() const
         return;
     m_inverse_view_matrix = mat3f::EYE;
     m_inverse_view_matrix
-        .translate(-m_translation)
         .scale(1 / m_scale, 1 / m_scale)
-        .rotate(-m_rotation);
+        .rotate(-m_rotation)
+        .translate(-m_translation);
     m_inverse_view_matrix_valid = true;
 }
 

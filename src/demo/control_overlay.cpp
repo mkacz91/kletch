@@ -161,7 +161,7 @@ void ControlOverlay::close()
 
 vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)
 {
-    vec2f world_pos = m_camera->inverse_matrix().transform(canvas_pos);
+    vec2f world_pos = m_camera->canvas_to_world(canvas_pos);
     float threshold = sq(m_point_radius);
     for (auto& point : m_points)
     {
@@ -183,7 +183,7 @@ void ControlOverlay::handle_event(const DemoEvent& e)
             if (point != nullptr)
             {
                 m_selected_points.insert(point);
-                m_prev_mouse_world_pos = m_camera->inverse_matrix().transform(
+                m_prev_mouse_world_pos = m_camera->canvas_to_world(
                     e.button().x,
                     e.button().y
                 );
@@ -208,7 +208,7 @@ void ControlOverlay::handle_event(const DemoEvent& e)
     {
         if (!m_selected_points.empty())
         {
-            vec2f mouse_world_pos = m_camera->matrix().transform(e.button().x, e.button().y);
+            vec2f mouse_world_pos = m_camera->canvas_to_world(e.button().x, e.button().y);
             vec2f translation = mouse_world_pos - m_prev_mouse_world_pos;
             for (vec2f* point : m_selected_points)
                 *point += translation;

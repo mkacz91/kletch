@@ -19,9 +19,7 @@ ClothoidAimer::Result ClothoidAimer::aim(
 ) const
 {
     vec2r p = kappa0 * (p1 - p0).rotated(-theta0);
-    cout << p << " ";
     vec2i grid_p = to_grid(p);
-    cout << grid_p << endl;
     Cell cell = m_grid[grid_p.y][grid_p.x];
     return { cell.a / kappa0, cell.s / kappa0, true };
 }
@@ -49,8 +47,6 @@ void ClothoidAimer::init_grid(real delta_theta)
     m_grid_box = box2f::EMPTY;
     for (Sample& sample : m_samples)
         m_grid_box.expand(sample.p);
-
-    cout << m_grid_box << endl;
 
     // Distribute samples to cells
     std::queue<vec2i> frontier;

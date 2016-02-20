@@ -46,12 +46,11 @@ void AimerDemo::handle_event(const DemoEvent& e)
     {
         real theta0 = tangent_angle();
         real kappa0 = rl(1) / rl(arc_radius());
-        cout << target() << endl;
         m_aim_result = m_aimer.aim(origin(), theta0, kappa0, target());
         real a = m_aim_result.a;
         real s = m_aim_result.s;
 
-        cout << theta0 << " " << kappa0 << " " << a << " " << s << endl;
+        //cout << theta0 << " " << kappa0 << " " << a << " " << s << endl;
         m_aim_eval = origin() + Fresnel::eval(theta0, kappa0, a, s);
 
         vector<vec2f> cloth_vertices;
