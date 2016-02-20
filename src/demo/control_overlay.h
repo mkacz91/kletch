@@ -55,9 +55,11 @@ private:
     GLuint m_vertices = 0;
 
     GLuint m_point_program = 0;
-    GLint m_point_transform_uniform = -1;
+    GLint m_point_origin_matrix_uniform = -1;
+    GLint m_point_origin_uniform = -1;
+    GLint m_point_offset_scale_uniform = -1;
     GLint m_point_color_uniform = -1;
-    GLint m_point_position_attrib = -1;
+    GLint m_point_offset_attrib = -1;
 
     GLuint m_vector_edge_program = 0;
     GLuint m_vector_edge_transform_uniform = -1;

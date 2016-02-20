@@ -33,7 +33,7 @@ private:
     bool m_cloth_ready = false;
     GLuint m_cloth_vertices = 0;
     GLuint m_cloth_program = 0;
-    GLint m_cloth_transform_uniform;
+    GLint m_cloth_matrix_uniform;
     GLint m_cloth_color_uniform;
     GLint m_cloth_position_attrib;
 };

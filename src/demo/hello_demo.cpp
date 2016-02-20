@@ -45,8 +45,7 @@ void HelloDemo::open()
     glVertexAttribPointer(m_position_attrib, 2, GL_FLOAT, false, 0, 0);
 
     m_camera.open_grid();
-    m_camera.size.x = width();
-    m_camera.size.y = height();
+    m_camera.set_size(width(), height());
 }
 
 void HelloDemo::close() noexcept

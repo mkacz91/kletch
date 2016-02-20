@@ -28,7 +28,7 @@ protected:
 
 private:
     static const int ARC_VERTEX_COUNT = 20;
-    
+
 protected: // TODO: This is temporary
     Camera2 m_camera;
     ControlOverlay m_control_overlay;
@@ -48,7 +48,7 @@ private:
 
     GLuint m_arc_vertices = 0;
     GLuint m_arc_program = 0;
-    GLint m_arc_transform_uniform;
+    GLint m_arc_matrix_uniform;
     GLint m_arc_center_r_uniform;
     GLint m_arc_angle_uniform;
     GLint m_arc_color0_uniform;

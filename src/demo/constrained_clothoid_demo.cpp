@@ -15,7 +15,7 @@ void ConstrainedClothoidDemo::render()
 
     // Draw arc
     glUseProgram(m_arc_program);
-    m_camera.set_uniform(m_arc_transform_uniform);
+    glUniformMatrix3fv(m_arc_matrix_uniform, m_camera.matrix());
     vec2f arc_center = from_tangent_coords(m_local_arc_center);
     glUniform3f(m_arc_center_r_uniform, arc_center.x, arc_center.y, m_arc_radius);
     glUniform2f(m_arc_angle_uniform,
@@ -70,8 +70,7 @@ void ConstrainedClothoidDemo::open()
     m_camera.open_grid();
     m_control_overlay.open();
 
-    m_camera.size.x = width();
-    m_camera.size.y = height();
+    m_camera.set_size(width(), height());
 
     m_control_overlay.add_point(&m_origin);
     m_control_overlay.add_point(&m_target);
@@ -92,7 +91,7 @@ void ConstrainedClothoidDemo::open()
         "shaders/constrained_clothoid_demo_arc_vx.glsl",
         "shaders/varying3_ft.glsl"
     );
-    m_arc_transform_uniform = gl::get_uniform_location(m_arc_program, "transform");
+    m_arc_matrix_uniform = gl::get_uniform_location(m_arc_program, "matrix");
     m_arc_center_r_uniform = gl::get_uniform_location(m_arc_program, "center_r");
     m_arc_angle_uniform = gl::get_uniform_location(m_arc_program, "angle");
     m_arc_color0_uniform = gl::get_uniform_location(m_arc_program, "color0");

@@ -2,41 +2,6 @@
 
 namespace kletch {
 
-void Camera2::set_uniform(int location)
-{
-    glUniform4f(
-        location,
-        translation.x, translation.y,
-        2 * scale.x / size.x , 2 * scale.y / size.y
-    );
-}
-
-vec2f Camera2::to_world(const vec2f& canvas_pos) const
-{
-    return vec2f(
-        (canvas_pos.x - size.x / 2) / scale.x - translation.x,
-        (size.y / 2 - canvas_pos.y) / scale.y - translation.y
-    );
-}
-
-vec2f Camera2::to_canvas(const vec2f& world_pos) const
-{
-    return vec2f(
-        (world_pos.x + translation.x) * scale.x + size.x / 2,
-        size.y / 2 - (world_pos.y + translation.y) * scale.y
-    );
-}
-
-vec2f Camera2::to_ndc(const vec2f& world_pos) const
-{
-    return 2 * (world_pos + translation) * scale / size;
-}
-
-vec2f Camera2::to_canvas_vector(const vec2f& world_vector) const
-{
-    return vec2f(world_vector.x * scale.x, -world_vector.y * scale.y);
-}
-
 void Camera2::handle_event(const DemoEvent& e)
 {
     switch (e.type()) {
@@ -46,21 +11,21 @@ void Camera2::handle_event(const DemoEvent& e)
         case SDL_BUTTON_RIGHT:
         {
             m_grab_position = vec2i(e.button().x, e.button().y);
-            m_translation_at_grab = translation;
+            m_translation_at_grab = m_translation;
             m_dragging = true;
             e.mark_handled();
             break;
         }
         case SDL_BUTTON_WHEELUP:
         {
-            scale *= 1.1f;
+            scale(1.1f);
             e.mark_handled();
             e.request_redraw();
             break;
         }
         case SDL_BUTTON_WHEELDOWN:
         {
-            scale /= 1.1f;
+            scale(1.0f / 1.1f);
             e.mark_handled();
             e.request_redraw();
             break;
@@ -81,8 +46,10 @@ void Camera2::handle_event(const DemoEvent& e)
         if (m_dragging)
         {
             vec2i u(e.motion().x - m_grab_position.x, m_grab_position.y - e.motion().y);
-            translation.x = m_translation_at_grab.x + u.x / scale.x;
-            translation.y = m_translation_at_grab.y + u.y / scale.y;
+            set_translation(
+                m_translation_at_grab.x + u.x / m_scale,
+                m_translation_at_grab.y + u.y / m_scale
+            );
             e.request_redraw();
             e.mark_handled();
         }
@@ -90,8 +57,7 @@ void Camera2::handle_event(const DemoEvent& e)
     }
     case SDL_VIDEORESIZE:
     {
-        size.x = e.resize().w;
-        size.y = e.resize().h;
+        set_size(e.resize().w, e.resize().h);
         break;
     }}
 }
@@ -105,7 +71,7 @@ void Camera2::open_grid()
     };
     m_grid_vertices = gl::create_buffer(GL_ARRAY_BUFFER, grid_vertices);
     m_grid_program = gl::link_program("shaders/grid_vx.glsl", "shaders/uniform_ft.glsl");
-    m_grid_transform_uniform = gl::get_uniform_location(m_grid_program, "transform");
+    m_grid_matrix_uniform = gl::get_uniform_location(m_grid_program, "matrix");
     m_grid_color_uniform = gl::get_uniform_location(m_grid_program, "color");
     m_grid_position_attrib = gl::get_attrib_location(m_grid_program, "position");
 }
@@ -126,17 +92,78 @@ void Camera2::render_grid()
         );
     }
 
-    if (size.x < 1 || size.y < 1)
+    if (m_size.x < 1 || m_size.y < 1)
         return;
 
     glUseProgram(m_grid_program);
     glBindBuffer(GL_ARRAY_BUFFER, m_grid_vertices);
-    set_uniform(m_grid_transform_uniform);
+    cout << projection_matrix() << endl;
+    cout << view_matrix() << endl;
+    cout << matrix() << endl;
+    glUniformMatrix3fv(m_grid_matrix_uniform, matrix());
     glUniform4f(m_grid_color_uniform, 1, 0, 0, 1);
     glVertexAttribPointer(m_grid_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(m_grid_position_attrib);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glDisableVertexAttribArray(m_grid_position_attrib);
+}
+
+void Camera2::ensure_projection_matrix_valid() const
+{
+    if (m_projection_matrix_valid)
+        return;
+    m_projection_matrix.a11 = 2.0f / m_size.x;
+    m_projection_matrix.a22 = 2.0f / m_size.y;
+    m_projection_matrix_valid = true;
+}
+
+void Camera2::ensure_inverse_projection_matrix_valid() const
+{
+    if (m_inverse_projection_matrix_valid)
+        return;
+    m_inverse_projection_matrix.a11 = 0.5f * m_size.x;
+    m_inverse_projection_matrix.a22 = 0.5f * m_size.y;
+    m_inverse_projection_matrix_valid = true;
+}
+
+void Camera2::ensure_view_matrix_valid() const
+{
+    if (m_view_matrix_valid)
+        return;
+    m_view_matrix = mat3f::EYE;
+    m_view_matrix
+        .rotate(m_rotation)
+        .scale(m_scale, m_scale)
+        .translate(m_translation);
+    m_view_matrix_valid = true;
+}
+
+void Camera2::ensure_inverse_view_matrix_valid() const
+{
+    if (m_inverse_view_matrix_valid)
+        return;
+    m_inverse_view_matrix = mat3f::EYE;
+    m_inverse_view_matrix
+        .translate(-m_translation)
+        .scale(1 / m_scale, 1 / m_scale)
+        .rotate(-m_rotation);
+    m_inverse_view_matrix_valid = true;
+}
+
+void Camera2::ensure_matrix_valid() const
+{
+    if (m_matrix_valid)
+        return;
+    m_matrix = projection_matrix() * view_matrix();
+    m_matrix_valid = true;
+}
+
+void Camera2::ensure_inverse_matrix_valid() const
+{
+    if (m_inverse_matrix_valid)
+        return;
+    m_inverse_matrix = inverse_view_matrix() * inverse_projection_matrix();
+    m_inverse_matrix_valid = true;
 }
 
 } // namespace kletch

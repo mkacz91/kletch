@@ -28,6 +28,21 @@ inline void glDrawArrays(GLenum target, const int_range& vertex_range)
     ::glDrawArrays(target, vertex_range.first, vertex_range.count);
 }
 
+inline void glUniformMatrix3fv(GLint location, const mat3f& m)
+{
+    ::glUniformMatrix3fv(location, 1, GL_FALSE, reinterpret_cast<const float*>(&m));
+}
+
+inline void glUniform2f(GLint location, float x, float y)
+{
+    ::glUniform2f(location, x, y);
+}
+
+inline void glUniform2f(GLint location, const vec2f& v)
+{
+    ::glUniform2f(location, v.x, v.y);
+}
+
 namespace gl {
 
 class exception : public std::exception

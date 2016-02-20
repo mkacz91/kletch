@@ -14,7 +14,7 @@ void AimerDemo::render()
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(m_cloth_program);
-    m_camera.set_uniform(m_cloth_transform_uniform);
+    glUniformMatrix3fv(m_cloth_matrix_uniform, m_camera.matrix());
     glEnableVertexAttribArray(m_cloth_position_attrib);
 
     // Draw samples
@@ -94,7 +94,7 @@ void AimerDemo::open()
         "shaders/aimer_demo_cloth_vx.glsl",
         "shaders/uniform_ft.glsl"
     );
-    m_cloth_transform_uniform = gl::get_uniform_location(m_cloth_program, "transform");
+    m_cloth_matrix_uniform = gl::get_uniform_location(m_cloth_program, "matrix");
     m_cloth_color_uniform = gl::get_uniform_location(m_cloth_program, "color");
     m_cloth_position_attrib = gl::get_attrib_location(m_cloth_program, "position");
 

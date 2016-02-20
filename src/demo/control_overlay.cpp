@@ -42,18 +42,14 @@ void ControlOverlay::render()
 
     // Render points
     glUseProgram(m_point_program);
-    glVertexAttribPointer(m_point_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(m_point_position_attrib);
+    glUniformMatrix3fv(m_point_origin_matrix_uniform, m_camera->matrix());
+    glUniform2f(m_point_offset_scale_uniform, 2 * m_point_radius / m_camera->size());
+    glVertexAttribPointer(m_point_offset_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(m_point_offset_attrib);
 
     for (vec2f* point : m_points)
     {
-        vec2f canvas_pos = m_camera->to_canvas(*point);
-        vec2f translation = 2 * canvas_pos / m_camera->size - 1;
-        vec2f scale = 2 * m_point_radius / m_camera->size;
-        glUniform4f(m_point_transform_uniform,
-            translation.x, -translation.y,
-            scale.x, scale.y
-        );
+        glUniform2f(m_point_origin_uniform, *point);
         if (m_selected_points.count(point))
             glUniform4f(m_point_color_uniform, 1, 0, 0, 1);
         else if (m_highlighted_point == point)
@@ -63,7 +59,7 @@ void ControlOverlay::render()
         glDrawArrays(GL_LINE_STRIP, POINT_VERTEX_RANGE);
     }
 
-    glDisableVertexAttribArray(m_point_position_attrib);
+    glDisableVertexAttribArray(m_point_offset_attrib);
 
     // Render vector edges
     glUseProgram(m_vector_edge_program);
@@ -72,8 +68,8 @@ void ControlOverlay::render()
 
     for (auto& v : m_vectors)
     {
-        vec2f p0 = m_camera->to_ndc(*get<0>(v));
-        vec2f p1 = m_camera->to_ndc(*get<1>(v));
+        vec2f p0 = m_camera->matrix().transform(*get<0>(v));
+        vec2f p1 = m_camera->matrix().transform(*get<1>(v));
         glUniform4f(m_vector_edge_transform_uniform, p0.x, p0.y, p1.x, p1.y);
         glUniform4f(m_vector_edge_color_uniform, 0, 0, 0, 1);
         glDrawArrays(GL_LINES, VECTOR_EDGE_VERTEX_RANGE);
@@ -130,9 +126,11 @@ void ControlOverlay::open()
 
     // Point program
     m_point_program = gl::link_program("shaders/aimer_point_vx.glsl", "shaders/uniform_ft.glsl");
-    m_point_transform_uniform = gl::get_uniform_location(m_point_program, "transform");
+    m_point_origin_matrix_uniform = gl::get_uniform_location(m_point_program, "origin_matrix");
+    m_point_origin_uniform = gl::get_uniform_location(m_point_program, "origin");
+    m_point_offset_scale_uniform = gl::get_uniform_location(m_point_program, "offset_scale");
     m_point_color_uniform = gl::get_uniform_location(m_point_program, "color");
-    m_point_position_attrib = gl::get_attrib_location(m_point_program, "position");
+    m_point_offset_attrib = gl::get_attrib_location(m_point_program, "offset");
 
     // Vector edge program
     m_vector_edge_program = gl::link_program(
@@ -163,11 +161,11 @@ void ControlOverlay::close()
 
 vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)
 {
-    vec2f world_pos = m_camera->to_world(canvas_pos);
+    vec2f world_pos = m_camera->inverse_matrix().transform(canvas_pos);
     float threshold = sq(m_point_radius);
     for (auto& point : m_points)
     {
-        vec2f r = m_camera->to_canvas_vector(world_pos - *point);
+        vec2f r = m_camera->view_matrix().transform_vector(world_pos - *point);
         if (r.length_sq() <= threshold)
             return point;
     }
@@ -185,7 +183,10 @@ void ControlOverlay::handle_event(const DemoEvent& e)
             if (point != nullptr)
             {
                 m_selected_points.insert(point);
-                m_prev_mouse_world_pos = m_camera->to_world(e.button().x, e.button().y);
+                m_prev_mouse_world_pos = m_camera->inverse_matrix().transform(
+                    e.button().x,
+                    e.button().y
+                );
                 e.request_redraw();
                 e.mark_handled();
             }
@@ -207,7 +208,7 @@ void ControlOverlay::handle_event(const DemoEvent& e)
     {
         if (!m_selected_points.empty())
         {
-            vec2f mouse_world_pos = m_camera->to_world(e.button().x, e.button().y);
+            vec2f mouse_world_pos = m_camera->matrix().transform(e.button().x, e.button().y);
             vec2f translation = mouse_world_pos - m_prev_mouse_world_pos;
             for (vec2f* point : m_selected_points)
                 *point += translation;
