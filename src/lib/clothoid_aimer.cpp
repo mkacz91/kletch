@@ -19,9 +19,11 @@ ClothoidAimer::Result ClothoidAimer::aim(
 ) const
 {
     vec2r p = kappa0 * (p1 - p0).rotated(-theta0);
+    cout << p << " ";
     vec2i grid_p = to_grid(p);
+    cout << grid_p << endl;
     Cell cell = m_grid[grid_p.y][grid_p.x];
-    return { cell.a, cell.s, true };
+    return { cell.a / kappa0, cell.s / kappa0, true };
 }
 
 inline real ClothoidAimer::get_max_s(real kappa0, real a, real delta_theta)
@@ -43,14 +45,16 @@ void ClothoidAimer::init_grid(real delta_theta)
     }
 
     // Generate samples and compute bounding box
-    auto samples = generate_samples(1, delta_theta);
+    m_samples = generate_samples(1, delta_theta);
     m_grid_box = box2f::EMPTY;
-    for (Sample& sample : samples)
+    for (Sample& sample : m_samples)
         m_grid_box.expand(sample.p);
+
+    cout << m_grid_box << endl;
 
     // Distribute samples to cells
     std::queue<vec2i> frontier;
-    for (Sample& sample : samples)
+    for (Sample& sample : m_samples)
     {
         vec2i grid_p = to_grid(sample.p);
         int i = grid_p.y, j = grid_p.x;
@@ -58,6 +62,7 @@ void ClothoidAimer::init_grid(real delta_theta)
         {
             m_grid[i][j] = { sample.a, sample.s };
             frontier.push(grid_p);
+            assert(!m_grid[i][j].empty());
         }
     }
 
@@ -66,25 +71,26 @@ void ClothoidAimer::init_grid(real delta_theta)
     {
         int i = frontier.front().y, j = frontier.front().x;
         frontier.pop();
+        assert(!m_grid[i][j].empty());
         if (0 < i && m_grid[i - 1][j].empty())
         {
             m_grid[i - 1][j] = m_grid[i][j];
-            frontier.emplace(i - 1, j);
+            frontier.emplace(j, i - 1);
         }
-        if (i < GRID_SIZE && m_grid[i + 1][j].empty())
+        if (i < GRID_SIZE - 1 && m_grid[i + 1][j].empty())
         {
             m_grid[i + 1][j] = m_grid[i][j];
-            frontier.emplace(i + 1, j);
+            frontier.emplace(j, i + 1);
         }
         if (0 < j && m_grid[i][j - 1].empty())
         {
             m_grid[i][j - 1] = m_grid[i][j];
-            frontier.emplace(i, j - 1);
+            frontier.emplace(j - 1, i);
         }
-        if (j < GRID_SIZE && m_grid[i][j + 1].empty())
+        if (j < GRID_SIZE - 1 && m_grid[i][j - 1].empty())
         {
             m_grid[i][j + 1] = m_grid[i][j];
-            frontier.emplace(i, j + 1);
+            frontier.emplace(j + 1, i);
         }
     }
 }
@@ -93,8 +99,8 @@ vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, real 
 {
     // TODO: These constants should be configurable
     const int n = 100; // TODO: I don't even know how to interpret this
-    const real min_a = rl(-3.0);
-    const real max_a = rl(3.0);
+    const real min_a = rl(-3);
+    const real max_a = rl(3);
     vector<Sample> result;
     result.reserve(n * n);
     for (int i = 0; i < n; ++i)
@@ -113,8 +119,8 @@ vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, real 
 vec2i ClothoidAimer::to_grid(const vec2r& point) const
 {
     return vec2i(
-        to_grid(GRID_SIZE, m_grid_box.x0, m_grid_box.x1, point.x),
-        to_grid(GRID_SIZE, m_grid_box.y0, m_grid_box.y1, point.y)
+        to_grid(GRID_SIZE, m_grid_box.y0, m_grid_box.y1, point.y),
+        to_grid(GRID_SIZE, m_grid_box.x0, m_grid_box.x1, point.x)
     );
 }
 

@@ -17,8 +17,10 @@ public:
     virtual void render() override;
     virtual void handle_event(const DemoEvent& e) override;
 
-    float arc_radius () const { return m_arc_radius; }
-    float tangent_angle () const { return m_tangent_angle; }
+    const vec2f origin() const { return m_origin; }
+    const vec2f target() const { return m_target; }
+    float arc_radius() const { return m_arc_radius; }
+    float tangent_angle() const { return m_tangent_angle; }
 
 protected:
     virtual void open() override;
@@ -26,10 +28,12 @@ protected:
 
 private:
     static const int ARC_VERTEX_COUNT = 20;
-
+    
+protected: // TODO: This is temporary
     Camera2 m_camera;
     ControlOverlay m_control_overlay;
 
+private:
     vec2f m_origin = 0;
     vec2f m_target = vec2f(2, 2);
     vec2f m_tangent_tip = vec2f(1, 0);

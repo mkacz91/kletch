@@ -245,6 +245,12 @@ int main_loop()
                     demo_index = key - SDLK_1;
                     redraw = true;
                 }
+                else if (key == SDLK_h)
+                {
+                    int value = 1;
+                    TwSetParam(twbar, nullptr, "iconified", TW_PARAM_INT32, 1, &value);
+                    redraw = true;
+                }
                 break;
             }
             case SDL_VIDEORESIZE:

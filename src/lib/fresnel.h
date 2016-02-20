@@ -38,9 +38,11 @@ inline real Fresnel::eval_s(real s)
 
 inline vec2r Fresnel::eval(real s)
 {
+    real sgn_s = sgn(s);
+    s = abs(s);
     real r = eval_r(s);
     real u = PI_OVER_2 * (eval_a(s) - s * s);
-    return vec2r(rl(0.5) - r * sin(u), rl(0.5) - r * cos(u));
+    return sgn_s * vec2r(rl(0.5) - r * sin(u), rl(0.5) - r * cos(u));
 }
 
 inline real Fresnel::eval_a(real s)

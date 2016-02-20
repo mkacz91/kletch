@@ -1,13 +1,41 @@
 #include "aimer_demo.h"
 #include <vector>
+#include <lib/fresnel.h>
 
 namespace kletch {
 
 AimerDemo::AimerDemo() : ConstrainedClothoidDemo("Clothoid Aim")
-{ }
+{
+    m_control_overlay.add_point(&m_aim_eval);
+}
 
 void AimerDemo::render()
 {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(m_cloth_program);
+    m_camera.set_uniform(m_cloth_transform_uniform);
+    glEnableVertexAttribArray(m_cloth_position_attrib);
+
+    // Draw samples
+
+    glUniform4f(m_cloth_color_uniform, 0.8f, 0.8f, 0.8f, 1.0f);
+    glBindBuffer(GL_ARRAY_BUFFER, m_sample_vertices);
+    glVertexAttribPointer(m_cloth_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glDrawArrays(GL_LINES, 0, m_aimer.m_samples.size() * 4);
+
+    // Draw clothoid
+    if (m_cloth_ready)
+    {
+        glUniform4f(m_cloth_color_uniform, 1, 0, 0, 1);
+        glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
+        glVertexAttribPointer(m_cloth_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glDrawArrays(GL_LINE_STRIP, 0, CLOTHOID_VERTEX_COUNT);
+
+    }
+
+    glDisableVertexAttribArray(m_cloth_position_attrib);
+
     ConstrainedClothoidDemo::render();
 }
 
@@ -16,19 +44,71 @@ void AimerDemo::handle_event(const DemoEvent& e)
     ConstrainedClothoidDemo::handle_event(e);
     if (e.handled())
     {
-        //m_aim_result = m_aimer.aim(m_origin, m_target)
-        return;
+        real theta0 = tangent_angle();
+        real kappa0 = rl(1) / rl(arc_radius());
+        cout << target() << endl;
+        m_aim_result = m_aimer.aim(origin(), theta0, kappa0, target());
+        real a = m_aim_result.a;
+        real s = m_aim_result.s;
 
+        cout << theta0 << " " << kappa0 << " " << a << " " << s << endl;
+        m_aim_eval = origin() + Fresnel::eval(theta0, kappa0, a, s);
+
+        vector<vec2f> cloth_vertices;
+        for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
+        {
+            real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
+            cloth_vertices.push_back(origin() + Fresnel::eval(theta0, kappa0, a, si));
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
+        glBufferData(GL_ARRAY_BUFFER, cloth_vertices);
+        m_cloth_ready = true;
+        return;
     }
 }
 
 void AimerDemo::open()
 {
     ConstrainedClothoidDemo::open();
+
+    // Samples
+
+    const float SAMPLE_SIZE = 0.02f;
+    std::vector<vec2f> sample_vertices;
+    for (const ClothoidAimer::Sample& sample : m_aimer.m_samples)
+    {
+        float x = sample.p.x, y = sample.p.y;
+        sample_vertices.emplace_back(x - SAMPLE_SIZE, y);
+        sample_vertices.emplace_back(x + SAMPLE_SIZE, y);
+        sample_vertices.emplace_back(x, y - SAMPLE_SIZE);
+        sample_vertices.emplace_back(x, y + SAMPLE_SIZE);
+    }
+    m_sample_vertices = gl::create_buffer(GL_ARRAY_BUFFER, sample_vertices);
+
+    // Clothoid
+
+    glGenBuffers(1, &m_cloth_vertices);
+    m_cloth_ready = false;
+
+    m_cloth_program = gl::link_program(
+        "shaders/aimer_demo_cloth_vx.glsl",
+        "shaders/uniform_ft.glsl"
+    );
+    m_cloth_transform_uniform = gl::get_uniform_location(m_cloth_program, "transform");
+    m_cloth_color_uniform = gl::get_uniform_location(m_cloth_program, "color");
+    m_cloth_position_attrib = gl::get_attrib_location(m_cloth_program, "position");
+
+    glUseProgram(m_cloth_program);
+    glUniform4f(m_cloth_color_uniform, 0, 0, 0, 1);
 }
 
 void AimerDemo::close() noexcept
 {
+    m_cloth_ready = false;
+    glDeleteProgram(m_cloth_program); m_cloth_program = 0;
+    glDeleteBuffers(1, &m_cloth_vertices); m_cloth_vertices = 0;
+    glDeleteBuffers(1, &m_sample_vertices); m_sample_vertices = 0;
+
     ConstrainedClothoidDemo::close();
 }
 

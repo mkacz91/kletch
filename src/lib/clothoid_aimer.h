@@ -31,6 +31,8 @@ public:
 
     Result aim(const vec2r& p0, real theta0, real kappa0, const vec2r& p1) const;
 
+    std::vector<Sample> m_samples; // TODO: temporary
+
 private:
     static const int GRID_SIZE = 200;
 
@@ -39,7 +41,7 @@ private:
         real a;
         real s;
 
-        bool empty() { return a < 0; }
+        bool empty() { return s < 0; }
     };
 
     Cell m_grid[GRID_SIZE][GRID_SIZE];

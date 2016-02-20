@@ -11,7 +11,7 @@ ConstrainedClothoidDemo::ConstrainedClothoidDemo(const string& display_name) :
 
 void ConstrainedClothoidDemo::render()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT);
 
     // Draw arc
     glUseProgram(m_arc_program);

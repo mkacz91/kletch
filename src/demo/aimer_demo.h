@@ -3,6 +3,8 @@
 
 #include "prefix.h"
 
+#include <lib/clothoid_aimer.h>
+
 #include "constrained_clothoid_demo.h"
 
 namespace kletch {
@@ -20,8 +22,20 @@ protected:
     virtual void close() noexcept override;
 
 private:
-    //ClothoidAimer m_aimer;
-    //ClothoidAimer.Result m_aim_result;
+    static const int CLOTHOID_VERTEX_COUNT = 40;
+
+    ClothoidAimer m_aimer;
+    ClothoidAimer::Result m_aim_result;
+    vec2f m_aim_eval = { 0.0f, 0.5f };
+
+    GLuint m_sample_vertices = 0;
+
+    bool m_cloth_ready = false;
+    GLuint m_cloth_vertices = 0;
+    GLuint m_cloth_program = 0;
+    GLint m_cloth_transform_uniform;
+    GLint m_cloth_color_uniform;
+    GLint m_cloth_position_attrib;
 };
 
 } // namespace kletch
