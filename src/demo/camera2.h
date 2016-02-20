@@ -173,7 +173,7 @@ inline vec2f Camera2::canvas_to_ndc(int x, int y) const
 {
     return vec2f(
         2.0f * x / m_size.x - 1.0f,
-        -2.0f * y / m_size.y - 1.0f
+        -2.0f * y / m_size.y + 1.0f
     );
 }
 

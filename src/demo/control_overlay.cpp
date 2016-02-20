@@ -162,11 +162,10 @@ void ControlOverlay::close()
 vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)
 {
     vec2f world_pos = m_camera->canvas_to_world(canvas_pos);
-    float threshold = sq(m_point_radius);
+    float threshold = sq(2 * m_point_radius / (m_camera->scale() * m_camera->size().y));
     for (auto& point : m_points)
     {
-        vec2f r = m_camera->view_matrix().transform_vector(world_pos - *point);
-        if (r.length_sq() <= threshold)
+        if (dist_sq(world_pos, *point) <= threshold)
             return point;
     }
     return nullptr;

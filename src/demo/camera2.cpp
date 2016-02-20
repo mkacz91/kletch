@@ -56,9 +56,6 @@ void Camera2::handle_event(const DemoEvent& e)
         if (m_dragging)
         {
             vec2i position = vec2i(e.motion().x, e.motion().y);
-            cout << "projection: " << projection_matrix() << " " << inverse_projection_matrix() << " " << projection_matrix() * inverse_projection_matrix() << endl;
-            cout << "view: " << view_matrix() * inverse_view_matrix() << endl;
-            cout << "matrix: " << matrix() * inverse_matrix() << endl;
             set_translation(
                 m_translation_at_grab +
                 canvas_to_world_vec(position - m_grab_position)
