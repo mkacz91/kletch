@@ -33,6 +33,36 @@ inline real ClothoidAimer::get_max_s(real kappa0, real a, real delta_theta)
         : -(sqrt(-two_a * theta) + kappa0) / a;
 }
 
+bool ClothoidAimer::get_a_range(real kappa0, real s, real delta_theta, real* a0, real* a1)
+{
+    assert(kappa0 >= 0);
+    assert(s > 0);
+    assert(delta_theta > 0);
+
+    real c0 = kappa0 * s;
+    real delta = c0 * (2 * delta_theta - c0) + sq(delta_theta);
+    cout << "kappa0: " << kappa0 << ", s: " << s << ", delta: " << delta << endl;
+    if (delta <= 0)
+        return false;
+
+    real c1 = -c0 - delta_theta;
+    real sqrt_delta = sqrt(delta);
+    real s_sq = sq(s);
+
+    real b0 = (c1 - sqrt_delta) / s_sq;
+    real b1 = (c1 + sqrt_delta) / s_sq;
+    if (b0 > b1)
+        swap(b0, b1);
+
+    real b2 = 2 * (delta_theta - c0) / s_sq;
+
+    cout << "b0: " << b0 << ", b1: " << b1 << ", b2: " << b2 << endl;
+
+    *a0 = b0;
+    *a1 = (b2 * s < -kappa0) ? b1 : b2;
+    return true;
+}
+
 void ClothoidAimer::init_grid(real delta_theta)
 {
     // Clear cells
@@ -91,25 +121,28 @@ void ClothoidAimer::init_grid(real delta_theta)
     }
 }
 
-vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, real delta_theta)
+std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, real delta_theta)
 {
-    // TODO: These constants should be configurable
-    const int n = 100; // TODO: I don't even know how to interpret this
-    const real min_a = rl(-3);
-    const real max_a = rl(3);
-    vector<Sample> result;
-    result.reserve(n * n);
-    for (int i = 0; i < n; ++i)
+    const real min_a = rl(-4);
+    const real max_a = rl(4);
+    const real ref_sample_dist = rl(0.1);
+    const real ref_sample_dist_sq = sq(ref_sample_dist);
+    const int initial_partition = 5;
+
+    std::vector<Sample> samples;
+    samples.emplace_back(0, 0, 0);
+
+    real s = rl(0.1);
+    real a0, a1;
+    while (get_a_range(kappa0, s, delta_theta, &a0, &a1))
     {
-        real a = lerp(min_a, max_a, rl(i) / (n - 1));
-        real max_s = get_max_s(kappa0, a, delta_theta);
-        for (int j = 0; j < n; ++j)
-        {
-            real s = lerp(rl(0), max_s, rl(j) / (n - 1));
-            result.emplace_back(a, s, Fresnel::eval(rl(0), kappa0, a, s));
-        }
+        cout << s << " " << a0 << " " << a1 << endl;
+        samples.emplace_back(a0, s, Fresnel::eval(0, kappa0, a0, s));
+        samples.emplace_back(a1, s, Fresnel::eval(0, kappa0, a1, s));
+        s += rl(0.1);
     }
-    return result;
+
+    return samples;
 }
 
 vec2i ClothoidAimer::to_grid(const vec2r& point) const

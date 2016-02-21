@@ -6,8 +6,6 @@
 
 namespace kletch {
 
-using std::vector;
-
 class ClothoidAimer
 {
 public:
@@ -57,8 +55,9 @@ private:
     static int to_grid(int n, real v0, real v1, real v);
 
     static real get_max_s(real kappa0, real a, real delta_theta);
+    static bool get_a_range(real kappa0, real s, real delta_theta, real* a0, real* a1);
 
-    static vector<Sample> generate_samples(real kappa0, real delta_theta);
+    static std::vector<Sample> generate_samples(real kappa0, real delta_theta);
 };
 
 } // namespace kletch

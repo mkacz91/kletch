@@ -7,6 +7,7 @@
 #include <string>
 #include <stdexcept>
 #include <tuple>
+#include <utility>
 
 #include "math/math.h"
 
@@ -31,6 +32,8 @@ using std::tuple;
 using std::tie;
 using std::make_tuple;
 using std::get;
+
+using std::swap;
 
 } // namespace kletch
 

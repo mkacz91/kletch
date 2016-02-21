@@ -65,8 +65,9 @@ void AimerDemo::handle_event(const DemoEvent& e)
 
         //cout << theta0 << " " << kappa0 << " " << a << " " << s << endl;
         m_aim_eval = origin() + Fresnel::eval(theta0, kappa0, a, s);
+        cout << "s: " << s << " a: " << a << endl;
 
-        vector<vec2f> cloth_vertices;
+        std::vector<vec2f> cloth_vertices;
         for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
         {
             real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
