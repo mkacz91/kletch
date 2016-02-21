@@ -34,7 +34,9 @@ public:
     std::vector<Sample> m_samples; // TODO: temporary
 
 private:
-    static const int GRID_SIZE = 200;
+public: // TODO: tmp
+    static const int GRID_SIZE = 100;
+private:
 
     struct Cell
     {
@@ -45,7 +47,9 @@ private:
     };
 
     Cell m_grid[GRID_SIZE][GRID_SIZE];
+public:// TODO: tmp
     box2r m_grid_box;
+private:
 
     void init_grid(real delta_theta);
     vec2i to_grid(const vec2r& point) const;

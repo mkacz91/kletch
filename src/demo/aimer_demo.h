@@ -36,6 +36,12 @@ private:
     GLint m_cloth_matrix_uniform;
     GLint m_cloth_color_uniform;
     GLint m_cloth_position_attrib;
+
+    GLuint m_grid_vertices = 0;
+    GLuint m_grid_program = 0;
+    GLint m_grid_matrix_uniform = 0;
+    GLint m_grid_color_uniform = 0;
+    GLint m_grid_position_attrib = 0;
 };
 
 } // namespace kletch
