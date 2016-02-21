@@ -28,8 +28,6 @@ private:
     ClothoidAimer::Result m_aim_result;
     vec2f m_aim_eval = { 0.0f, 0.5f };
 
-    GLuint m_sample_vertices = 0;
-
     bool m_cloth_ready = false;
     GLuint m_cloth_vertices = 0;
     GLuint m_cloth_program = 0;
@@ -37,11 +35,13 @@ private:
     GLint m_cloth_color_uniform;
     GLint m_cloth_position_attrib;
 
+    GLuint m_aimer_program = 0;
+    GLint m_aimer_matrix_uniform = -1;
+    GLint m_aimer_color_uniform = -1;
+    GLint m_aimer_position_attrib = -1;
+
     GLuint m_grid_vertices = 0;
-    GLuint m_grid_program = 0;
-    GLint m_grid_matrix_uniform = 0;
-    GLint m_grid_color_uniform = 0;
-    GLint m_grid_position_attrib = 0;
+    GLuint m_sample_vertices = 0;
 };
 
 } // namespace kletch

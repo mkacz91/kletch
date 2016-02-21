@@ -1,6 +1,7 @@
 #include "clothoid_aimer.h"
 
 #include <queue>
+#include <stack>
 
 #include "fresnel.h"
 
@@ -123,23 +124,43 @@ void ClothoidAimer::init_grid(real delta_theta)
 
 std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, real delta_theta)
 {
-    const real min_a = rl(-4);
-    const real max_a = rl(4);
     const real ref_sample_dist = rl(0.1);
     const real ref_sample_dist_sq = sq(ref_sample_dist);
-    const int initial_partition = 5;
+    const int initial_partition = 7;
 
     std::vector<Sample> samples;
     samples.emplace_back(0, 0, 0);
 
     real s = rl(0.1);
     real a0, a1;
+    std::stack<tuple<int, int>> ranges;
     while (get_a_range(kappa0, s, delta_theta, &a0, &a1))
     {
-        cout << s << " " << a0 << " " << a1 << endl;
-        samples.emplace_back(a0, s, Fresnel::eval(0, kappa0, a0, s));
-        samples.emplace_back(a1, s, Fresnel::eval(0, kappa0, a1, s));
-        s += rl(0.1);
+        for (int i = 0; i <= initial_partition; ++i)
+        {
+            real a = lerp(a0, a1, rl(i) / rl(initial_partition));
+            samples.emplace_back(a, s, Fresnel::eval(0, kappa0, a, s));
+        }
+        for (int i = 1; i <= initial_partition; ++i)
+            ranges.emplace(samples.size() - i, samples.size() - i - 1);
+        while (!ranges.empty())
+        {
+            int j0 = get<0>(ranges.top()), j1 = get<1>(ranges.top());
+            ranges.pop();
+            const Sample& s0 = samples[j0];
+            const Sample& s1 = samples[j1];
+            if (2 * ref_sample_dist_sq < dist_sq(s0.p, s1.p))
+            {
+                int j = samples.size();
+                real a = rl(0.5) * (s0.a + s1.a);
+                real s = s0.s;
+                assert(s == s1.s);
+                samples.emplace_back(a, s, Fresnel::eval(0, kappa0, a, s));
+                ranges.emplace(j0, j);
+                ranges.emplace(j, j1);
+            }
+        }
+        s += ref_sample_dist;
     }
 
     return samples;
