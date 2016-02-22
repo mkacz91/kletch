@@ -73,7 +73,7 @@ void AimerDemo::handle_event(const DemoEvent& e)
         real s = m_aim_result.s;
 
         //cout << theta0 << " " << kappa0 << " " << a << " " << s << endl;
-        m_aim_eval = origin() + Fresnel::eval(theta0, kappa0, a, s);
+        m_aim_eval = origin() + Fresnel::eval(theta0, kappa0, a, s); // TODO
         cout << "s: " << s << " a: " << a << endl;
 
         std::vector<vec2f> cloth_vertices;

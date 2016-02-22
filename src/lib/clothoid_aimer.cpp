@@ -20,9 +20,10 @@ ClothoidAimer::Result ClothoidAimer::aim(
 ) const
 {
     vec2r p = kappa0 * (p1 - p0).rotated(-theta0);
+    cout << "p: " << p << endl;
     vec2i grid_p = to_grid(p);
     Cell cell = m_grid[grid_p.y][grid_p.x];
-    return { cell.a / kappa0, cell.s / kappa0, true };
+    return { cell.a / (kappa0 * kappa0) , cell.s / kappa0, true };
 }
 
 inline real ClothoidAimer::get_max_s(real kappa0, real a, real delta_theta)
