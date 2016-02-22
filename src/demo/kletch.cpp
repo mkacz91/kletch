@@ -123,6 +123,13 @@ int init_sdl()
         << "\n    Renderer:       " << (const char*)glGetString(GL_RENDERER)
         << endl;
 
+    int ext_result = gl::init_ext();
+    if (ext_result != 0)
+    {
+        cerr << "Couldn't initialize OpenGL extensions" << endl;
+        return ext_result;
+    }
+
     demo_snapshot.capture();
     twbar_snapshot.capture();
 

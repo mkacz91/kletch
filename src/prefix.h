@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <utility>
+#include <sstream>
 
 #include "math/math.h"
 
@@ -24,9 +25,17 @@ using std::endl;
 using std::flush;
 
 using std::string;
-using std::to_string;
+//using std::to_string;
 inline string quote(const string& s) { return "\"" + s + "\""; }
 inline string squote(const string& s) { return "'" + s + "'"; }
+
+template <typename T>
+std::string to_string(const T& t)
+{
+    std::ostringstream sout;
+    sout << t;
+    return sout.str();
+}
 
 using std::tuple;
 using std::tie;

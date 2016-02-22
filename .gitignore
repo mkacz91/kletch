@@ -1,6 +1,7 @@
 build/
 buildf/
 buildf_xcode/
+cb_buildf/
 process-palette.json
 
 # In case for some reason we are building in the project directory
