@@ -20,10 +20,11 @@ ClothoidAimer::Result ClothoidAimer::aim(
 ) const
 {
     vec2r p = kappa0 * (p1 - p0).rotated(-theta0);
-    cout << "p: " << p << endl;
     vec2i grid_p = to_grid(p);
     Cell cell = m_grid[grid_p.y][grid_p.x];
-    return { cell.a / (kappa0 * kappa0) , cell.s / kappa0, true };
+    real a = cell.a, s = cell.s;
+    newton_refine1(p, &a, &s, 5);
+    return { a, s, true };
 }
 
 inline real ClothoidAimer::get_max_s(real kappa0, real a, real delta_theta)
@@ -182,6 +183,19 @@ inline int ClothoidAimer::to_grid(int n, real v0, real v1, real v)
     if (v1 <= v)
         return n - 1;
     return min(n - 1, n * (v - v0) / (v1 - v0));
+}
+
+void ClothoidAimer::newton_refine1(vec2r p, real* a, real* s, int iter_count)
+{
+    vec2r as = { *a, *s };
+    while (iter_count --> 0)
+    {
+        vec2r q = p - Fresnel::eval1(as.x, as.y);
+        mat2r J = Fresnel::jacobian1(as.x, as.y);
+        J.invert();
+        as += J.transform(q);
+    }
+    *a = as.x, *s = as.y;
 }
 
 } // namespace kletch

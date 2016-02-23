@@ -7,7 +7,7 @@ namespace kletch {
 AimerDemo::AimerDemo() :
     ConstrainedClothoidDemo("Clothoid Aim")
 {
-    m_control_overlay.add_point(&m_aim_eval);
+    //m_control_overlay.add_point(&m_aim_eval);
 }
 
 void AimerDemo::render()
@@ -73,14 +73,16 @@ void AimerDemo::handle_event(const DemoEvent& e)
         real s = m_aim_result.s;
 
         //cout << theta0 << " " << kappa0 << " " << a << " " << s << endl;
-        m_aim_eval = origin() + Fresnel::eval(theta0, kappa0, a, s); // TODO
+        m_aim_eval = origin() + arc_radius() * Fresnel::eval(theta0, 1, a, s); // TODO
         cout << "s: " << s << " a: " << a << endl;
 
         std::vector<vec2f> cloth_vertices;
         for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
         {
             real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
-            cloth_vertices.push_back(origin() + Fresnel::eval(theta0, kappa0, a, si));
+            cloth_vertices.push_back(
+                origin() + arc_radius() * Fresnel::eval(theta0, 1, a, si)
+            );
         }
         glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
         glBufferData(GL_ARRAY_BUFFER, cloth_vertices);

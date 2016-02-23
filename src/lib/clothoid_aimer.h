@@ -58,6 +58,8 @@ private:
     static bool get_a_range(real kappa0, real s, real delta_theta, real* a0, real* a1);
 
     static std::vector<Sample> generate_samples(real kappa0, real delta_theta);
+
+    static void newton_refine1(vec2r p, real* a, real* s, int iter_count = 4);
 };
 
 } // namespace kletch

@@ -16,10 +16,16 @@ public:
 
     static vec2r eval(real theta0, real kappa0, real a, real s);
 
+    static vec2r eval(real a, real s);
+
+    static vec2r eval1(real a, real s);
+
+    static mat2r jacobian1(real a, real s);
+
 private:
-    static constexpr real TAU = rl(6.28318530718);
-    static constexpr real HALF_TAU = rl(3.14159265359);
-    static constexpr real QUARTER_TAU = rl(1.57079632679);
+    static constexpr real TWO_PI = rl(6.28318530718);
+    static constexpr real PI = rl(3.14159265359);
+    static constexpr real HALF_PI = rl(1.57079632679);
     static constexpr real SQRT_2 = rl(1.41421356237);
 
     static real eval_a(real s);
@@ -29,12 +35,12 @@ private:
 
 inline real Fresnel::eval_c(real s)
 {
-    return rl(0.5) - eval_r(s) * sin(QUARTER_TAU * (eval_a(s) - s * s));
+    return rl(0.5) - eval_r(s) * sin(HALF_PI * (eval_a(s) - s * s));
 }
 
 inline real Fresnel::eval_s(real s)
 {
-    return rl(0.5) - eval_r(s) * cos(QUARTER_TAU * (eval_a(s) - s * s));
+    return rl(0.5) - eval_r(s) * cos(HALF_PI * (eval_a(s) - s * s));
 }
 
 inline vec2r Fresnel::eval(real s)
@@ -42,7 +48,7 @@ inline vec2r Fresnel::eval(real s)
     real sgn_s = sgn(s);
     s = abs(s);
     real r = eval_r(s);
-    real u = QUARTER_TAU * (eval_a(s) - s * s);
+    real u = HALF_PI * (eval_a(s) - s * s);
     return sgn_s * vec2r(rl(0.5) - r * sin(u), rl(0.5) - r * cos(u));
 }
 
