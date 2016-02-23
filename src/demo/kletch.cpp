@@ -156,6 +156,8 @@ int init_twbar()
 
     TwWindowSize(window->w, window->h);
     twbar = TwNewBar("Kletch");
+    float refresh_rate = 1.0f / 30.0f;
+    TwSetParam(twbar, nullptr, "refresh", TW_PARAM_FLOAT, 1, &refresh_rate);
 
     cout << "AntTweakBar initialization complete" << endl;
     return 0;
@@ -281,7 +283,7 @@ int main_loop()
                 demos[initial_demo_index]->close(true);
 
             if (demo_index >= 0 && demo_index < demos.size())
-                demos[demo_index]->open(window);
+                demos[demo_index]->open(window, twbar);
             demo_snapshot.capture();
         }
 

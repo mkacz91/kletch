@@ -23,7 +23,7 @@ ClothoidAimer::Result ClothoidAimer::aim(
     vec2i grid_p = to_grid(p);
     Cell cell = m_grid[grid_p.y][grid_p.x];
     real a = cell.a, s = cell.s;
-    newton_refine1(p, &a, &s, 5);
+    newton_refine1(p, &a, &s, refine_steps());
     return { a, s, true };
 }
 
@@ -44,7 +44,6 @@ bool ClothoidAimer::get_a_range(real kappa0, real s, real delta_theta, real* a0,
 
     real c0 = kappa0 * s;
     real delta = c0 * (2 * delta_theta - c0) + sq(delta_theta);
-    cout << "kappa0: " << kappa0 << ", s: " << s << ", delta: " << delta << endl;
     if (delta <= 0)
         return false;
 
@@ -58,8 +57,6 @@ bool ClothoidAimer::get_a_range(real kappa0, real s, real delta_theta, real* a0,
         swap(b0, b1);
 
     real b2 = 2 * (delta_theta - c0) / s_sq;
-
-    cout << "b0: " << b0 << ", b1: " << b1 << ", b2: " << b2 << endl;
 
     *a0 = b0;
     *a1 = (b2 * s < -kappa0) ? b1 : b2;

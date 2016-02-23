@@ -27,6 +27,8 @@ private:
     ClothoidAimer m_aimer;
     ClothoidAimer::Result m_aim_result;
     vec2f m_aim_eval = { 0.0f, 0.5f };
+    float m_a = 0;
+    float m_s = 0;
 
     bool m_cloth_ready = false;
     GLuint m_cloth_vertices = 0;
@@ -42,6 +44,11 @@ private:
 
     GLuint m_grid_vertices = 0;
     GLuint m_sample_vertices = 0;
+
+    static void TW_CALL set_refine_steps_cb(const void* value, void* client_data);
+    static void TW_CALL get_refine_steps_cb(void* value, void* client_data);
+
+    void aim();
 };
 
 } // namespace kletch

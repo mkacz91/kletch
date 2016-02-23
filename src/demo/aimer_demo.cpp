@@ -65,30 +65,7 @@ void AimerDemo::handle_event(const DemoEvent& e)
 {
     ConstrainedClothoidDemo::handle_event(e);
     if (e.handled())
-    {
-        real theta0 = tangent_angle();
-        real kappa0 = rl(1) / rl(arc_radius());
-        m_aim_result = m_aimer.aim(origin(), theta0, kappa0, target());
-        real a = m_aim_result.a;
-        real s = m_aim_result.s;
-
-        //cout << theta0 << " " << kappa0 << " " << a << " " << s << endl;
-        m_aim_eval = origin() + arc_radius() * Fresnel::eval(theta0, 1, a, s); // TODO
-        cout << "s: " << s << " a: " << a << endl;
-
-        std::vector<vec2f> cloth_vertices;
-        for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
-        {
-            real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
-            cloth_vertices.push_back(
-                origin() + arc_radius() * Fresnel::eval(theta0, 1, a, si)
-            );
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
-        glBufferData(GL_ARRAY_BUFFER, cloth_vertices);
-        m_cloth_ready = true;
-        return;
-    }
+        aim();
 }
 
 void AimerDemo::open()
@@ -148,10 +125,30 @@ void AimerDemo::open()
         sample_vertices.emplace_back(x, y + SAMPLE_SIZE);
     }
     m_sample_vertices = gl::create_buffer(GL_ARRAY_BUFFER, sample_vertices);
+
+    // Alter TwBar
+
+    TwAddVarRO(twbar(), "a", TW_TYPE_FLOAT, &m_a, nullptr);
+    TwAddVarRO(twbar(), "s", TW_TYPE_FLOAT, &m_s, nullptr);
+    TwAddVarCB(
+        twbar(), "Iters", TW_TYPE_INT32,
+        set_refine_steps_cb, get_refine_steps_cb,
+        this, "min=0 max=10"
+    );
+
+    aim();
 }
 
 void AimerDemo::close() noexcept
 {
+    // TwBar
+
+    TwRemoveVar(twbar(), "s");
+    TwRemoveVar(twbar(), "a");
+
+
+    // OpenGL resources
+
     m_cloth_ready = false;
     glDeleteProgram(m_cloth_program); m_cloth_program = 0;
     glDeleteProgram(m_aimer_program); m_aimer_program = 0;
@@ -160,6 +157,43 @@ void AimerDemo::close() noexcept
     glDeleteBuffers(1, &m_grid_vertices); m_grid_vertices = 0;
 
     ConstrainedClothoidDemo::close();
+}
+
+void AimerDemo::set_refine_steps_cb(const void* value, void* client_data)
+{
+    AimerDemo* aimer_demo = (AimerDemo*)client_data;
+    aimer_demo->m_aimer.set_refine_steps(*(const int*)value);
+    aimer_demo->aim();
+}
+
+void AimerDemo::get_refine_steps_cb(void* value, void* client_data)
+{
+    AimerDemo* aimer_demo = (AimerDemo*)client_data;
+    *(int*)value = aimer_demo->m_aimer.refine_steps();
+}
+
+void AimerDemo::aim()
+{
+    real theta0 = tangent_angle();
+    real kappa0 = rl(1) / rl(arc_radius());
+    m_aim_result = m_aimer.aim(origin(), theta0, kappa0, target());
+    real a = m_aim_result.a;
+    real s = m_aim_result.s;
+    m_a = float(a); m_s = float(s);
+
+    m_aim_eval = origin() + arc_radius() * Fresnel::eval(theta0, 1, a, s); // TODO
+
+    std::vector<vec2f> cloth_vertices;
+    for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
+    {
+        real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
+        cloth_vertices.push_back(
+            origin() + arc_radius() * Fresnel::eval(theta0, 1, a, si)
+        );
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
+    glBufferData(GL_ARRAY_BUFFER, cloth_vertices);
+    m_cloth_ready = true;
 }
 
 } // namespace kletch

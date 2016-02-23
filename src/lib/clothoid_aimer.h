@@ -29,6 +29,9 @@ public:
 
     Result aim(const vec2r& p0, real theta0, real kappa0, const vec2r& p1) const;
 
+    int refine_steps() const { return m_refine_steps; }
+    void set_refine_steps(int refine_steps) { m_refine_steps = refine_steps; }
+
     std::vector<Sample> m_samples; // TODO: temporary
 
 private:
@@ -48,6 +51,8 @@ private:
 public:// TODO: tmp
     box2r m_grid_box;
 private:
+
+    int m_refine_steps = 4;
 
     void init_grid(real delta_theta);
     vec2i to_grid(const vec2r& point) const;
