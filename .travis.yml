@@ -1,13 +1,18 @@
 language: cpp
+sudo: false
 
 compiler:
   - gcc
 
-before_install:
-  - sudo apt-get update -qq
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
 
 install:
-  - echo Hello
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
 
 script:
   - mkdir build
@@ -15,3 +20,6 @@ script:
   - cmake -DBUILD_DEMO=0 -DBUILD_TEST=1 ..
   - make
   - ./kletch_test
+
+notifications:
+  email: false
