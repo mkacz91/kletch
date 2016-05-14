@@ -33,8 +33,6 @@ set_target_properties(gtest PROPERTIES
 file(GLOB KLETCH_TEST_SOURCES *.cpp)
 
 add_executable(kletch_test ${KLETCH_TEST_SOURCES})
-set_property(TARGET kletch_test PROPERTY CXX_STANDARD 11)
-set_property(TARGET kletch_test PROPERTY CXX_STANDARD_REQUIRED ON)
 target_link_libraries(kletch_test
   libkletch
   gtest
