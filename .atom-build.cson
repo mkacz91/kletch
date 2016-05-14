@@ -11,4 +11,4 @@ targets:
     cmd: 'unbuffer make kletch && unbuffer ./kletch'
     cwd: '{PROJECT_PATH}/buildf'
     keymap: 'f5'
-    errorMatch: '\n(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'
+    errorMatch: '\n[^/]*(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'

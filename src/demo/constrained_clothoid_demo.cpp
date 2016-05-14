@@ -64,7 +64,7 @@ void ConstrainedClothoidDemo::handle_event(const DemoEvent& e)
     }
 }
 
-void ConstrainedClothoidDemo::open()
+void ConstrainedClothoidDemo::gl_open()
 {
     glClearColor(0.9f, 0.9f, 0.9f, 0);
     m_camera.open_grid();
@@ -85,9 +85,9 @@ void ConstrainedClothoidDemo::open()
     arc_vertices.reserve(ARC_VERTEX_COUNT);
     for (int i = 0; i < ARC_VERTEX_COUNT; ++i)
         arc_vertices.push_back((float)i / (ARC_VERTEX_COUNT - 1));
-    m_arc_vertices = gl::create_buffer(GL_ARRAY_BUFFER, arc_vertices);
+    gl::create_buffer(&m_arc_vertices, arc_vertices);
 
-    m_arc_program = gl::link_program(
+    gl::link_program(&m_arc_program,
         "shaders/constrained_clothoid_demo_arc_vx.glsl",
         "shaders/varying3_ft.glsl"
     );
@@ -103,14 +103,14 @@ void ConstrainedClothoidDemo::open()
     glUniform3f(m_arc_color1_uniform, 0.9f, 0.9f, 0.9f);
 }
 
-void ConstrainedClothoidDemo::close() noexcept
+void ConstrainedClothoidDemo::gl_close()
 {
-    glDeleteBuffers(1, &m_arc_vertices); m_arc_vertices = 0;
-    glDeleteProgram(m_arc_program); m_arc_program = 0;
+    gl::delete_buffer(&m_arc_vertices);
+    gl::delete_program(&m_arc_program);
 
     m_control_overlay.clear_points();
-
     m_control_overlay.close();
+
     m_camera.close_grid();
 }
 

@@ -23,8 +23,8 @@ public:
     float tangent_angle() const { return m_tangent_angle; }
 
 protected:
-    virtual void open() override;
-    virtual void close() noexcept override;
+    virtual void gl_open() override;
+    virtual void gl_close() override;
 
 private:
     static const int ARC_VERTEX_COUNT = 20;

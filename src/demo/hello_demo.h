@@ -18,9 +18,8 @@ public:
     virtual void handle_event(const DemoEvent& e) override;
 
 protected:
-    virtual void open() override;
-
-    virtual void close() noexcept override;
+    virtual void gl_open() override;
+    virtual void gl_close() override;
 
 private:
     Camera2 m_camera;

@@ -265,7 +265,11 @@ int main_loop()
             case SDL_VIDEORESIZE:
             {
                 window = SDL_SetVideoMode(e.resize.w, e.resize.h, 0, video_flags);
+                gl::lost = true;
+                if (demo_index >= 0 && demo_index < demos.size())
+                    demos[demo_index]->gl_lost();
                 redraw = true;
+                gl::lost = false;
                 break;
             }
             case SDL_QUIT:

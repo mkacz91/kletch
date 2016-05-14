@@ -7,6 +7,8 @@
 namespace kletch {
 namespace gl {
 
+bool lost = false;
+
 std::unordered_map<GLuint, string> shader_names;
 
 GLuint load_shader(const string& resname, GLenum shader_type)
@@ -39,14 +41,16 @@ GLuint load_shader(const string& resname, GLenum shader_type)
     return shader;
 }
 
-GLuint load_vertex_shader(const string& resname)
+void load_vertex_shader(GLuint* shader, const string& resname)
 {
-    return load_shader(resname, GL_VERTEX_SHADER);
+    assert(lost || *shader == 0);
+    *shader = load_shader(resname, GL_VERTEX_SHADER);
 }
 
-GLuint load_fragment_shader(const string& resname)
+void load_fragment_shader(GLuint* shader, const string& resname)
 {
-    return load_shader(resname, GL_FRAGMENT_SHADER);
+    assert(lost || *shader == 0);
+    *shader = load_shader(resname, GL_FRAGMENT_SHADER);
 }
 
 string shader_name(GLuint shader)
@@ -57,18 +61,19 @@ string shader_name(GLuint shader)
     return to_string(shader);
 }
 
-GLuint link_program(const string& vertex_shader_resname, const string& fragment_shader_resname)
-{
+void link_program(
+    GLuint* program,
+    const string& vertex_shader_resname, const string& fragment_shader_resname
+) {
     GLuint vertex_shader = 0;
     GLuint fragment_shader = 0;
     try
     {
-        vertex_shader = load_vertex_shader(vertex_shader_resname);
-        fragment_shader = load_fragment_shader(fragment_shader_resname);
-        GLuint program = link_program(vertex_shader, fragment_shader);
+        load_vertex_shader(&vertex_shader, vertex_shader_resname);
+        load_fragment_shader(&fragment_shader, fragment_shader_resname);
+        link_program(program, vertex_shader, fragment_shader);
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
-        return program;
     }
     catch (...)
     {
@@ -78,19 +83,21 @@ GLuint link_program(const string& vertex_shader_resname, const string& fragment_
     }
 }
 
-GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
+void link_program(GLuint* program, GLuint vertex_shader, GLuint fragment_shader)
 {
+    assert(lost || *program == 0);
+
     // Create program
-    GLuint program = glCreateProgram();
-    if (program == 0)
+    GLuint tmp_program = glCreateProgram();
+    if (tmp_program == 0)
         throw exception("Unable to create new program");
 
     // Attach shaders
     gl_if_error (
-        glAttachShader(program, vertex_shader);
-        glAttachShader(program, fragment_shader);
+        glAttachShader(tmp_program, vertex_shader);
+        glAttachShader(tmp_program, fragment_shader);
     ) {
-        glDeleteProgram(program);
+        glDeleteProgram(tmp_program);
         throw exception(
             "Unable to attach shaders " + squote(shader_name(vertex_shader)) + ", " +
             squote(shader_name(fragment_shader)) + ": "+ error_string(error)
@@ -98,22 +105,22 @@ GLuint link_program(GLuint vertex_shader, GLuint fragment_shader)
     }
 
     // Link program
-    glLinkProgram(program);
+    glLinkProgram(tmp_program);
     int link_status;
-    glGetProgramiv(program, GL_LINK_STATUS, &link_status);
+    glGetProgramiv(tmp_program, GL_LINK_STATUS, &link_status);
     if (link_status != GL_TRUE)
     {
         const int max_log_length = 255;
         char log[max_log_length + 1];
-        glGetProgramInfoLog(program, max_log_length, nullptr, (char*)&log);
-        glDeleteProgram(program);
+        glGetProgramInfoLog(tmp_program, max_log_length, nullptr, (char*)&log);
+        glDeleteProgram(tmp_program);
         throw exception(
             "Unable to link shaders " + squote(shader_name(vertex_shader)) + ", " +
             squote(shader_name(fragment_shader)) + ": " + log
         );
     }
 
-    return program;
+    *program = tmp_program;
 }
 
 GLint get_uniform_location(GLuint program, const char* name)

@@ -101,8 +101,9 @@ void Camera2::open_grid()
          0,  1,
          1, -1
     };
-    m_grid_vertices = gl::create_buffer(GL_ARRAY_BUFFER, grid_vertices);
-    m_grid_program = gl::link_program("shaders/grid_vx.glsl", "shaders/uniform4_ft.glsl");
+    gl::create_buffer(&m_grid_vertices, grid_vertices);
+
+    gl::link_program(&m_grid_program, "shaders/grid_vx.glsl", "shaders/uniform4_ft.glsl");
     m_grid_matrix_uniform = gl::get_uniform_location(m_grid_program, "matrix");
     m_grid_color_uniform = gl::get_uniform_location(m_grid_program, "color");
     m_grid_position_attrib = gl::get_attrib_location(m_grid_program, "position");
@@ -110,9 +111,8 @@ void Camera2::open_grid()
 
 void Camera2::close_grid()
 {
-    assert(m_grid_program != 0);
-    glDeleteBuffers(1, &m_grid_vertices); m_grid_vertices = 0;
-    glDeleteProgram(m_grid_program); m_grid_program = 0;
+    gl::delete_buffer(&m_grid_vertices);
+    gl::delete_program(&m_grid_program);
 }
 
 void Camera2::render_grid()

@@ -19,7 +19,9 @@ public:
 
 protected:
     virtual void open() override;
-    virtual void close() noexcept override;
+    virtual void gl_open() override;
+    virtual void close() override;
+    virtual void gl_close() override;
 
 private:
     static const int CLOTHOID_VERTEX_COUNT = 40;

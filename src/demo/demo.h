@@ -14,6 +14,7 @@ public:
 
     void open(SDL_Surface* canvas, TwBar* twbar);
     void close(bool);
+    void gl_lost();
 
     SDL_Surface* canvas() noexcept { return m_canvas; }
     int width() const noexcept { return m_canvas->w; }
@@ -33,8 +34,10 @@ public:
 protected:
     Demo(const string& display_name) : m_display_name(display_name) { }
 
-    virtual void open() = 0;
-    virtual void close() noexcept = 0;
+    virtual void open() { }
+    virtual void gl_open() { }
+    virtual void gl_close() { }
+    virtual void close() { }
 
 private:
     const string m_display_name;

@@ -72,15 +72,27 @@ void AimerDemo::open()
 {
     ConstrainedClothoidDemo::open();
 
+    // Alter TwBar
+    TwAddVarRO(twbar(), "a", TW_TYPE_FLOAT, &m_a, nullptr);
+    TwAddVarRO(twbar(), "s", TW_TYPE_FLOAT, &m_s, nullptr);
+    TwAddVarCB(
+        twbar(), "Iters", TW_TYPE_INT32,
+        set_refine_steps_cb, get_refine_steps_cb,
+        this, "min=0 max=10"
+    );
+}
+
+void AimerDemo::gl_open()
+{
+    ConstrainedClothoidDemo::gl_open();
+
     // Clothoid
 
-    glGenBuffers(1, &m_cloth_vertices);
+    gl::create_buffer(&m_cloth_vertices);
     m_cloth_ready = false;
 
-    m_cloth_program = gl::link_program(
-        "shaders/aimer_demo_cloth_vx.glsl",
-        "shaders/uniform4_ft.glsl"
-    );
+    gl::link_program(&m_cloth_program,
+        "shaders/aimer_demo_cloth_vx.glsl", "shaders/uniform4_ft.glsl");
     m_cloth_matrix_uniform = gl::get_uniform_location(m_cloth_program, "matrix");
     m_cloth_color_uniform = gl::get_uniform_location(m_cloth_program, "color");
     m_cloth_position_attrib = gl::get_attrib_location(m_cloth_program, "position");
@@ -90,10 +102,7 @@ void AimerDemo::open()
 
     // Aimer grid and samples
 
-    m_aimer_program = gl::link_program(
-        "shaders/mat3_pos2_vx.glsl",
-        "shaders/uniform3_ft.glsl"
-    );
+    gl::link_program(&m_aimer_program, "shaders/mat3_pos2_vx.glsl", "shaders/uniform3_ft.glsl");
     m_aimer_matrix_uniform = gl::get_uniform_location(m_aimer_program, "matrix");
     m_aimer_color_uniform = gl::get_uniform_location(m_aimer_program, "color");
     m_aimer_position_attrib = gl::get_attrib_location(m_aimer_program, "position");
@@ -110,7 +119,7 @@ void AimerDemo::open()
         grid_vertices.emplace_back(-1,  t);
         grid_vertices.emplace_back( 1,  t);
     }
-    m_grid_vertices = gl::create_buffer(GL_ARRAY_BUFFER, grid_vertices);
+    gl::create_buffer(&m_grid_vertices, grid_vertices);
 
     // Samples
 
@@ -124,39 +133,30 @@ void AimerDemo::open()
         sample_vertices.emplace_back(x, y - SAMPLE_SIZE);
         sample_vertices.emplace_back(x, y + SAMPLE_SIZE);
     }
-    m_sample_vertices = gl::create_buffer(GL_ARRAY_BUFFER, sample_vertices);
-
-    // Alter TwBar
-
-    TwAddVarRO(twbar(), "a", TW_TYPE_FLOAT, &m_a, nullptr);
-    TwAddVarRO(twbar(), "s", TW_TYPE_FLOAT, &m_s, nullptr);
-    TwAddVarCB(
-        twbar(), "Iters", TW_TYPE_INT32,
-        set_refine_steps_cb, get_refine_steps_cb,
-        this, "min=0 max=10"
-    );
+    gl::create_buffer(&m_sample_vertices, sample_vertices);
 
     aim();
 }
 
-void AimerDemo::close() noexcept
+void AimerDemo::close()
 {
-    // TwBar
-
+    TwRemoveVar(twbar(), "Iters");
     TwRemoveVar(twbar(), "s");
     TwRemoveVar(twbar(), "a");
 
-
-    // OpenGL resources
-
-    m_cloth_ready = false;
-    glDeleteProgram(m_cloth_program); m_cloth_program = 0;
-    glDeleteProgram(m_aimer_program); m_aimer_program = 0;
-    glDeleteBuffers(1, &m_cloth_vertices); m_cloth_vertices = 0;
-    glDeleteBuffers(1, &m_sample_vertices); m_sample_vertices = 0;
-    glDeleteBuffers(1, &m_grid_vertices); m_grid_vertices = 0;
-
     ConstrainedClothoidDemo::close();
+}
+
+void AimerDemo::gl_close()
+{
+    m_cloth_ready = false;
+    gl::delete_program(&m_cloth_program);
+    gl::delete_program(&m_aimer_program);
+    gl::delete_buffer(&m_cloth_vertices);
+    gl::delete_buffer(&m_sample_vertices);
+    gl::delete_buffer(&m_grid_vertices);
+
+    ConstrainedClothoidDemo::gl_close();
 }
 
 void AimerDemo::set_refine_steps_cb(const void* value, void* client_data)

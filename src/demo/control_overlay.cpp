@@ -120,12 +120,12 @@ void ControlOverlay::open()
     vertices.emplace_back(-1.0f,  0.3f);
     vertices.emplace_back(-1.0f, -0.3f);
 
-    m_vertices = gl::create_buffer(GL_ARRAY_BUFFER, vertices);
+    gl::create_buffer(&m_vertices, vertices);
 
     // Initialize shader programs
 
     // Point program
-    m_point_program = gl::link_program("shaders/aimer_point_vx.glsl", "shaders/uniform4_ft.glsl");
+    gl::link_program(&m_point_program, "shaders/aimer_point_vx.glsl", "shaders/uniform4_ft.glsl");
     m_point_origin_matrix_uniform = gl::get_uniform_location(m_point_program, "origin_matrix");
     m_point_origin_uniform = gl::get_uniform_location(m_point_program, "origin");
     m_point_offset_scale_uniform = gl::get_uniform_location(m_point_program, "offset_scale");
@@ -133,19 +133,17 @@ void ControlOverlay::open()
     m_point_offset_attrib = gl::get_attrib_location(m_point_program, "offset");
 
     // Vector edge program
-    m_vector_edge_program = gl::link_program(
-        "shaders/control_overlay_vector_edge_vx.glsl",
-        "shaders/uniform4_ft.glsl"
-    );
+    gl::link_program(
+        &m_vector_edge_program,
+        "shaders/control_overlay_vector_edge_vx.glsl", "shaders/uniform4_ft.glsl");
     m_vector_edge_transform_uniform = gl::get_uniform_location(m_vector_edge_program, "transform");
     m_vector_edge_color_uniform = gl::get_uniform_location(m_vector_edge_program, "color");
     m_vector_edge_position_attrib = gl::get_attrib_location(m_vector_edge_program, "position");
 
     // Vector cap program
-    m_vector_cap_program = gl::link_program(
-        "shaders/control_overlay_vector_cap_vx.glsl",
-        "shaders/uniform4_ft.glsl"
-    );
+    gl::link_program(
+        &m_vector_cap_program,
+        "shaders/control_overlay_vector_cap_vx.glsl", "shaders/uniform4_ft.glsl");
     m_vector_cap_transform_uniform = gl::get_uniform_location(m_vector_cap_program, "transform");
     m_vector_cap_color_uniform = gl::get_uniform_location(m_vector_cap_program, "color");
     m_vector_cap_position_attrib = gl::get_attrib_location(m_vector_cap_program, "position");
@@ -153,10 +151,10 @@ void ControlOverlay::open()
 
 void ControlOverlay::close()
 {
-    glDeleteProgram(m_vector_cap_program); m_vector_cap_program = 0;
-    glDeleteProgram(m_vector_edge_program); m_vector_edge_program = 0;
-    glDeleteProgram(m_point_program); m_point_program = 0;
-    glDeleteBuffers(1, &m_vertices); m_vertices = 0;
+    gl::delete_program(&m_vector_cap_program);
+    gl::delete_program(&m_vector_edge_program);
+    gl::delete_program(&m_point_program);
+    gl::delete_buffer(&m_vertices);
 }
 
 vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)

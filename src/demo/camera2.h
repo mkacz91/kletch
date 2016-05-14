@@ -1,5 +1,5 @@
-#ifndef KLETCJ_DEMO_CAMERA2_H
-#define KLETCJ_DEMO_CAMERA2_H
+#ifndef KLETCH_DEMO_CAMERA2_H
+#define KLETCH_DEMO_CAMERA2_H
 
 #include "prefix.h"
 
@@ -200,4 +200,4 @@ inline void Camera2::invalidate_view_matrix()
 
 } // namespace kletch
 
-#endif // KLETCJ_DEMO_CAMERA2_H
+#endif // KLETCH_DEMO_CAMERA2_H

@@ -45,6 +45,8 @@ inline void glUniform2f(GLint location, const vec2f& v)
 
 namespace gl {
 
+extern bool lost;
+
 class exception : public std::exception
 {
 public:
@@ -63,25 +65,53 @@ private:
     gl_if_error (call) \
         throw ::kletch::gl::exception(::kletch::gl::error_string(error) + " during " + #call);
 
-template <typename T>
-GLuint create_buffer(GLenum target, const std::vector<T>& data, GLenum usage = GL_STATIC_DRAW)
+inline void create_buffer(GLuint* buffer)
 {
-    GLuint buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(target, buffer);
-    glBufferData(target, data, usage);
-    return buffer;
+    assert(lost || *buffer == 0);
+    glGenBuffers(1, buffer);
 }
 
-GLuint load_vertex_shader(const string& resname);
+template <typename T>
+void create_buffer(GLuint* buffer, const std::vector<T>& data, GLenum usage = GL_STATIC_DRAW)
+{
+    create_buffer(buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, *buffer);
+    glBufferData(GL_ARRAY_BUFFER, data, usage);
+}
 
-GLuint load_fragment_shader(const string& resname);
+inline void delete_buffer(GLuint* buffer)
+{
+    assert(!lost);
+    glDeleteBuffers(1, buffer);
+    *buffer = 0;
+}
+
+inline void delete_program(GLuint* program)
+{
+    assert(!lost);
+    glDeleteProgram(*program);
+    *program = 0;
+}
+
+void load_vertex_shader(GLuint* shader, const string& resname);
+
+void load_fragment_shader(GLuint* shader, const string& resname);
+
+inline void delete_shader(GLuint* shader)
+{
+    assert(!lost);
+    glDeleteShader(*shader);
+    *shader = 0;
+}
 
 string shader_name(GLuint shader);
 
-GLuint link_program(GLuint vertex_shader, GLuint fragment_shader);
+void link_program(GLuint* program, GLuint vertex_shader, GLuint fragment_shader);
 
-GLuint link_program(const string& vertex_shader_resname, const string& fragment_shader_resname);
+void link_program(
+    GLuint* program,
+    const string& vertex_shader_resname, const string& fragment_shader_resname
+);
 
 GLint get_uniform_location(GLuint program, const char* name);
 
