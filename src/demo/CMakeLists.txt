@@ -7,8 +7,6 @@ find_package(AntTweakBar REQUIRED)
 # Executable 'resemb'
 
 add_executable(resemb resemb.cpp)
-set_property(TARGET resemb PROPERTY CXX_STANDARD 11)
-set_property(TARGET resemb PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Generated embedded resource files
 
@@ -75,8 +73,6 @@ if (APPLE)
 endif (APPLE)
 
 add_executable(kletch ${KLETCH_SOURCES} ${KLETCH_RESOURCES})
-set_property(TARGET kletch PROPERTY CXX_STANDARD 11)
-set_property(TARGET kletch PROPERTY CXX_STANDARD_REQUIRED ON)
 target_link_libraries(kletch
   libkletch
   ${SDL_LIBRARY}
