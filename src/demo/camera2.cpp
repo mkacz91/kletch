@@ -96,12 +96,18 @@ void Camera2::handle_event(const DemoEvent& e)
 
 void Camera2::open_grid()
 {
-    std::vector<float> grid_vertices = {
-        -1, -1,
-         0,  1,
-         1, -1
-    };
+    const int tick_count = GRID_PARTITION * sqrt(GRID_PARTITION);
+    std::vector<vec2f> grid_vertices;
+    grid_vertices.reserve(4 * (2 * tick_count + 1));
+    for (int i = -tick_count; i <= tick_count; ++i)
+    {
+        grid_vertices.emplace_back(-tick_count, i);
+        grid_vertices.emplace_back( tick_count, i);
+        grid_vertices.emplace_back(i, -tick_count);
+        grid_vertices.emplace_back(i,  tick_count);
+    }
     gl::create_buffer(&m_grid_vertices, grid_vertices);
+    m_grid_vertex_count = grid_vertices.size();
 
     gl::link_program(&m_grid_program, "shaders/grid_vx.glsl", "shaders/uniform4_ft.glsl");
     m_grid_matrix_uniform = gl::get_uniform_location(m_grid_program, "matrix");
@@ -127,14 +133,34 @@ void Camera2::render_grid()
     if (m_size.x < 1 || m_size.y < 1)
         return;
 
+    float ref_tick = (m_size.x + m_size.y) / (GRID_PARTITION * m_scale * m_size.y);
+    float log_ref_tick = floor(log(GRID_PARTITION, ref_tick));
+    float lo_tick = pow(GRID_PARTITION, log_ref_tick);
+    float hi_tick = lo_tick * GRID_PARTITION;
+    float lo_alpha = (hi_tick - ref_tick) / hi_tick;
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquation(GL_FUNC_ADD);
     glUseProgram(m_grid_program);
     glBindBuffer(GL_ARRAY_BUFFER, m_grid_vertices);
-    glUniformMatrix3fv(m_grid_matrix_uniform, matrix());
-    glUniform4f(m_grid_color_uniform, 1, 0, 0, 1);
     glVertexAttribPointer(m_grid_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(m_grid_position_attrib);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    mat3f grid_matrix = mat3f::EYE;
+    grid_matrix.scale(lo_tick).pre_mul(matrix());
+    glUniformMatrix3fv(m_grid_matrix_uniform, grid_matrix);
+    glUniform4f(m_grid_color_uniform, 0, 0, 0, lo_alpha);
+    glDrawArrays(GL_LINES, 0, m_grid_vertex_count);
+
+    grid_matrix = mat3f::EYE;
+    grid_matrix.scale(hi_tick).pre_mul(matrix());
+    glUniformMatrix3fv(m_grid_matrix_uniform, grid_matrix);
+    glUniform4f(m_grid_color_uniform, 0, 0, 0, 1);
+    glDrawArrays(GL_LINES, 0, m_grid_vertex_count);
+
     glDisableVertexAttribArray(m_grid_position_attrib);
+    glDisable(GL_BLEND);
 }
 
 void Camera2::ensure_projection_matrix_valid() const
