@@ -38,7 +38,7 @@ vec2r Fresnel::eval(real theta0, real kappa0, real a, real s)
 vec2r Fresnel::eval(real a, real s)
 {
     const real c0 = sqrt(abs(a) / PI);
-    return eval(c0 * s) / c0;
+    return eval(c0 * s) / c0; // sgn(a)?
 }
 
 vec2r Fresnel::eval1(real a, real s)
