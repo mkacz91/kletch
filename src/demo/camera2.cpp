@@ -128,6 +128,9 @@ void Camera2::render_grid()
     float lo_tick = pow(GRID_PARTITION, log_ref_tick);
     float hi_tick = lo_tick * GRID_PARTITION;
     float lo_alpha = (hi_tick - ref_tick) / hi_tick;
+    vec2f grid_translation(
+        round(-m_translation.x / hi_tick) * hi_tick,
+        round(-m_translation.y / hi_tick) * hi_tick);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -137,14 +140,18 @@ void Camera2::render_grid()
     glVertexAttribPointer(m_grid_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(m_grid_position_attrib);
 
-    mat3f grid_matrix = mat3f::EYE;
-    grid_matrix.scale(lo_tick).premul(matrix());
+    mat3f grid_matrix = eye3f()
+        .scale(lo_tick)
+        .translate(grid_translation)
+        .premul(matrix());
     glUniformMatrix3fv(m_grid_matrix_uniform, grid_matrix);
     glUniform4f(m_grid_color_uniform, 0, 0, 0, lo_alpha);
     glDrawArrays(GL_LINES, 0, m_grid_vertex_count);
 
-    grid_matrix = mat3f::EYE;
-    grid_matrix.scale(hi_tick).premul(matrix());
+    grid_matrix = eye3f()
+        .scale(hi_tick)
+        .translate(grid_translation)
+        .premul(matrix());
     glUniformMatrix3fv(m_grid_matrix_uniform, grid_matrix);
     glUniform4f(m_grid_color_uniform, 0, 0, 0, 1);
     glDrawArrays(GL_LINES, 0, m_grid_vertex_count);
@@ -157,7 +164,7 @@ void Camera2::ensure_projection_matrix_valid() const
 {
     if (m_projection_matrix_valid)
         return;
-    m_projection_matrix = mat3f::create_scale(float(m_size.y) / float(m_size.x), 1.0f);
+    m_projection_matrix = eye3f().scale(float(m_size.y) / float(m_size.x), 1.0f);
     m_projection_matrix_valid = true;
 }
 
@@ -165,7 +172,7 @@ void Camera2::ensure_inverse_projection_matrix_valid() const
 {
     if (m_inverse_projection_matrix_valid)
         return;
-    m_inverse_projection_matrix = mat3f::create_scale(float(m_size.x) / float(m_size.y), 1.0f);
+    m_inverse_projection_matrix = eye3f().scale(float(m_size.x) / float(m_size.y), 1.0f);
     m_inverse_projection_matrix_valid = true;
 }
 
@@ -173,8 +180,7 @@ void Camera2::ensure_view_matrix_valid() const
 {
     if (m_view_matrix_valid)
         return;
-    m_view_matrix = mat3f::EYE;
-    m_view_matrix
+    m_view_matrix = eye3f()
         .translate(m_translation)
         .rotate(m_rotation)
         .scale(m_scale, m_scale);
@@ -185,8 +191,7 @@ void Camera2::ensure_inverse_view_matrix_valid() const
 {
     if (m_inverse_view_matrix_valid)
         return;
-    m_inverse_view_matrix = mat3f::EYE;
-    m_inverse_view_matrix
+    m_inverse_view_matrix = eye3f()
         .scale(1 / m_scale, 1 / m_scale)
         .rotate(-m_rotation)
         .translate(-m_translation);
