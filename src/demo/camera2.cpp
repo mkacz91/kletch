@@ -2,16 +2,6 @@
 
 namespace kletch {
 
-vec2f Camera2::canvas_to_world(int x, int y) const
-{
-    return inverse_matrix().transform(canvas_to_ndc(x, y));
-}
-
-vec2f Camera2::canvas_to_world_vec(int x, int y) const
-{
-    return inverse_matrix().transform_vector(canvas_to_ndc_vec(x, y));
-}
-
 void Camera2::handle_event(const DemoEvent& e)
 {
     switch (e.type()) {
@@ -58,7 +48,7 @@ void Camera2::handle_event(const DemoEvent& e)
             vec2i position = vec2i(e.motion().x, e.motion().y);
             set_translation(
                 m_translation_at_grab +
-                canvas_to_world_vec(position - m_grab_position)
+                canvas2worldv(position - m_grab_position)
             );
             e.request_redraw();
             e.mark_handled();
@@ -148,13 +138,13 @@ void Camera2::render_grid()
     glEnableVertexAttribArray(m_grid_position_attrib);
 
     mat3f grid_matrix = mat3f::EYE;
-    grid_matrix.scale(lo_tick).pre_mul(matrix());
+    grid_matrix.scale(lo_tick).premul(matrix());
     glUniformMatrix3fv(m_grid_matrix_uniform, grid_matrix);
     glUniform4f(m_grid_color_uniform, 0, 0, 0, lo_alpha);
     glDrawArrays(GL_LINES, 0, m_grid_vertex_count);
 
     grid_matrix = mat3f::EYE;
-    grid_matrix.scale(hi_tick).pre_mul(matrix());
+    grid_matrix.scale(hi_tick).premul(matrix());
     glUniformMatrix3fv(m_grid_matrix_uniform, grid_matrix);
     glUniform4f(m_grid_color_uniform, 0, 0, 0, 1);
     glDrawArrays(GL_LINES, 0, m_grid_vertex_count);

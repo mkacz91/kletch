@@ -21,7 +21,7 @@ void AimerDemo::render()
         .scale(arc_radius(), arc_radius())
         .rotate(tangent_angle())
         .translate(origin())
-        .pre_mul(m_camera.matrix());
+        .premul(m_camera.matrix());
     glEnableVertexAttribArray(m_aimer_position_attrib);
 
     // Draw grid

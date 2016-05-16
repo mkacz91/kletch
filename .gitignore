@@ -1,6 +1,7 @@
 build/
 buildf/
 buildf_xcode/
+debugf/
 cb_buildf/
 process-palette.json
 

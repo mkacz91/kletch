@@ -66,10 +66,11 @@ void ControlOverlay::render()
     glVertexAttribPointer(m_vector_edge_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(m_vector_edge_position_attrib);
 
+    mat3f matrix = m_camera->matrix();
     for (auto& v : m_vectors)
     {
-        vec2f p0 = m_camera->matrix().transform(*get<0>(v));
-        vec2f p1 = m_camera->matrix().transform(*get<1>(v));
+        vec2f p0 = matrix.tform(*get<0>(v));
+        vec2f p1 = matrix.tform(*get<1>(v));
         glUniform4f(m_vector_edge_transform_uniform, p0.x, p0.y, p1.x, p1.y);
         glUniform4f(m_vector_edge_color_uniform, 0, 0, 0, 1);
         glDrawArrays(GL_LINES, VECTOR_EDGE_VERTEX_RANGE);
@@ -159,7 +160,7 @@ void ControlOverlay::close()
 
 vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)
 {
-    vec2f world_pos = m_camera->canvas_to_world(canvas_pos);
+    vec2f world_pos = m_camera->canvas2world(canvas_pos);
     float threshold = sq(2 * m_point_radius / (m_camera->scale() * m_camera->size().y));
     for (auto& point : m_points)
     {
@@ -180,7 +181,7 @@ void ControlOverlay::handle_event(const DemoEvent& e)
             if (point != nullptr)
             {
                 m_selected_points.insert(point);
-                m_prev_mouse_world_pos = m_camera->canvas_to_world(
+                m_prev_mouse_world_pos = m_camera->canvas2world(
                     e.button().x,
                     e.button().y
                 );
@@ -205,7 +206,7 @@ void ControlOverlay::handle_event(const DemoEvent& e)
     {
         if (!m_selected_points.empty())
         {
-            vec2f mouse_world_pos = m_camera->canvas_to_world(e.button().x, e.button().y);
+            vec2f mouse_world_pos = m_camera->canvas2world(e.button().x, e.button().y);
             vec2f translation = mouse_world_pos - m_prev_mouse_world_pos;
             for (vec2f* point : m_selected_points)
                 *point += translation;
