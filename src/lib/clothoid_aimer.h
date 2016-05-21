@@ -49,7 +49,7 @@ private:
 
     Cell m_grid[GRID_SIZE][GRID_SIZE];
 public:// TODO: tmp
-    box2r m_grid_box;
+    box2f m_grid_box;
 private:
 
     int m_refine_steps = 4;

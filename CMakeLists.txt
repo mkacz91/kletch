@@ -15,6 +15,10 @@ endif()
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
+if (USE_DOUBLES)
+  add_definitions(-DKLETCH_USE_DOUBLES)
+endif()
+
 add_subdirectory(src/lib)
 
 if (NOT DEFINED BUILD_DEMO)
