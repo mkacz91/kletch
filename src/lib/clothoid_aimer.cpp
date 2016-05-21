@@ -3,7 +3,7 @@
 #include <queue>
 #include <stack>
 
-#include "fresnel.h"
+#include "display_fresnel.h"
 
 namespace kletch {
 
@@ -138,7 +138,7 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, 
         for (int i = 0; i <= initial_partition; ++i)
         {
             real a = lerp(a0, a1, rl(i) / rl(initial_partition));
-            samples.emplace_back(a, s, Fresnel::eval(0, kappa0, a, s));
+            samples.emplace_back(a, s, DisplayFresnel::eval(0, kappa0, a, s));
         }
         for (int i = 1; i <= initial_partition; ++i)
             ranges.emplace(samples.size() - i, samples.size() - i - 1);
@@ -154,7 +154,7 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, 
                 real a = rl(0.5) * (s0.a + s1.a);
                 real s = s0.s;
                 assert(s == s1.s);
-                samples.emplace_back(a, s, Fresnel::eval(0, kappa0, a, s));
+                samples.emplace_back(a, s, DisplayFresnel::eval(0, kappa0, a, s));
                 ranges.emplace(j0, j);
                 ranges.emplace(j, j1);
             }
@@ -187,8 +187,8 @@ void ClothoidAimer::newton_refine1(vec2r p, real* a, real* s, int iter_count)
     vec2r as = { *a, *s };
     while (iter_count --> 0)
     {
-        vec2r q = p - Fresnel::eval1(as.x, as.y);
-        mat2r J = Fresnel::jacobian1(as.x, as.y);
+        vec2r q = p - DisplayFresnel::eval1(as.x, as.y);
+        mat2r J = DisplayFresnel::jacobian1(as.x, as.y);
         J.invert();
         as += J.transform(q);
     }

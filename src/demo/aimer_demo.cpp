@@ -1,6 +1,6 @@
 #include "aimer_demo.h"
 #include <vector>
-#include <lib/fresnel.h>
+#include <lib/display_fresnel.h>
 
 namespace kletch {
 
@@ -181,14 +181,14 @@ void AimerDemo::aim()
     real s = m_aim_result.s;
     m_a = float(a); m_s = float(s);
 
-    m_aim_eval = origin() + arc_radius() * Fresnel::eval(theta0, 1, a, s); // TODO
+    m_aim_eval = origin() + arc_radius() * DisplayFresnel::eval(theta0, 1, a, s); // TODO
 
     std::vector<vec2f> cloth_vertices;
     for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
     {
         real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
         cloth_vertices.push_back(
-            origin() + arc_radius() * Fresnel::eval(theta0, 1, a, si)
+            origin() + arc_radius() * DisplayFresnel::eval(theta0, 1, a, si)
         );
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);

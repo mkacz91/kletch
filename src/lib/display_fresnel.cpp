@@ -1,8 +1,8 @@
-#include "fresnel.h"
+#include "display_fresnel.h"
 
 namespace kletch {
 
-vec2r Fresnel::eval(real theta0, real kappa0, real a, real s)
+vec2r DisplayFresnel::eval(real theta0, real kappa0, real a, real s)
 {
     real c1 = kappa0 / a;
     real theta = theta0 - kappa0 * kappa0 / (rl(2.0) * a);
@@ -35,13 +35,13 @@ vec2r Fresnel::eval(real theta0, real kappa0, real a, real s)
     }
 }
 
-vec2r Fresnel::eval(real a, real s)
+vec2r DisplayFresnel::eval(real a, real s)
 {
     const real c0 = sqrt(abs(a) / PI);
     return eval(c0 * s) / c0; // sgn(a)?
 }
 
-vec2r Fresnel::eval1(real a, real s)
+vec2r DisplayFresnel::eval1(real a, real s)
 {
     const real c0 = sqrt(abs(a) / PI);
     const real c1 = rl(1) / a;
@@ -56,7 +56,7 @@ vec2r Fresnel::eval1(real a, real s)
     return result;
 }
 
-mat2r Fresnel::jacobian1(real a, real s)
+mat2r DisplayFresnel::jacobian1(real a, real s)
 {
     //  d          d
     // -- C(a,s)  -- C(a,s)

@@ -1,6 +1,6 @@
 #include "prefix.h"
 
-#include <lib/fresnel.h>
+#include <lib/display_fresnel.h>
 using namespace kletch;
 
 TEST(FresnelTest, eval_c)
@@ -22,7 +22,7 @@ TEST(FresnelTest, eval_c)
     int i = 0;
     while (values[i][0] != rl(-1.0))
     {
-        EXPECT_NEAR(values[i][1], Fresnel::eval_c(values[i][0]), tol);
+        EXPECT_NEAR(values[i][1], DisplayFresnel::eval_c(values[i][0]), tol);
         ++i;
     }
 }
