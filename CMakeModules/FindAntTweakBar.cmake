@@ -35,10 +35,5 @@ FIND_LIBRARY(ANTTWEAKBAR_LIBRARY DOC "Absolute path to AntTweakBar library."
   /opt
 )
 
-IF(ANTTWEAKBAR_LIBRARY AND ANTTWEAKBAR_INCLUDE_DIR)
-  SET(ANTTWEAKBAR_FOUND TRUE)
-  message(STATUS "Found AntTweakBar: ${ANTTWEAKBAR_LIBRARY}")
-ELSE()
-    message(STATUS "AntTweakBar NOT found!")
-    return()
-ENDIF(ANTTWEAKBAR_LIBRARY AND ANTTWEAKBAR_INCLUDE_DIR)
+include("${CMAKE_ROOT}/Modules/FindPackageHandleStandardArgs.cmake")
+find_package_handle_standard_args(ANTTWEAKBAR REQUIRED_VARS ANTTWEAKBAR_LIBRARY ANTTWEAKBAR_INCLUDE_DIR)
