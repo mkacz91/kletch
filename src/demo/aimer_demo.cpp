@@ -10,7 +10,7 @@ AimerDemo::AimerDemo() :
     //m_control_overlay.add_point(&m_aim_eval);
 }
 
-void AimerDemo::render()
+void AimerDemo::on_render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -58,19 +58,22 @@ void AimerDemo::render()
 
     glDisableVertexAttribArray(m_cloth_position_attrib);
 
-    ConstrainedClothoidDemo::render();
+    ConstrainedClothoidDemo::on_render();
 }
 
-void AimerDemo::handle_event(const DemoEvent& e)
+bool AimerDemo::on_event(const SDL_Event& e)
 {
-    ConstrainedClothoidDemo::handle_event(e);
-    if (e.handled())
+    if (ConstrainedClothoidDemo::on_event(e))
+    {
         aim();
+        return true;
+    }
+    return false;
 }
 
-void AimerDemo::open()
+void AimerDemo::on_open()
 {
-    ConstrainedClothoidDemo::open();
+    ConstrainedClothoidDemo::on_open();
 
     // Alter TwBar
     TwAddVarRO(twbar(), "a", TW_TYPE_FLOAT, &m_a, nullptr);
@@ -80,14 +83,8 @@ void AimerDemo::open()
         set_refine_steps_cb, get_refine_steps_cb,
         this, "min=0 max=10"
     );
-}
-
-void AimerDemo::gl_open()
-{
-    ConstrainedClothoidDemo::gl_open();
 
     // Clothoid
-
     gl::create_buffer(&m_cloth_vertices);
     m_cloth_ready = false;
 
@@ -138,25 +135,21 @@ void AimerDemo::gl_open()
     aim();
 }
 
-void AimerDemo::close()
-{
-    TwRemoveVar(twbar(), "Iters");
-    TwRemoveVar(twbar(), "s");
-    TwRemoveVar(twbar(), "a");
-
-    ConstrainedClothoidDemo::close();
-}
-
-void AimerDemo::gl_close()
+void AimerDemo::on_close()
 {
     m_cloth_ready = false;
+
     gl::delete_program(&m_cloth_program);
     gl::delete_program(&m_aimer_program);
     gl::delete_buffer(&m_cloth_vertices);
     gl::delete_buffer(&m_sample_vertices);
     gl::delete_buffer(&m_grid_vertices);
 
-    ConstrainedClothoidDemo::gl_close();
+    TwRemoveVar(twbar(), "Iters");
+    TwRemoveVar(twbar(), "s");
+    TwRemoveVar(twbar(), "a");
+
+    ConstrainedClothoidDemo::on_close();
 }
 
 void AimerDemo::set_refine_steps_cb(const void* value, void* client_data)

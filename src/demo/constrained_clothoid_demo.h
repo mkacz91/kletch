@@ -12,19 +12,20 @@ namespace kletch {
 class ConstrainedClothoidDemo : public Demo
 {
 public:
-    ConstrainedClothoidDemo(const string& dusplay_name);
-
-    virtual void render() override;
-    virtual void handle_event(const DemoEvent& e) override;
+    ConstrainedClothoidDemo(const string& display_name);
 
     const vec2f origin() const { return m_origin; }
     const vec2f target() const { return m_target; }
     float arc_radius() const { return m_arc_radius; }
     float tangent_angle() const { return m_tangent_angle; }
 
+    virtual bool on_event(SDL_Event const& e) override;
+
 protected:
-    virtual void gl_open() override;
-    virtual void gl_close() override;
+    virtual void on_render() override;
+    virtual void on_open() override;
+    virtual void on_close() override;
+    virtual void on_resize() override;
 
 private:
     static const int ARC_VERTEX_COUNT = 20;

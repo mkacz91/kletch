@@ -13,13 +13,13 @@ class HelloDemo : public Demo
 public:
     HelloDemo() : Demo("Hello") { }
 
-    virtual void render() override;
-
-    virtual void handle_event(const DemoEvent& e) override;
+    virtual bool on_event(SDL_Event const& e) override;
 
 protected:
-    virtual void gl_open() override;
-    virtual void gl_close() override;
+    virtual void on_render() override;
+    virtual void on_open() override;
+    virtual void on_close() override;
+    virtual void on_resize() override;
 
 private:
     Camera2 m_camera;

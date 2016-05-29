@@ -1,6 +1,6 @@
 message(STATUS "Creating demo executable target: kletch")
 
-find_package(SDL REQUIRED)
+find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(AntTweakBar REQUIRED)
 
@@ -59,7 +59,7 @@ file(APPEND "${RES_SUMMARY_CPP}" "}\n}\n")
 include_directories(
   ../
   ${GEN_DIR}/..
-  ${SDL_INCLUDE_DIR}
+  ${SDL2_INCLUDE_DIRS}
   ${OPENGL_INCLUDE_DIR}
   ${ANTTWEAKBAR_INCLUDE_DIR}
 )
@@ -69,13 +69,13 @@ file(GLOB KLETCH_SOURCE_EXCLUDES resemb.cpp)
 list(REMOVE_ITEM KLETCH_SOURCES ${KLETCH_SOURCE_EXCLUDES})
 
 if (APPLE)
-  list(APPEND KLETCH_SOURCES SDLMain/SDLMain.m)
+  #list(APPEND KLETCH_SOURCES SDLMain/SDLMain.m)
 endif (APPLE)
 
 add_executable(kletch ${KLETCH_SOURCES} ${KLETCH_RESOURCES})
 target_link_libraries(kletch
   libkletch
-  ${SDL_LIBRARY}
+  -L${SDL2_LIBDIR}  -lSDL2
   ${OPENGL_gl_LIBRARY}
   ${ANTTWEAKBAR_LIBRARY}
 )

@@ -2,86 +2,57 @@
 
 namespace kletch {
 
-void Camera2::handle_event(const DemoEvent& e)
+bool Camera2::on_event(SDL_Event const& e)
 {
-    switch (e.type()) {
+    switch (e.type) {
     case SDL_MOUSEBUTTONDOWN:
     {
-        switch (e.button().button) {
-        case SDL_BUTTON_RIGHT:
+        if (e.button.button == SDL_BUTTON_RIGHT)
         {
-            m_grab_position = vec2i(e.button().x, e.button().y);
+            m_grab_position = vec2i(e.button.x, e.button.y);
             m_translation_at_grab = m_translation;
             m_dragging = true;
-            e.mark_handled();
-            break;
+            return true;
         }
-        case SDL_BUTTON_WHEELUP:
-        {
-            scale(1.1f);
-            e.mark_handled();
-            e.request_redraw();
-            break;
-        }
-        case SDL_BUTTON_WHEELDOWN:
-        {
-            scale(1.0f / 1.1f);
-            e.mark_handled();
-            e.request_redraw();
-            break;
-        }}
-        break;
+    }
+    case SDL_MOUSEWHEEL:
+    {
+        scale(pow(1.1, e.wheel.y));
+        return true;
     }
     case SDL_MOUSEBUTTONUP:
     {
-        if (e.button().button == SDL_BUTTON_RIGHT)
+        if (e.button.button == SDL_BUTTON_RIGHT)
         {
             m_dragging = false;
-            e.mark_handled();
+            return true;
         }
-        break;
+        return false;
     }
     case SDL_MOUSEMOTION:
     {
-        if (m_dragging)
-        {
-            vec2i position = vec2i(e.motion().x, e.motion().y);
-            set_translation(
-                m_translation_at_grab +
-                canvas2worldv(position - m_grab_position)
-            );
-            e.request_redraw();
-            e.mark_handled();
-        }
-        break;
+        if (!m_dragging)
+            return false;
+        vec2i position = vec2i(e.motion.x, e.motion.y);
+        set_translation(m_translation_at_grab + canvas2worldv(position - m_grab_position));
+        return true;
     }
     case SDL_KEYDOWN:
     {
-        switch (e.key().keysym.sym)
-        {
+        switch (e.key.keysym.sym) {
         case SDLK_q:
         {
             rotate(0.1f);
-            e.request_redraw();
-            e.mark_handled();
-            break;
+            return true;
         }
         case SDLK_e:
         {
             rotate(-0.1f);
-            e.request_redraw();
-            e.mark_handled();
-            break;
-        }
-        default: break;
-        }
-        break;
-    }
-    case SDL_VIDEORESIZE:
-    {
-        set_size(e.resize().w, e.resize().h);
-        break;
+            return true;
+        }}
+        return false;
     }}
+    return false;
 }
 
 void Camera2::open_grid()

@@ -170,61 +170,54 @@ vec2f* ControlOverlay::pick_point(const vec2i& canvas_pos)
     return nullptr;
 }
 
-void ControlOverlay::handle_event(const DemoEvent& e)
+bool ControlOverlay::on_event(SDL_Event const& e)
 {
-    switch (e.type()) {
+    switch (e.type) {
     case SDL_MOUSEBUTTONDOWN:
     {
-        if (e.button().button == SDL_BUTTON_LEFT)
+        if (e.button.button != SDL_BUTTON_LEFT)
+            return false;
+        vec2f* point = pick_point(e.button.x, e.button.y);
+        if (point != nullptr)
         {
-            vec2f* point = pick_point(e.button().x, e.button().y);
-            if (point != nullptr)
-            {
-                m_selected_points.insert(point);
-                m_prev_mouse_world_pos = m_camera->canvas2world(
-                    e.button().x,
-                    e.button().y
-                );
-                e.request_redraw();
-                e.mark_handled();
-            }
+            m_selected_points.insert(point);
+            m_prev_mouse_world_pos = m_camera->canvas2world(e.button.x, e.button.y);
+            return true;
         }
-        break;
+        return false;
     }
     case SDL_MOUSEBUTTONUP:
     {
-        if (!m_selected_points.empty() && e.button().button == SDL_BUTTON_LEFT)
+        if (!m_selected_points.empty())
         {
             m_selected_points.clear();
-            m_highlighted_point = pick_point(e.button().x, e.button().y);
-            e.mark_handled();
-            e.request_redraw();
+            m_highlighted_point = pick_point(e.button.x, e.button.y);
         }
-        break;
+        return true;
     }
     case SDL_MOUSEMOTION:
     {
         if (!m_selected_points.empty())
         {
-            vec2f mouse_world_pos = m_camera->canvas2world(e.button().x, e.button().y);
+            vec2f mouse_world_pos = m_camera->canvas2world(e.motion.x, e.motion.y);
             vec2f translation = mouse_world_pos - m_prev_mouse_world_pos;
             for (vec2f* point : m_selected_points)
                 *point += translation;
             m_prev_mouse_world_pos = mouse_world_pos;
-            e.mark_handled();
-            e.request_redraw();
+            return true;
         }
         else
         {
-            vec2f* point = pick_point(e.button().x, e.button().y);
+            vec2f* point = pick_point(e.motion.x, e.motion.y);
             if (point != m_highlighted_point)
             {
                 m_highlighted_point = point;
-                e.request_redraw();
+                // invalidate(); TODO
             }
+            return false;
         }
-        break;
-    }};
+    }}
+    return false;
 }
 
 void ControlOverlay::highlight_points(const vec2i& canvas_pos)

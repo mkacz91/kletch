@@ -1,8 +1,6 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#ifdef __WIN32__
-
 PFNGLBUFFERDATAPROC glBufferData;
 PFNGLUNIFORMMATRIX3FVPROC glUniformMatrix3fv;
 PFNGLUNIFORM2FPROC glUniform2f;
@@ -32,13 +30,10 @@ PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
 PFNGLGETATTRIBLOCATIONPROC glGetAttribLocation;
 PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
 
-#endif // __WIN32__
-
 namespace kletch {
 namespace gl {
 
 int init_ext() {
-#ifdef __WIN32__
 
 #define get_proc_address(proctype, procname) \
     procname = (proctype)SDL_GL_GetProcAddress(#procname); \
@@ -74,8 +69,7 @@ int init_ext() {
     get_proc_address(PFNGLGETATTRIBLOCATIONPROC, glGetAttribLocation);
     get_proc_address(PFNGLGETUNIFORMLOCATIONPROC, glGetUniformLocation);
 
-#endif // __WIN32__
-return 0;
+    return 0;
 }
 
 } // namespace gl

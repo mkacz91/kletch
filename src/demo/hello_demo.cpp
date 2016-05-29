@@ -6,19 +6,18 @@ namespace kletch {
 
 using std::vector;
 
-void HelloDemo::render()
+bool HelloDemo::on_event(SDL_Event const& e)
+{
+    return m_camera.on_event(e);
+}
+
+void HelloDemo::on_render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     m_camera.render_grid();
-    //glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-void HelloDemo::handle_event(const DemoEvent& e)
-{
-    m_camera.handle_event(e);
-}
-
-void HelloDemo::gl_open()
+void HelloDemo::on_open()
 {
     glClearColor(0.5f, 0.9f, 0.5f, 1.0f);
 
@@ -40,11 +39,16 @@ void HelloDemo::gl_open()
     m_camera.set_size(width(), height());
 }
 
-void HelloDemo::gl_close()
+void HelloDemo::on_close()
 {
     m_camera.close_grid();
     gl::delete_buffer(&m_vertices);
     gl::delete_program(&m_program);
+}
+
+void HelloDemo::on_resize()
+{
+    m_camera.set_size(size());
 }
 
 } // anamespace keltch

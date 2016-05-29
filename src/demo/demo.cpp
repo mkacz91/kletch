@@ -2,34 +2,42 @@
 
 namespace kletch {
 
-void Demo::open(SDL_Surface* canvas, TwBar* twbar)
+void Demo::open(SDL_Window* window, TwBar* twbar)
 {
-    assert(canvas != nullptr);
+    assert(window != nullptr);
     assert(twbar != nullptr);
     cout << "Opening demo " << squote(display_name()) << "..." << endl;
-    m_canvas = canvas;
+    m_window = window;
     m_twbar = twbar;
-    open();
-    gl_open();
+    on_open();
+    resize();
+    invalidate();
     cout << "Demo " << squote(display_name()) << " opened" << endl;
 }
 
-void Demo::close(bool)
+void Demo::close()
 {
     cout << "Closing demo " << squote(display_name()) << "..." << endl;
-    assert(m_canvas != nullptr);
+    assert(m_window != nullptr);
     assert(m_twbar != nullptr);
-    gl_close();
-    close();
+    on_close();
     m_twbar = nullptr;
-    m_canvas = nullptr;
+    m_window = nullptr;
+    m_size = vec2i::ZERO;
     cout << "Done closing demo " << squote(display_name()) << endl;
 }
 
-void Demo::gl_lost()
+void Demo::resize()
 {
-    cout << "Recreating OpenGL resources ..." << endl;
-    gl_open();
+    SDL_GetWindowSize(m_window, &m_size.x, &m_size.y);
+    on_resize();
+    invalidate();
+}
+
+void Demo::render()
+{
+    on_render();
+    m_needs_redraw = false;
 }
 
 } // namespace kletch

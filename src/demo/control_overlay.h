@@ -5,10 +5,10 @@
 #include <unordered_set>
 
 #include "camera2.h"
-#include "demo_event.h"
 
 namespace kletch {
 
+// TODO: Make this a demo base class
 class ControlOverlay
 {
 public:
@@ -34,7 +34,7 @@ public:
     vec2f* pick_point(const vec2i& canvas_pos);
     vec2f* pick_point(int cx, int cy) { return pick_point(vec2i(cx, cy)); }
 
-    void handle_event(const DemoEvent& e);
+    bool on_event(SDL_Event const& e);
 
 private:
     static const int CIRCLE_SEGMENT_COUNT;

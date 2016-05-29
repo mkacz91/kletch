@@ -16,11 +16,12 @@ using namespace kletch;
 
 gl::ContextSnapshot demo_snapshot;
 gl::ContextSnapshot twbar_snapshot;
-SDL_Surface* window;
+SDL_Window* window;
+SDL_GLContext gl_context;
 TwBar* twbar;
-Uint32 video_flags;
 
-std::vector<unique_ptr<Demo>> demos;
+std::vector<Demo*> demos;
+Demo* demo;
 int demo_index = -1;
 
 int init(int argc, char** argv);
@@ -46,6 +47,8 @@ void quit_sdl();
 
 int init_twbar();
 void quit_twbar();
+//int sdl_keycode_to_twbar(SDL_Keycode code);
+//int sdl_keymod_to_twbar(SDL_Keymod mod);
 
 int init_demos();
 void quit_demos();
@@ -96,6 +99,9 @@ int init_sdl()
         return 1;
     }
 
+    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -106,13 +112,35 @@ int init_sdl()
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
-    video_flags = SDL_OPENGL | SDL_RESIZABLE;
-    window = SDL_SetVideoMode(800, 600, 0, video_flags);
+    window = SDL_CreateWindow(
+        "Kletch",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        800, 600,
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (window == nullptr)
     {
         cerr << "Unable to create window: " << SDL_GetError() << endl;
         SDL_Quit();
         return 1;
+    }
+
+    gl_context = SDL_GL_CreateContext(window);
+    if (gl_context == nullptr)
+    {
+        cerr << "Unable to create OpenGL context: " << SDL_GetError() << endl;
+        SDL_DestroyWindow(window); window = nullptr;
+        SDL_Quit();
+        return 1;
+    }
+
+    int ext_result = gl::init_ext();
+    if (ext_result != 0)
+    {
+        cerr << "Couldn't initialize OpenGL extensions" << endl;
+        SDL_GL_DeleteContext(gl_context); gl_context = nullptr;
+        SDL_DestroyWindow(window); window = nullptr;
+        SDL_Quit();
+        return ext_result;
     }
 
     cout << "SDL initialization complete" << endl;
@@ -123,13 +151,6 @@ int init_sdl()
         << "\n    Renderer:       " << (const char*)glGetString(GL_RENDERER)
         << endl;
 
-    int ext_result = gl::init_ext();
-    if (ext_result != 0)
-    {
-        cerr << "Couldn't initialize OpenGL extensions" << endl;
-        return ext_result;
-    }
-
     demo_snapshot.capture();
     twbar_snapshot.capture();
 
@@ -139,6 +160,7 @@ int init_sdl()
 void quit_sdl()
 {
     assert(window != nullptr);
+    assert(gl_context != nullptr);
 
     SDL_Quit();
     window = nullptr;
@@ -154,7 +176,9 @@ int init_twbar()
         return 1;
     }
 
-    TwWindowSize(window->w, window->h);
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    TwWindowSize(w, h);
     twbar = TwNewBar("Kletch");
     float refresh_rate = 1.0f / 30.0f;
     TwSetParam(twbar, nullptr, "refresh", TW_PARAM_FLOAT, 1, &refresh_rate);
@@ -172,34 +196,13 @@ void quit_twbar()
     twbar = nullptr;
 }
 
-void draw()
-{
-    if (demo_index >= 0 && demo_index < demos.size())
-    {
-        demo_snapshot.restore();
-        demos[demo_index]->render();
-        demo_snapshot.capture();
-    }
-    else
-    {
-        glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-
-    twbar_snapshot.restore();
-    TwDraw();
-    twbar_snapshot.capture();
-
-    SDL_GL_SwapBuffers();
-}
-
 int init_demos()
 {
     demos.emplace_back(new HelloDemo);
     demos.emplace_back(new AimerDemo);
     // Add more demos here
 
-    // Greate AntTweakBar combo box
+    // Create AntTweakBar combo box
     std::ostringstream enum_string;
     for (auto& demo : demos)
         enum_string << demo->display_name() << ",";
@@ -212,11 +215,35 @@ int init_demos()
 
 void quit_demos()
 {
-    if (demo_index >= 0 && demo_index < demos.size())
+    if (demo != nullptr)
     {
         demo_snapshot.restore();
-        demos[demo_index]->close(true);
+        demo->close();
     }
+    for (auto& demo : demos)
+        delete demo;
+    demos.clear();
+}
+
+void draw()
+{
+    if (demo)
+    {
+        demo_snapshot.restore();
+        demo->render();
+        demo_snapshot.capture();
+    }
+    else
+    {
+        glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    twbar_snapshot.restore();
+    TwDraw();
+    twbar_snapshot.capture();
+
+    SDL_GL_SwapWindow(window);
 }
 
 int main_loop()
@@ -224,87 +251,143 @@ int main_loop()
     assert(window != nullptr);
     assert(twbar != nullptr);
 
-    DemoEvent de;
-    SDL_Event& e = de.sdl_event();
+    SDL_Event e;
     bool running = true;
-    bool redraw = true;
+    int twbar_wheelpos = 0;
     while (running && SDL_WaitEvent(&e))
     {
         bool handled = false;
+        bool redraw = false;
         int initial_demo_index = demo_index;
 
-        // Let AntTweakBar handle the event
-        if (running && !handled)
+        switch (e.type) {
+        case SDL_KEYDOWN:
         {
-            handled = TwEventSDL(&e, SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
-            redraw = redraw || handled;
-        }
-
-        // Handle most basic high priority events
-        if (running && !handled)
-        {
-            switch (e.type) {
-            case SDL_KEYDOWN:
+            auto key = e.key.keysym.sym;
+            if (TwKeyPressed(key, e.key.keysym.mod))
             {
-                auto key = e.key.keysym.sym;
-                if (key == SDLK_ESCAPE)
-                    running = false;
-                else if (SDLK_1 <= key && key <= SDLK_9 && key - SDLK_1 < demos.size())
-                {
-                    demo_index = key - SDLK_1;
-                    redraw = true;
-                }
-                else if (key == SDLK_h)
-                {
-                    int value = 1;
-                    TwSetParam(twbar, nullptr, "iconified", TW_PARAM_INT32, 1, &value);
-                    redraw = true;
-                }
-                break;
+                handled = redraw = true;
             }
-            case SDL_VIDEORESIZE:
-            {
-                window = SDL_SetVideoMode(e.resize.w, e.resize.h, 0, video_flags);
-                gl::lost = true;
-                if (demo_index >= 0 && demo_index < demos.size())
-                    demos[demo_index]->gl_lost();
-                redraw = true;
-                gl::lost = false;
-                break;
-            }
-            case SDL_QUIT:
+            else if (key == SDLK_ESCAPE)
             {
                 running = false;
-                break;
-            }}
+            }
+            else if (SDLK_1 <= key && key <= SDLK_9 && key - SDLK_1 < demos.size())
+            {
+                demo_index = key - SDLK_1;
+                redraw = true;
+            }
+            else if (key == SDLK_h)
+            {
+                int value = 1;
+                TwSetParam(twbar, nullptr, "iconified", TW_PARAM_INT32, 1, &value);
+                redraw = true;
+            }
+            break;
         }
+        case SDL_MOUSEBUTTONDOWN:
+        {
+            handled = redraw = TwMouseButton(TW_MOUSE_PRESSED, (TwMouseButtonID)e.button.button);
+            break;
+        }
+        case SDL_MOUSEBUTTONUP:
+        {
+            handled = redraw = TwMouseButton(TW_MOUSE_RELEASED, (TwMouseButtonID)e.button.button);
+            break;
+        }
+        case SDL_MOUSEMOTION:
+        {
+            handled = redraw = TwMouseMotion(e.motion.x, e.motion.y);
+            break;
+        }
+        case SDL_MOUSEWHEEL:
+        {
+            twbar_wheelpos += e.wheel.y;
+            handled = redraw = TwMouseWheel(twbar_wheelpos);
+            break;
+        }
+        case SDL_WINDOWEVENT:
+        {
+            if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+            {
+                TwWindowSize(e.window.data1, e.window.data2);
+                if (demo) demo->resize();
+                glViewport(0, 0, e.window.data1, e.window.data2);
+                handled = true;
+                redraw = true;
+            }
+            break;
+        }
+        case SDL_QUIT:
+        {
+            running = false;
+            break;
+        }}
 
-        // Exchange demo if it was changed
-        if (initial_demo_index != demo_index)
+        if (!handled && demo)
+        {
+            handled = demo->on_event(e);
+        }
+        else if (initial_demo_index != demo_index)
         {
             demo_snapshot.restore();
-            if (initial_demo_index >= 0 && initial_demo_index < demos.size())
-                demos[initial_demo_index]->close(true);
-
+            if (demo)
+            {
+                demo->close();
+                demo = nullptr;
+            }
             if (demo_index >= 0 && demo_index < demos.size())
-                demos[demo_index]->open(window, twbar);
-            demo_snapshot.capture();
+            {
+                demo = demos[demo_index];
+                demo->open(window, twbar);
+                demo_snapshot.capture();
+            }
         }
 
-        // Let demo handle the event
-        if (running && !handled && demo_index >= 0 && demo_index < demos.size())
-        {
-            de.reset();
-            demos[demo_index]->handle_event(de);
-            handled = de.handled();
-            redraw = redraw || de.redraw_requested();
-            running = !de.quit_requested();
-        }
-
-        if (running && redraw)
+        if (redraw || (demo && demo->needs_redraw()))
             draw();
-        redraw = false;
     }
 
     return 0;
 }
+/*
+int sdl_keycode_to_twbar(SDL_Keycode code)
+{
+    if (' ' <= code && code <= '~') // Printable ASCII character
+        returun code;
+    switch (code)
+    {
+        case SDLK_BACKSPACE: return TW_KEY_BACKSPACE;
+        case SDLK_TAB: return TW_KEY_TAB;
+        case SDLK_CLEAR: return TW_KEY_CLEAR;
+        case SDLK_RETURN: return TW_KEY_RETURN;
+        case SDLK_PAUSE: return TW_KEY_PAUSE;
+        case SDLK_ESCAPE: return TW_KEY_ESCAPE;
+        case SDLK_SPACE: return TW_KEY_SPACE;
+        case SDLK_DELETE: return TW_KEY_DELETE;
+        case SDLK_UP: return TW_KEY_UP;
+        case SDLK_DOWN: return TW_KEY_DOWN;
+        case SDLK_LEFT: return TW_KEY_LEFT;
+        case SDLK_RIGHT: return TW_KEY_RIGHT;
+        case SDLK_INSERT: return TW_KEY_INSERT;
+        case SDLK_HOME: return TW_KEY_HOME;
+        case SDLK_END: return TW_KEY_END;
+        case SDLK_PAGEUP: return TW_KEY_PAGE_UP;
+        case SDLK_PAGEDOWN: return TW_KEY_PAGE_DOWN;
+    }
+    if (SDLK_F1 <= code && code <= SDLK_F15)
+        return TW_KEY_F1 + (code - SDLK_F1);
+}
+
+int sdl_keymod_to_twbar(SDL_Keymod mod)
+{
+    int result = TW_KMOD_NONE;
+    if (mod & KMOD_SHIFT)
+        result |= TW_KMOD_SHIFT;
+    if (mode & KMOD_CTRL))
+        result |= TW_KMOD_CTRL;
+    if (mode & KMOD_ALT)
+        retult |= TW_KMOD_ALT;
+    return result;
+}
+*/
