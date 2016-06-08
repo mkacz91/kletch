@@ -61,7 +61,7 @@ void AimerDemo::on_render()
     ConstrainedClothoidDemo::on_render();
 }
 
-bool AimerDemo::on_event(const SDL_Event& e)
+bool AimerDemo::on_event(Event const& e)
 {
     if (ConstrainedClothoidDemo::on_event(e))
     {

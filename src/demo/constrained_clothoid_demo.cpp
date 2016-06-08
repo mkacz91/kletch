@@ -33,7 +33,7 @@ void ConstrainedClothoidDemo::on_render()
     m_control_overlay.render();
 }
 
-bool ConstrainedClothoidDemo::on_event(SDL_Event const& e)
+bool ConstrainedClothoidDemo::on_event(Event const& e)
 {
     if (m_camera.on_event(e))
     {
@@ -60,11 +60,6 @@ bool ConstrainedClothoidDemo::on_event(SDL_Event const& e)
     }
 
     return false;
-}
-
-void ConstrainedClothoidDemo::on_resize()
-{
-    m_camera.set_size(width(), height());
 }
 
 void ConstrainedClothoidDemo::on_open()

@@ -34,7 +34,7 @@ public:
     vec2f* pick_point(const vec2i& canvas_pos);
     vec2f* pick_point(int cx, int cy) { return pick_point(vec2i(cx, cy)); }
 
-    bool on_event(SDL_Event const& e);
+    bool on_event(Event const& e);
 
 private:
     static const int CIRCLE_SEGMENT_COUNT;

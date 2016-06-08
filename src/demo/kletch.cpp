@@ -1,12 +1,7 @@
 #include "prefix.h"
 
-#include <vector>
-#include <sstream>
-
 #include <lib/kletch.h>
-namespace kletch {
-    extern void init_resources();
-}
+namespace kletch { extern void init_resources(); } // TODO: This more elegant
 using namespace kletch;
 
 #include "aimer_demo.h"
@@ -14,66 +9,75 @@ using namespace kletch;
 #include "gl_context_snapshot.h"
 #include "hello_demo.h"
 
-gl::ContextSnapshot demo_snapshot;
-gl::ContextSnapshot twbar_snapshot;
-SDL_Window* window;
-SDL_GLContext gl_context;
-TwBar* twbar;
-
-std::vector<Demo*> demos;
-Demo* demo;
-int demo_index = -1;
-
 int init(int argc, char** argv);
-int main_loop();
-void quit();
+void main_loop();
+int quit();
 
 int main(int argc, char** argv)
 {
     int init_result = init(argc, argv);
     if (init_result != 0)
         return init_result;
-
-    int main_loop_result = main_loop();
-    if (main_loop_result != 0)
-        return main_loop_result;
-
-    quit();
-    return main_loop_result;
+    main_loop();
+    return quit();
 }
 
-int init_sdl();
-void quit_sdl();
+int init_glfw();
+int quit_glfw();
+void glfw_error_callback(int error, char const* description);
+void on_key(GLFWwindow* window, int key, int scancode, int action, int mods);
+void on_mouse_button(GLFWwindow* window, int button, int action, int mods);
+void on_mouse_move(GLFWwindow* window, double x, double y);
+void on_mouse_scroll(GLFWwindow* window, double x, double y);
+void on_resize(GLFWwindow* window, int width, int height);
+void draw();
+bool redraw = true;
+GLFWwindow* window;
+int glfw_last_error = 1;
+char const* glfw_last_error_description = "";
+vec2i mouse_pos = vec2i::ZERO;
+int keyboard_mod = 0;
 
 int init_twbar();
-void quit_twbar();
+int quit_twbar();
+TwBar* twbar;
+gl::ContextSnapshot twbar_snapshot;
+int twbar_wheelpos = 0;
 //int sdl_keycode_to_twbar(SDL_Keycode code);
 //int sdl_keymod_to_twbar(SDL_Keymod mod);
 
 int init_demos();
-void quit_demos();
+int quit_demos();
+std::vector<Demo*> demos;
+Demo* demo;
+int demo_index = -1;
+gl::ContextSnapshot demo_snapshot;
+
+typedef int (*init_fun_t)();
+typedef int (*quit_fun_t)();
+typedef tuple<init_fun_t, quit_fun_t> subsystem_t;
+subsystem_t subsystems[] =
+{
+    make_tuple(init_glfw, quit_glfw),
+    make_tuple(init_twbar, quit_twbar),
+    make_tuple(init_demos, quit_demos)
+};
+constexpr int SUBSYSTEM_COUNT = sizeof(subsystems) / sizeof(subsystem_t);
+int init_subsystem_count = 0;
 
 int init(int argc, char** argv)
 {
-    cout << "Initializing ...\n" << endl;
-
-    int init_sdl_result = init_sdl();
-    if (init_sdl_result != 0)
-        return init_sdl_result;
-
-    int init_twbar_result = init_twbar();
-    if (init_twbar_result != 0)
+    cout << "\nInitializing ...\n" << endl;
+    assert(init_subsystem_count == 0);
+    for (;init_subsystem_count < SUBSYSTEM_COUNT; ++init_subsystem_count)
     {
-        quit_sdl();
-        return init_twbar_result;
-    }
-
-    int init_demos_result = init_demos();
-    if (init_demos_result != 0)
-    {
-        quit_twbar();
-        quit_sdl();
-        return init_demos_result;
+        init_fun_t init_fun = get<0>(subsystems[init_subsystem_count]);
+        int result = init_fun();
+        if (result != 0)
+        {
+            quit(); // Ignore the return value
+            return result;
+        }
     }
 
     init_resources();
@@ -84,66 +88,60 @@ int init(int argc, char** argv)
     return 0;
 }
 
-void quit()
+int quit()
 {
-    quit_demos();
-    quit_twbar();
-    quit_sdl();
+    cout << "\nShutting down ...\n" << endl;
+    int result = 0;
+    while (init_subsystem_count --> 0)
+    {
+        quit_fun_t quit_fun = get<1>(subsystems[init_subsystem_count]);
+        int sub_result = quit_fun();
+        // Keep the first error
+        if (result == 0 && sub_result != 0)
+            result = sub_result;
+    }
+    return result;
 }
 
-int init_sdl()
+int init_glfw()
 {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    cout << "Initializing GLFW ... " << flush;
+    glfwSetErrorCallback(glfw_error_callback);
+
+    if (!glfwInit())
     {
-        cerr << "Unable to initialize SDL: " << SDL_GetError() << endl;
+        cerr << "Unable to initialize GLFW: " << glfw_last_error << " "
+            << glfw_last_error_description << endl;
+        return glfw_last_error;
+    }
+
+    window = glfwCreateWindow(800, 600, "Kletch", nullptr, nullptr);
+    if (!window)
+    {
+        cerr << "Unable to create window: " << glfw_last_error << " "
+            << glfw_last_error_description << endl;
+        glfwTerminate();
+        return glfw_last_error;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        cerr << "Unable to load OpenGL extensions" << endl;
+        glfwTerminate();
+        window = nullptr;
         return 1;
     }
 
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+    glfwSwapInterval(1);
+    glfwSetKeyCallback(window, on_key);
+    glfwSetMouseButtonCallback(window, on_mouse_button);
+    glfwSetCursorPosCallback(window, on_mouse_move);
+    glfwSetScrollCallback(window, on_mouse_scroll);
+    glfwSetFramebufferSizeCallback(window, on_resize);
 
-    window = SDL_CreateWindow(
-        "Kletch",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        800, 600,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    if (window == nullptr)
-    {
-        cerr << "Unable to create window: " << SDL_GetError() << endl;
-        SDL_Quit();
-        return 1;
-    }
-
-    gl_context = SDL_GL_CreateContext(window);
-    if (gl_context == nullptr)
-    {
-        cerr << "Unable to create OpenGL context: " << SDL_GetError() << endl;
-        SDL_DestroyWindow(window); window = nullptr;
-        SDL_Quit();
-        return 1;
-    }
-
-    int ext_result = gl::init_ext();
-    if (ext_result != 0)
-    {
-        cerr << "Couldn't initialize OpenGL extensions" << endl;
-        SDL_GL_DeleteContext(gl_context); gl_context = nullptr;
-        SDL_DestroyWindow(window); window = nullptr;
-        SDL_Quit();
-        return ext_result;
-    }
-
-    cout << "SDL initialization complete" << endl;
+    cout << "done" << endl;
     cout << "OpenGL Platform:"
         << "\n    OpenGL Version: " << (const char*)glGetString(GL_VERSION)
         << "\n    GLSL Version:   " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)
@@ -157,72 +155,121 @@ int init_sdl()
     return 0;
 }
 
-void quit_sdl()
+int quit_glfw()
 {
+    cout << "Closing GLFW ... " << flush;
     assert(window != nullptr);
-    assert(gl_context != nullptr);
-
-    SDL_Quit();
+    glfw_last_error = 0;
+    glfwDestroyWindow(window);
     window = nullptr;
+    glfwTerminate(); // No errors
+    if (glfw_last_error != 0)
+        cerr << glfw_last_error_description << endl;
+    else
+        cout << "done" << endl;
+    return glfw_last_error;
 }
 
-int init_twbar()
+void glfw_error_callback(int error, char const* description)
 {
-    assert(window != nullptr);
+    glfw_last_error = error;
+    glfw_last_error_description = description;
+}
 
-    if (TwInit(TW_OPENGL, NULL) == 0)
+void on_key(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    unused(window, scancode);
+    Event e(action == GLFW_PRESS || action == GLFW_REPEAT ? KEY_PRESS : KEY_RELEASE);
+    e.key = Event::translate_glfw_key(key);
+    e.mod = keyboard_mod = Event::translate_glfw_mods(mods);
+    e.pos = mouse_pos;
+    if (e.type == KEY_PRESS)
     {
-        cerr << "Unable to initialize AntTweakBar: " << TwGetLastError() << endl;
-        return 1;
+        if (TwKeyPressed(e.key, e.mod))
+        {
+            redraw = true;
+            return;
+        }
+        if (key == GLFW_KEY_ESCAPE)
+        {
+            glfwSetWindowShouldClose(window, 1);
+            return;
+        }
+        if (GLFW_KEY_1 <= key && key <= GLFW_KEY_9)
+        {
+            int new_demo_index = key - GLFW_KEY_1;
+            if (new_demo_index != demo_index && new_demo_index <= demos.size())
+            {
+                demo_snapshot.restore();
+                if (demo)
+                    demo->close();
+                demo_index = new_demo_index;
+                demo = demos[demo_index];
+                // An artificial resize event is supplied on every open
+                Event resize_event(RESIZE);
+                glfwGetFramebufferSize(window, &resize_event.size.x, &resize_event.size.y);
+                resize_event.mod = keyboard_mod;
+                demo->open(window, twbar, resize_event);
+                demo_snapshot.capture();
+                redraw = true;
+                return;
+            }
+        }
     }
-
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-    TwWindowSize(w, h);
-    twbar = TwNewBar("Kletch");
-    float refresh_rate = 1.0f / 30.0f;
-    TwSetParam(twbar, nullptr, "refresh", TW_PARAM_FLOAT, 1, &refresh_rate);
-
-    cout << "AntTweakBar initialization complete" << endl;
-    return 0;
+    if (demo)
+        demo->on_event(e);
 }
 
-void quit_twbar()
+void on_mouse_button(GLFWwindow* window, int button, int action, int mods)
 {
-    assert(twbar != nullptr);
-
-    twbar_snapshot.restore();
-    TwTerminate();
-    twbar = nullptr;
+    unused(window, mods);
+    Event e(action == GLFW_PRESS ? MOUSE_PRESS : MOUSE_RELEASE);
+    e.button = Event::translate_glfw_mouse(button);
+    e.mod = keyboard_mod = Event::translate_glfw_mods(mods);
+    e.pos = mouse_pos;
+    TwMouseAction tw_action = action == GLFW_PRESS ? TW_MOUSE_PRESSED : TW_MOUSE_RELEASED;
+    if (TwMouseButton(tw_action, (TwMouseButtonID)e.button))
+        redraw = true;
+    else if (demo)
+        demo->on_event(e);
 }
 
-int init_demos()
+void on_mouse_move(GLFWwindow* window, double x, double y)
 {
-    demos.emplace_back(new HelloDemo);
-    demos.emplace_back(new AimerDemo);
-    // Add more demos here
-
-    // Create AntTweakBar combo box
-    std::ostringstream enum_string;
-    for (auto& demo : demos)
-        enum_string << demo->display_name() << ",";
-    TwType demo_twtype = TwDefineEnumFromString("DemoEnum", enum_string.str().c_str());
-    TwAddVarRW(twbar, "Demo", demo_twtype, &demo_index, nullptr);
-
-    cout << "Demos initialization complete" << endl;
-    return 0;
+    unused(window);
+    Event e(MOUSE_MOVE);
+    e.pos = mouse_pos = mouse_pos = vec2i(x, y);
+    e.mod = keyboard_mod;
+    if (TwMouseMotion(x, y))
+        redraw = true;
+    else if (demo)
+        demo->on_event(e);
 }
 
-void quit_demos()
+void on_mouse_scroll(GLFWwindow* window, double x, double y)
 {
-    if (demo != nullptr)
-    {
-        demo_snapshot.restore();
-        demo->close();
-    }
-    for (auto& demo : demos)
-        delete demo;
-    demos.clear();
+    unused(window, x);
+    Event e(MOUSE_SCROLL);
+    e.delta = y > 0 ? 1 : -1;
+    e.pos = mouse_pos;
+    e.mod = keyboard_mod;
+    twbar_wheelpos += e.delta;
+    if (TwMouseWheel(twbar_wheelpos))
+        redraw = true;
+    else if (demo)
+        demo->on_event(e);
+}
+
+void on_resize(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+    Event e(RESIZE);
+    e.size = vec2i(width, height);
+    e.mod = keyboard_mod;
+    TwWindowSize(width, height);
+    if (demo)
+        demo->on_event(e);
+    draw();
 }
 
 void draw()
@@ -243,151 +290,96 @@ void draw()
     TwDraw();
     twbar_snapshot.capture();
 
-    SDL_GL_SwapWindow(window);
+    glfwSwapBuffers(window);
+    redraw = false;
 }
 
-int main_loop()
+int init_twbar()
+{
+    cout << "Initializing AntTweakBar ... " << flush;
+    assert(window != nullptr);
+
+    if (TwInit(TW_OPENGL, NULL) == 0)
+    {
+        cerr << "Unable to initialize AntTweakBar: " << TwGetLastError() << endl;
+        return 1;
+    }
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    TwWindowSize(width, height);
+    twbar = TwNewBar("Kletch");
+    float refresh_rate = 1.0f / 30.0f;
+    TwSetParam(twbar, nullptr, "refresh", TW_PARAM_FLOAT, 1, &refresh_rate);
+
+    cout << "done" << endl;
+    return 0;
+}
+
+int quit_twbar()
+{
+    cout << "Closing AntTweakBar ... " << flush;
+    assert(twbar != nullptr);
+    twbar_snapshot.restore();
+    int result = 1 - TwTerminate();
+    twbar = nullptr;
+    if (result != 0)
+        cerr << TwGetLastError() << endl;
+    else
+        cout << "done" << endl;
+    return result;
+}
+
+int init_demos()
+{
+    cout << "Initializing demos ..." << endl;
+    demos.emplace_back(new HelloDemo);
+    demos.emplace_back(new AimerDemo);
+    // Add more demos here
+
+    // Create AntTweakBar combo box
+    std::ostringstream enum_string;
+    for (int i = 0; i < demos.size(); ++i)
+    {
+        Demo const* demo = demos[i];
+        cout << "    " << i << ": " << demo->display_name() << endl;
+        enum_string << demo->display_name() << ",";
+    }
+
+    // TwDefineEnumFromString has vaguely documented errors. Leave unchecked and hope for the best.
+    TwType demo_twtype = TwDefineEnumFromString("DemoEnum", enum_string.str().c_str());
+    int result = 1 - TwAddVarRW(twbar, "Demo", demo_twtype, &demo_index, nullptr);
+    if (result != 0)
+        cerr << TwGetLastError() << endl;
+    else
+        cout << "Demos initialization complete" << endl;
+
+    return result;
+}
+
+int quit_demos()
+{
+    cout << "Closing demos ... " << flush;
+    if (demo)
+    {
+        demo_snapshot.restore();
+        demo->close();
+    }
+    for (auto& demo : demos)
+        delete demo;
+    demos.clear();
+    cout << "done" << endl;
+    return 0; // TODO: Any errors?
+}
+
+void main_loop()
 {
     assert(window != nullptr);
     assert(twbar != nullptr);
-
-    SDL_Event e;
-    bool running = true;
-    int twbar_wheelpos = 0;
-    while (running && SDL_WaitEvent(&e))
+    while (!glfwWindowShouldClose(window))
     {
-        bool handled = false;
-        bool redraw = false;
-        int initial_demo_index = demo_index;
-
-        switch (e.type) {
-        case SDL_KEYDOWN:
-        {
-            auto key = e.key.keysym.sym;
-            if (TwKeyPressed(key, e.key.keysym.mod))
-            {
-                handled = redraw = true;
-            }
-            else if (key == SDLK_ESCAPE)
-            {
-                running = false;
-            }
-            else if (SDLK_1 <= key && key <= SDLK_9 && key - SDLK_1 < demos.size())
-            {
-                demo_index = key - SDLK_1;
-                redraw = true;
-            }
-            else if (key == SDLK_h)
-            {
-                int value = 1;
-                TwSetParam(twbar, nullptr, "iconified", TW_PARAM_INT32, 1, &value);
-                redraw = true;
-            }
-            break;
-        }
-        case SDL_MOUSEBUTTONDOWN:
-        {
-            handled = redraw = TwMouseButton(TW_MOUSE_PRESSED, (TwMouseButtonID)e.button.button);
-            break;
-        }
-        case SDL_MOUSEBUTTONUP:
-        {
-            handled = redraw = TwMouseButton(TW_MOUSE_RELEASED, (TwMouseButtonID)e.button.button);
-            break;
-        }
-        case SDL_MOUSEMOTION:
-        {
-            handled = redraw = TwMouseMotion(e.motion.x, e.motion.y);
-            break;
-        }
-        case SDL_MOUSEWHEEL:
-        {
-            twbar_wheelpos += e.wheel.y;
-            handled = redraw = TwMouseWheel(twbar_wheelpos);
-            break;
-        }
-        case SDL_WINDOWEVENT:
-        {
-            if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-            {
-                TwWindowSize(e.window.data1, e.window.data2);
-                if (demo) demo->resize();
-                glViewport(0, 0, e.window.data1, e.window.data2);
-                handled = true;
-                redraw = true;
-            }
-            break;
-        }
-        case SDL_QUIT:
-        {
-            running = false;
-            break;
-        }}
-
-        if (!handled && demo)
-        {
-            handled = demo->on_event(e);
-        }
-        else if (initial_demo_index != demo_index)
-        {
-            demo_snapshot.restore();
-            if (demo)
-            {
-                demo->close();
-                demo = nullptr;
-            }
-            if (demo_index >= 0 && demo_index < demos.size())
-            {
-                demo = demos[demo_index];
-                demo->open(window, twbar);
-                demo_snapshot.capture();
-            }
-        }
-
         if (redraw || (demo && demo->needs_redraw()))
             draw();
+        glfwWaitEvents();
     }
-
-    return 0;
 }
-/*
-int sdl_keycode_to_twbar(SDL_Keycode code)
-{
-    if (' ' <= code && code <= '~') // Printable ASCII character
-        returun code;
-    switch (code)
-    {
-        case SDLK_BACKSPACE: return TW_KEY_BACKSPACE;
-        case SDLK_TAB: return TW_KEY_TAB;
-        case SDLK_CLEAR: return TW_KEY_CLEAR;
-        case SDLK_RETURN: return TW_KEY_RETURN;
-        case SDLK_PAUSE: return TW_KEY_PAUSE;
-        case SDLK_ESCAPE: return TW_KEY_ESCAPE;
-        case SDLK_SPACE: return TW_KEY_SPACE;
-        case SDLK_DELETE: return TW_KEY_DELETE;
-        case SDLK_UP: return TW_KEY_UP;
-        case SDLK_DOWN: return TW_KEY_DOWN;
-        case SDLK_LEFT: return TW_KEY_LEFT;
-        case SDLK_RIGHT: return TW_KEY_RIGHT;
-        case SDLK_INSERT: return TW_KEY_INSERT;
-        case SDLK_HOME: return TW_KEY_HOME;
-        case SDLK_END: return TW_KEY_END;
-        case SDLK_PAGEUP: return TW_KEY_PAGE_UP;
-        case SDLK_PAGEDOWN: return TW_KEY_PAGE_DOWN;
-    }
-    if (SDLK_F1 <= code && code <= SDLK_F15)
-        return TW_KEY_F1 + (code - SDLK_F1);
-}
-
-int sdl_keymod_to_twbar(SDL_Keymod mod)
-{
-    int result = TW_KMOD_NONE;
-    if (mod & KMOD_SHIFT)
-        result |= TW_KMOD_SHIFT;
-    if (mode & KMOD_CTRL))
-        result |= TW_KMOD_CTRL;
-    if (mode & KMOD_ALT)
-        retult |= TW_KMOD_ALT;
-    return result;
-}
-*/

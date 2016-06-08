@@ -3,6 +3,8 @@
 
 #include "prefix.h"
 
+#include "event.h"
+
 namespace kletch {
 
 class Demo
@@ -12,11 +14,10 @@ public:
 
     const string& display_name() const { return m_display_name; }
 
-    void open(SDL_Window* window, TwBar* twbar);
+    void open(GLFWwindow* window, TwBar* twbar, Event const& resize_event);
     void close();
-    void resize();
 
-    SDL_Window* window() { return m_window; }
+    GLFWwindow* window() { return m_window; }
     TwBar* twbar() { return m_twbar; }
     bool active() const { return m_window != nullptr; }
 
@@ -28,7 +29,7 @@ public:
     void invalidate() { m_needs_redraw = true; }
     bool needs_redraw() const { return m_needs_redraw; }
 
-    virtual bool on_event(SDL_Event const& e) { unused(e); return false; }
+    virtual bool on_event(Event const& e) { unused(e); return false; }
 
 protected:
     Demo(string const& display_name) : m_display_name(display_name) { }
@@ -36,11 +37,10 @@ protected:
     virtual void on_open() = 0;
     virtual void on_close() = 0;
     virtual void on_render() = 0;
-    virtual void on_resize() = 0;
 
 private:
     string const m_display_name;
-    SDL_Window* m_window = nullptr;
+    GLFWwindow* m_window = nullptr;
     TwBar* m_twbar = nullptr;
     vec2i m_size = vec2i::ZERO;
     bool m_needs_redraw = false;

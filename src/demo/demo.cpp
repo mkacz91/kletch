@@ -2,7 +2,7 @@
 
 namespace kletch {
 
-void Demo::open(SDL_Window* window, TwBar* twbar)
+void Demo::open(GLFWwindow* window, TwBar* twbar, Event const& resize_event)
 {
     assert(window != nullptr);
     assert(twbar != nullptr);
@@ -10,7 +10,7 @@ void Demo::open(SDL_Window* window, TwBar* twbar)
     m_window = window;
     m_twbar = twbar;
     on_open();
-    resize();
+    on_event(resize_event);
     invalidate();
     cout << "Demo " << squote(display_name()) << " opened" << endl;
 }
@@ -25,13 +25,6 @@ void Demo::close()
     m_window = nullptr;
     m_size = vec2i::ZERO;
     cout << "Done closing demo " << squote(display_name()) << endl;
-}
-
-void Demo::resize()
-{
-    SDL_GetWindowSize(m_window, &m_size.x, &m_size.y);
-    on_resize();
-    invalidate();
 }
 
 void Demo::render()

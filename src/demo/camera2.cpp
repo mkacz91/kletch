@@ -2,57 +2,64 @@
 
 namespace kletch {
 
-bool Camera2::on_event(SDL_Event const& e)
+bool Camera2::on_event(Event const& e)
 {
     switch (e.type) {
-    case SDL_MOUSEBUTTONDOWN:
+    case MOUSE_PRESS:
     {
-        if (e.button.button == SDL_BUTTON_RIGHT)
+        if (e.button == MOUSE_RIGHT)
         {
-            m_grab_position = vec2i(e.button.x, e.button.y);
+            m_grab_position = e.pos;
             m_translation_at_grab = m_translation;
             m_dragging = true;
             return true;
         }
     }
-    case SDL_MOUSEWHEEL:
+    case MOUSE_SCROLL:
     {
-        scale(pow(1.1, e.wheel.y));
+        scale(pow(1.1, e.delta));
         return true;
     }
-    case SDL_MOUSEBUTTONUP:
+    case MOUSE_RELEASE:
     {
-        if (e.button.button == SDL_BUTTON_RIGHT)
+        if (e.button == MOUSE_RIGHT)
         {
             m_dragging = false;
             return true;
         }
         return false;
     }
-    case SDL_MOUSEMOTION:
+    case MOUSE_MOVE:
     {
         if (!m_dragging)
             return false;
-        vec2i position = vec2i(e.motion.x, e.motion.y);
-        set_translation(m_translation_at_grab + canvas2worldv(position - m_grab_position));
+        set_translation(m_translation_at_grab + canvas2worldv(e.pos - m_grab_position));
         return true;
     }
-    case SDL_KEYDOWN:
+    case KEY_PRESS:
     {
-        switch (e.key.keysym.sym) {
-        case SDLK_q:
+        switch (e.key) {
+        case 'q':
         {
             rotate(0.1f);
             return true;
         }
-        case SDLK_e:
+        case 'e':
         {
             rotate(-0.1f);
             return true;
         }}
         return false;
+    }
+    case RESIZE:
+    {
+        set_size(e.size);
+        return true;
+    }
+    default:
+    {
+        return false;
     }}
-    return false;
 }
 
 void Camera2::open_grid()

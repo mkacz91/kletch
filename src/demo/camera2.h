@@ -3,6 +3,8 @@
 
 #include "prefix.h"
 
+#include "event.h"
+
 namespace kletch {
 
 class Camera2
@@ -54,7 +56,7 @@ public:
     vec2f world2ndc(const vec2f& p) const { return matrix().tform(p); }
     vec2f world2ndc(float x, float y) const { return world2ndc(vec2f(x, y)); }
 
-    bool on_event(SDL_Event const& e);
+    bool on_event(Event const& e);
     void open_grid();
     void close_grid();
     void render_grid();

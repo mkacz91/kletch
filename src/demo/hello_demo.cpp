@@ -6,7 +6,7 @@ namespace kletch {
 
 using std::vector;
 
-bool HelloDemo::on_event(SDL_Event const& e)
+bool HelloDemo::on_event(Event const& e)
 {
     return m_camera.on_event(e);
 }
@@ -44,11 +44,6 @@ void HelloDemo::on_close()
     m_camera.close_grid();
     gl::delete_buffer(&m_vertices);
     gl::delete_program(&m_program);
-}
-
-void HelloDemo::on_resize()
-{
-    m_camera.set_size(size());
 }
 
 } // anamespace keltch

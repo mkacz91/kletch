@@ -14,7 +14,7 @@ class AimerDemo : public ConstrainedClothoidDemo
 public:
     AimerDemo();
 
-    virtual bool on_event(SDL_Event const& e) override;
+    virtual bool on_event(Event const& e) override;
 
 protected:
     virtual void on_render() override;
