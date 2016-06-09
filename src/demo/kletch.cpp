@@ -49,8 +49,8 @@ int twbar_wheelpos = 0;
 int init_demos();
 int quit_demos();
 std::vector<Demo*> demos;
-Demo* demo;
-int demo_index = -1;
+Demo* demo = nullptr;
+int demo_index = 0;
 gl::ContextSnapshot demo_snapshot;
 
 typedef int (*init_fun_t)();
@@ -195,25 +195,10 @@ void on_key(GLFWwindow* window, int key, int scancode, int action, int mods)
             glfwSetWindowShouldClose(window, 1);
             return;
         }
-        if (GLFW_KEY_1 <= key && key <= GLFW_KEY_9)
+        if (GLFW_KEY_0 <= key && key <= GLFW_KEY_9)
         {
-            int new_demo_index = key - GLFW_KEY_1;
-            if (new_demo_index != demo_index && new_demo_index <= demos.size())
-            {
-                demo_snapshot.restore();
-                if (demo)
-                    demo->close();
-                demo_index = new_demo_index;
-                demo = demos[demo_index];
-                // An artificial resize event is supplied on every open
-                Event resize_event(RESIZE);
-                glfwGetFramebufferSize(window, &resize_event.size.x, &resize_event.size.y);
-                resize_event.mod = keyboard_mod;
-                demo->open(window, twbar, resize_event);
-                demo_snapshot.capture();
-                redraw = true;
-                return;
-            }
+            demo_index = key - GLFW_KEY_0;
+            return;
         }
     }
     if (demo)
@@ -333,17 +318,19 @@ int quit_twbar()
 int init_demos()
 {
     cout << "Initializing demos ..." << endl;
-    demos.emplace_back(new HelloDemo);
-    demos.emplace_back(new AimerDemo);
+    demos.push_back(nullptr);
+    demos.push_back(new HelloDemo);
+    demos.push_back(new AimerDemo);
     // Add more demos here
 
     // Create AntTweakBar combo box
     std::ostringstream enum_string;
-    for (int i = 0; i < demos.size(); ++i)
+    enum_string << "-";
+    for (int i = 1; i < demos.size(); ++i)
     {
         Demo const* demo = demos[i];
         cout << "    " << i << ": " << demo->display_name() << endl;
-        enum_string << demo->display_name() << ",";
+        enum_string << "," << demo->display_name();
     }
 
     // TwDefineEnumFromString has vaguely documented errors. Leave unchecked and hope for the best.
@@ -381,5 +368,24 @@ void main_loop()
         if (redraw || (demo && demo->needs_redraw()))
             draw();
         glfwWaitEvents();
+
+        // Switch demo if necessary
+        if (0 <= demo_index && demo_index < demos.size() && demos[demo_index] != demo)
+        {
+            demo_snapshot.restore();
+            if (demo)
+                demo->close();
+            demo = demos[demo_index];
+            if (demo)
+            {
+                // An artificial resize event is supplied on every open
+                Event resize_event(RESIZE);
+                glfwGetFramebufferSize(window, &resize_event.size.x, &resize_event.size.y);
+                resize_event.mod = keyboard_mod;
+                demo->open(window, twbar, resize_event);
+                demo_snapshot.capture();
+            }
+            redraw = true;
+        }
     }
 }
