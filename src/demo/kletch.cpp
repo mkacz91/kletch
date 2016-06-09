@@ -37,14 +37,14 @@ int glfw_last_error = 1;
 char const* glfw_last_error_description = "";
 vec2i mouse_pos = vec2i::ZERO;
 int keyboard_mod = 0;
+enum MouseFocus { MOUSE_FOCUS_NONE, MOUSE_FOCUS_DEMO, MOUSE_FOCUS_TWBAR };
+MouseFocus mouse_focus = MOUSE_FOCUS_NONE;
 
 int init_twbar();
 int quit_twbar();
 TwBar* twbar;
 gl::ContextSnapshot twbar_snapshot;
 int twbar_wheelpos = 0;
-//int sdl_keycode_to_twbar(SDL_Keycode code);
-//int sdl_keymod_to_twbar(SDL_Keymod mod);
 
 int init_demos();
 int quit_demos();
@@ -213,21 +213,28 @@ void on_mouse_button(GLFWwindow* window, int button, int action, int mods)
     e.mod = keyboard_mod = Event::translate_glfw_mods(mods);
     e.pos = mouse_pos;
     TwMouseAction tw_action = action == GLFW_PRESS ? TW_MOUSE_PRESSED : TW_MOUSE_RELEASED;
-    if (TwMouseButton(tw_action, (TwMouseButtonID)e.button))
+    if (mouse_focus != MOUSE_FOCUS_DEMO && TwMouseButton(tw_action, (TwMouseButtonID)e.button))
+    {
+        mouse_focus = MOUSE_FOCUS_TWBAR;
         redraw = true;
-    else if (demo)
-        demo->on_event(e);
+    }
+    else if (mouse_focus != MOUSE_FOCUS_TWBAR && demo && demo->on_event(e))
+    {
+        mouse_focus = MOUSE_FOCUS_DEMO;
+    }
+    if (e.type == MOUSE_RELEASE)
+        mouse_focus = MOUSE_FOCUS_NONE;
 }
 
 void on_mouse_move(GLFWwindow* window, double x, double y)
 {
     unused(window);
     Event e(MOUSE_MOVE);
-    e.pos = mouse_pos = mouse_pos = vec2i(x, y);
+    e.pos = mouse_pos = vec2i(x, y);
     e.mod = keyboard_mod;
-    if (TwMouseMotion(x, y))
+    if (mouse_focus != MOUSE_FOCUS_DEMO && TwMouseMotion(x, y))
         redraw = true;
-    else if (demo)
+    else if (mouse_focus != MOUSE_FOCUS_TWBAR && demo)
         demo->on_event(e);
 }
 

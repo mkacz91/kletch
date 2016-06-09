@@ -212,6 +212,7 @@ bool ControlOverlay::on_event(Event const& e)
             if (point != m_highlighted_point)
             {
                 m_highlighted_point = point;
+                return true;
                 // invalidate(); TODO
             }
             return false;

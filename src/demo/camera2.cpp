@@ -7,13 +7,12 @@ bool Camera2::on_event(Event const& e)
     switch (e.type) {
     case MOUSE_PRESS:
     {
-        if (e.button == MOUSE_RIGHT)
-        {
-            m_grab_position = e.pos;
-            m_translation_at_grab = m_translation;
-            m_dragging = true;
-            return true;
-        }
+        if (e.button != MOUSE_RIGHT)
+            return false;
+        m_grab_position = e.pos;
+        m_translation_at_grab = m_translation;
+        m_dragging = true;
+        return true;;
     }
     case MOUSE_SCROLL:
     {
