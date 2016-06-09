@@ -23,9 +23,9 @@ protected:
 private:
     Camera2 m_camera;
 
-    GLuint m_program;
-    GLint m_position_attrib;
-    GLuint m_vertices;
+    GLuint m_program = 0;
+    GLint m_position_attrib = -1;
+    GLuint m_vertices = 0;
 };
 
 } // namespace kletch
