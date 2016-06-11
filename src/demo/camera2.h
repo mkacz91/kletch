@@ -3,7 +3,7 @@
 
 #include "prefix.h"
 
-#include "demo_event.h"
+#include "event.h"
 
 namespace kletch {
 
@@ -56,7 +56,7 @@ public:
     vec2f world2ndc(const vec2f& p) const { return matrix().tform(p); }
     vec2f world2ndc(float x, float y) const { return world2ndc(vec2f(x, y)); }
 
-    void handle_event(const DemoEvent& e);
+    bool on_event(Event const& e);
     void open_grid();
     void close_grid();
     void render_grid();

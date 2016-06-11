@@ -3,12 +3,12 @@
 
 #include "../prefix.h"
 
-#include <SDL.h>
-#include <SDL_opengl.h>
 #include <AntTweakBar.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
-#include "resources.h"
-#include "gl_ext.h"
 #include "gl_utils.h"
+#include "resources.h"
+//#include "gl_ext.h"
 
 #endif // KLETCH_DEMO_PREFIX_H

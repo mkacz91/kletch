@@ -2,85 +2,62 @@
 
 namespace kletch {
 
-void Camera2::handle_event(const DemoEvent& e)
+bool Camera2::on_event(Event const& e)
 {
-    switch (e.type()) {
-    case SDL_MOUSEBUTTONDOWN:
+    switch (e.type) {
+    case MOUSE_PRESS:
     {
-        switch (e.button().button) {
-        case SDL_BUTTON_RIGHT:
-        {
-            m_grab_position = vec2i(e.button().x, e.button().y);
-            m_translation_at_grab = m_translation;
-            m_dragging = true;
-            e.mark_handled();
-            break;
-        }
-        case SDL_BUTTON_WHEELUP:
-        {
-            scale(1.1f);
-            e.mark_handled();
-            e.request_redraw();
-            break;
-        }
-        case SDL_BUTTON_WHEELDOWN:
-        {
-            scale(1.0f / 1.1f);
-            e.mark_handled();
-            e.request_redraw();
-            break;
-        }}
-        break;
+        if (e.button != MOUSE_RIGHT)
+            return false;
+        m_grab_position = e.pos;
+        m_translation_at_grab = m_translation;
+        m_dragging = true;
+        return true;;
     }
-    case SDL_MOUSEBUTTONUP:
+    case MOUSE_SCROLL:
     {
-        if (e.button().button == SDL_BUTTON_RIGHT)
+        scale(pow(1.1, e.delta));
+        return true;
+    }
+    case MOUSE_RELEASE:
+    {
+        if (e.button == MOUSE_RIGHT)
         {
             m_dragging = false;
-            e.mark_handled();
+            return true;
         }
-        break;
+        return false;
     }
-    case SDL_MOUSEMOTION:
+    case MOUSE_MOVE:
     {
-        if (m_dragging)
-        {
-            vec2i position = vec2i(e.motion().x, e.motion().y);
-            set_translation(
-                m_translation_at_grab +
-                canvas2worldv(position - m_grab_position)
-            );
-            e.request_redraw();
-            e.mark_handled();
-        }
-        break;
+        if (!m_dragging)
+            return false;
+        set_translation(m_translation_at_grab + canvas2worldv(e.pos - m_grab_position));
+        return true;
     }
-    case SDL_KEYDOWN:
+    case KEY_PRESS:
     {
-        switch (e.key().keysym.sym)
-        {
-        case SDLK_q:
+        switch (e.key) {
+        case 'q':
         {
             rotate(0.1f);
-            e.request_redraw();
-            e.mark_handled();
-            break;
+            return true;
         }
-        case SDLK_e:
+        case 'e':
         {
             rotate(-0.1f);
-            e.request_redraw();
-            e.mark_handled();
-            break;
-        }
-        default: break;
-        }
-        break;
+            return true;
+        }}
+        return false;
     }
-    case SDL_VIDEORESIZE:
+    case RESIZE:
     {
-        set_size(e.resize().w, e.resize().h);
-        break;
+        set_size(e.size);
+        return true;
+    }
+    default:
+    {
+        return false;
     }}
 }
 
