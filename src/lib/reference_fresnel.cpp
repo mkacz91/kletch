@@ -6,6 +6,7 @@ vec2r ReferenceFresnel::eval_standard(real s)
 {
     // Mark A. Heald, Rational Approximations for the Fresnel Integrals,
     // Mathematics of Computation 44 (1985), 459-461.
+    // (With corrigenda)
 
     // A numerator coefficients
     constexpr real a0 = rl(1.00000000);

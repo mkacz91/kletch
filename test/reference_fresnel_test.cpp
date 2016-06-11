@@ -116,8 +116,12 @@ TEST(ReferenceFresnelTest, eval_standard)
     {
         vec2r expected = vec2r(values[i][1], values[i][2]);
         vec2r actual = ReferenceFresnel::eval_standard(values[i][0]);
-        // TODO: real type dependent threshold
-        ASSERT_LT(dist(expected, actual), rl(1e-3));
+#       ifdef KLETCH_WITH_DOUBLE
+            real const th = rl(1e-7);
+#       else
+            real const th = rl(1e-6);
+#       endif
+        ASSERT_LT(dist(expected, actual), th);
         ++i;
     }
 }
