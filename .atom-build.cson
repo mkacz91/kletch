@@ -1,14 +1,14 @@
 cmd: 'unbuffer make kletch'
-name: 'kletch'
-cwd: '{PROJECT_PATH}/buildf'
-errorMatch: '\n(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'
+name: 'kletch-float'
+cwd: '{PROJECT_PATH}/build/makef'
+errorMatch: '\n[^/]*(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'
 targets:
   'cmake':
-    cmd: 'unbuffer cmake ..'
-    cwd: '{PROJECT_PATH}/buildf'
+    cmd: 'unbuffer cmake {PROJECT_PATH}'
+    cwd: '{PROJECT_PATH}/build/makef'
     keymap: 'shift-f5'
-  'kletch-run':
+  'kletch-float-run':
     cmd: 'unbuffer make kletch && unbuffer ./kletch'
-    cwd: '{PROJECT_PATH}/buildf'
+    cwd: '{PROJECT_PATH}/build/makef'
     keymap: 'f5'
     errorMatch: '\n[^/]*(?<file>[\\/0-9a-zA-Z\\._]+):(?<line>\\d+):(?<col>\\d+)'
