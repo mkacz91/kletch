@@ -9,7 +9,7 @@ ConstrainedClothoidDemo::ConstrainedClothoidDemo(const string& display_name) :
     update_local_arc();
 }
 
-void ConstrainedClothoidDemo::render()
+void ConstrainedClothoidDemo::on_render()
 {
     //glClear(GL_COLOR_BUFFER_BIT);
 
@@ -33,23 +33,18 @@ void ConstrainedClothoidDemo::render()
     m_control_overlay.render();
 }
 
-void ConstrainedClothoidDemo::handle_event(const DemoEvent& e)
+bool ConstrainedClothoidDemo::on_event(Event const& e)
 {
-    if (e.type() == SDL_VIDEORESIZE)
+    if (m_camera.on_event(e))
     {
-        close(); // TODO: This is not ok
-        open();
+        invalidate();
+        return true;
     }
-
-    m_camera.handle_event(e);
-    if (e.handled())
-        return;
 
     vec2f origin = m_origin;
     vec2f tangent_tip = m_tangent_tip;
     vec2f arc_end = m_arc_end;
-    m_control_overlay.handle_event(e);
-    if (e.handled())
+    if (m_control_overlay.on_event(e))
     {
         if (origin != m_origin)
             m_tangent_tip = tangent_tip + m_origin - origin;
@@ -60,11 +55,14 @@ void ConstrainedClothoidDemo::handle_event(const DemoEvent& e)
         }
         else if (arc_end != m_arc_end)
             update_local_arc();
-        return;
+        invalidate();
+        return true;
     }
+
+    return false;
 }
 
-void ConstrainedClothoidDemo::gl_open()
+void ConstrainedClothoidDemo::on_open()
 {
     glClearColor(0.9f, 0.9f, 0.9f, 0);
     m_camera.open_grid();
@@ -89,8 +87,7 @@ void ConstrainedClothoidDemo::gl_open()
 
     gl::link_program(&m_arc_program,
         "shaders/constrained_clothoid_demo_arc_vx.glsl",
-        "shaders/varying3_ft.glsl"
-    );
+        "shaders/varying3_ft.glsl");
     m_arc_matrix_uniform = gl::get_uniform_location(m_arc_program, "matrix");
     m_arc_center_r_uniform = gl::get_uniform_location(m_arc_program, "center_r");
     m_arc_angle_uniform = gl::get_uniform_location(m_arc_program, "angle");
@@ -103,7 +100,7 @@ void ConstrainedClothoidDemo::gl_open()
     glUniform3f(m_arc_color1_uniform, 0.9f, 0.9f, 0.9f);
 }
 
-void ConstrainedClothoidDemo::gl_close()
+void ConstrainedClothoidDemo::on_close()
 {
     gl::delete_buffer(&m_arc_vertices);
     gl::delete_program(&m_arc_program);

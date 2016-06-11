@@ -13,20 +13,19 @@ class HelloDemo : public Demo
 public:
     HelloDemo() : Demo("Hello") { }
 
-    virtual void render() override;
-
-    virtual void handle_event(const DemoEvent& e) override;
+    virtual bool on_event(Event const& e) override;
 
 protected:
-    virtual void gl_open() override;
-    virtual void gl_close() override;
+    virtual void on_render() override;
+    virtual void on_open() override;
+    virtual void on_close() override;
 
 private:
     Camera2 m_camera;
 
-    GLuint m_program;
-    GLint m_position_attrib;
-    GLuint m_vertices;
+    GLuint m_program = 0;
+    GLint m_position_attrib = -1;
+    GLuint m_vertices = 0;
 };
 
 } // namespace kletch

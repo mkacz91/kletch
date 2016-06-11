@@ -3,46 +3,47 @@
 
 #include "prefix.h"
 
-#include "demo_event.h"
+#include "event.h"
 
 namespace kletch {
 
 class Demo
 {
 public:
-    const string& display_name() const noexcept { return m_display_name; }
+    virtual ~Demo() { assert(!active()); }
 
-    void open(SDL_Surface* canvas, TwBar* twbar);
-    void close(bool);
-    void gl_lost();
+    const string& display_name() const { return m_display_name; }
 
-    SDL_Surface* canvas() noexcept { return m_canvas; }
-    int width() const noexcept { return m_canvas->w; }
-    int height() const noexcept { return m_canvas->h; }
-    bool active() const noexcept { return m_canvas != nullptr; }
+    void open(GLFWwindow* window, TwBar* twbar, Event const& resize_event);
+    void close();
 
-    TwBar* twbar() noexcept { return m_twbar; }
+    GLFWwindow* window() { return m_window; }
+    TwBar* twbar() { return m_twbar; }
+    bool active() const { return m_window != nullptr; }
 
-    virtual void render() = 0;
-    virtual void handle_event(const DemoEvent& e) { } // Do nothing
+    vec2i const& size() { return m_size; }
+    int width() { return m_size.x; }
+    int height() { return m_size.y; }
 
-    virtual ~Demo() noexcept
-    {
-        assert(!active());
-    }
+    void render();
+    void invalidate() { m_needs_redraw = true; }
+    bool needs_redraw() const { return m_needs_redraw; }
+
+    virtual bool on_event(Event const& e) { unused(e); return false; }
 
 protected:
-    Demo(const string& display_name) : m_display_name(display_name) { }
+    Demo(string const& display_name) : m_display_name(display_name) { }
 
-    virtual void open() { }
-    virtual void gl_open() { }
-    virtual void gl_close() { }
-    virtual void close() { }
+    virtual void on_open() = 0;
+    virtual void on_close() = 0;
+    virtual void on_render() = 0;
 
 private:
-    const string m_display_name;
-    SDL_Surface* m_canvas = nullptr;
+    string const m_display_name;
+    GLFWwindow* m_window = nullptr;
     TwBar* m_twbar = nullptr;
+    vec2i m_size = vec2i::ZERO;
+    bool m_needs_redraw = false;
 };
 
 } // namespace kletch

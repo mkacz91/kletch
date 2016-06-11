@@ -173,7 +173,6 @@ string error_string(GLenum error)
         error_string_case(GL_STACK_OVERFLOW);
         error_string_case(GL_STACK_UNDERFLOW);
         error_string_case(GL_OUT_OF_MEMORY);
-        error_string_case(GL_TABLE_TOO_LARGE);
         default: return "KLETCH_GL_UNKNOWN";
     }
 }

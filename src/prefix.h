@@ -25,7 +25,6 @@ using std::endl;
 using std::flush;
 
 using std::string;
-//using std::to_string;
 inline string quote(const string& s) { return "\"" + s + "\""; }
 inline string squote(const string& s) { return "'" + s + "'"; }
 
@@ -43,6 +42,11 @@ using std::make_tuple;
 using std::get;
 
 using std::swap;
+
+template <typename T>
+void unused(T const& arg) { (void)arg; }
+template <typename T1, typename T2>
+void unused(T1 const& arg1, T2 const& arg2) { (void)arg1; (void)arg2; }
 
 } // namespace kletch
 
