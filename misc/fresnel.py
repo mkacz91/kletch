@@ -1,10 +1,23 @@
 import numpy as np
 from numpy import linspace
 import matplotlib.pyplot as plt
-from scipy import special
+from scipy import special, integrate
 import math
-from math import sqrt, copysign
+from math import sqrt, copysign, hypot, sin, cos
 import cmath
+
+def eval_int(k0, k1, s):
+    re, _ = integrate.quad(lambda t: cos(t * (k0 + 0.5 * k1 * t)), 0, s)
+    im, _ = integrate.quad(lambda t: sin(t * (k0 + 0.5 * k1 * t)), 0, s)
+    return complex(re, im)
+
+def eval_bgk1(k0, k1, s):
+    c0 = sqrt(abs(k1 / math.pi))
+    c1 = k0 / k1
+    c2 = -0.5 * k0 * c1
+    s0 = c0 * c1
+    s1 = c0 * (s + c1)
+    result
 
 def fresnel_k0_abg(a, s):
     c0 = sqrt(abs(a) / math.pi)

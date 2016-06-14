@@ -48,4 +48,31 @@ vec2r ReferenceFresnel::eval_standard(real s)
     return vec2r(rl(0.5) - r * sin(t), rl(0.5) - r * cos(t));
 }
 
+vec2r ReferenceFresnel::eval_bgk1(real k0, real k1, real s)
+{
+    real const c0 = sqrt(abs(k1 / PI));
+    real const c1 = k0 / k1;
+    real const c2 = rl(-0.5) * k0 * c1;
+    real const s0 = c0 * c1;
+    real const s1 = c0 * (s + c1);
+    vec2r const f0 = s0 >= 0 ? eval_standard(s0) : -eval_standard(-s0);
+    vec2r const f1 = s1 >= 0 ? eval_standard(s1) : -eval_standard(-s1);
+    vec2r result = (f1 - f0) / c0;
+    if (k1 < 0)
+        result.y = -result.y;
+    result.rotate(c2);
+    return result;
+}
+
+vec2r ReferenceFresnel::eval_smk1(real k0, real k1, real s)
+{
+    return eval_bgk1(k0, k1, s);
+}
+
+template <int n>
+void ReferenceFresnel::eval_momenta(real k0, real k1, real s, vec2r* fs)
+{
+
+}
+
 } // namespace kletch
