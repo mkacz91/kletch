@@ -35,7 +35,7 @@ bool redraw = true;
 GLFWwindow* window;
 int glfw_last_error = 1;
 char const* glfw_last_error_description = "";
-vec2i mouse_pos = vec2i::ZERO;
+vec2i mouse_pos = 0;
 int keyboard_mod = 0;
 enum MouseFocus { MOUSE_FOCUS_NONE, MOUSE_FOCUS_DEMO, MOUSE_FOCUS_TWBAR };
 MouseFocus mouse_focus = MOUSE_FOCUS_NONE;

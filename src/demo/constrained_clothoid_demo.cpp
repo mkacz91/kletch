@@ -140,19 +140,16 @@ void ConstrainedClothoidDemo::update_arc()
     m_arc_end = from_tangent_coords(m_local_arc_end);
 }
 
-vec2f ConstrainedClothoidDemo::to_tangent_coords(vec2f v)
+vec2f ConstrainedClothoidDemo::to_tangent_coords(vec2f const& v) const
 {
-    vec2f unit_x = (m_tangent_tip - m_origin).normalized_safe();
-    vec2f unit_y = vec2f(-unit_x.y, unit_x.x);
-    v -= m_origin;
-    return vec2f(dot(v, unit_x), dot(v, unit_y));
+    vec2f unx = dir(m_origin, m_tangent_tip).fix(unx2f());
+    return (v - m_origin).in(unx, lhp(unx));
 }
 
-vec2f ConstrainedClothoidDemo::from_tangent_coords(const vec2f& v)
+vec2f ConstrainedClothoidDemo::from_tangent_coords(const vec2f& v) const
 {
-    vec2f unit_x = (m_tangent_tip - m_origin).normalized_safe();
-    vec2f unit_y = vec2f(-unit_x.y, unit_x.x);
-    return m_origin + v.x * unit_x + v.y * unit_y;
+    vec2f unx = dir(m_origin, m_tangent_tip).fix(unx2f());
+    return m_origin + v.of(unx, lhp(unx));
 }
 
 } // namespace kletch
