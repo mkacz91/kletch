@@ -58,8 +58,8 @@ private:
     void update_local_arc();
     void update_arc();
 
-    vec2f to_tangent_coords(vec2f v);
-    vec2f from_tangent_coords(const vec2f& v);
+    vec2f to_tangent_coords(vec2f const& v) const;
+    vec2f from_tangent_coords(vec2f const& v) const;
 };
 
 } // namespace kletch

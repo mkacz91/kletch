@@ -19,7 +19,7 @@ ClothoidAimer::Result ClothoidAimer::aim(
     const vec2r& p1
 ) const
 {
-    vec2r p = kappa0 * (p1 - p0).rotated(-theta0);
+    vec2r p = kappa0 * span(p0, p1).rot(-theta0);
     vec2i grid_p = to_grid(p);
     Cell cell = m_grid[grid_p.y][grid_p.x];
     real a = cell.a, s = cell.s;
