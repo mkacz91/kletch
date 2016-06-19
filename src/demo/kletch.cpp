@@ -1,4 +1,5 @@
 #include "prefix.h"
+#include "printing.h"
 
 #include <lib/kletch.h>
 namespace kletch { extern void init_resources(); } // TODO: This more elegant
@@ -178,7 +179,7 @@ void glfw_error_callback(int error, char const* description)
 
 void on_key(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    unused(window, scancode);
+    ignore(window, scancode);
     Event e(action == GLFW_PRESS || action == GLFW_REPEAT ? KEY_PRESS : KEY_RELEASE);
     e.key = Event::translate_glfw_key(key);
     e.mod = keyboard_mod = Event::translate_glfw_mods(mods);
@@ -207,7 +208,7 @@ void on_key(GLFWwindow* window, int key, int scancode, int action, int mods)
 
 void on_mouse_button(GLFWwindow* window, int button, int action, int mods)
 {
-    unused(window, mods);
+    ignore(window, mods);
     Event e(action == GLFW_PRESS ? MOUSE_PRESS : MOUSE_RELEASE);
     e.button = Event::translate_glfw_mouse(button);
     e.mod = keyboard_mod = Event::translate_glfw_mods(mods);
@@ -228,7 +229,7 @@ void on_mouse_button(GLFWwindow* window, int button, int action, int mods)
 
 void on_mouse_move(GLFWwindow* window, double x, double y)
 {
-    unused(window);
+    ignore(window);
     Event e(MOUSE_MOVE);
     e.pos = mouse_pos = vec2i(x, y);
     e.mod = keyboard_mod;
@@ -240,7 +241,7 @@ void on_mouse_move(GLFWwindow* window, double x, double y)
 
 void on_mouse_scroll(GLFWwindow* window, double x, double y)
 {
-    unused(window, x);
+    ignore(window, x);
     Event e(MOUSE_SCROLL);
     e.delta = y > 0 ? 1 : -1;
     e.pos = mouse_pos;

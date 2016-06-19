@@ -63,7 +63,6 @@ file(APPEND "${RES_SUMMARY_CPP}" "}\n}\n")
 
 # Executable 'kletch'
 
-message(STATUS "GLFW3_INCLUDE_DIR: ${GLFW3_INCLUDE_DIR}")
 include_directories(
   ../
   ${GEN_DIR}/..
