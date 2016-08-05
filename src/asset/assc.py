@@ -7,7 +7,7 @@ class AssetWriter:
         src_path = kwargs.get('src_path', "")
         stream.write(b'----')
         stream.write(src_path.encode())
-        stream.write(b'\0')
+        stream.write(b'\0' * (4 - stream.tell() % 4));
 
     def write(self, data):
         self.stream.write(data)
