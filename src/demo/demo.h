@@ -42,7 +42,7 @@ private:
     string const m_display_name;
     GLFWwindow* m_window = nullptr;
     TwBar* m_twbar = nullptr;
-    vec2i m_size = vec2i::ZERO;
+    vec2i m_size = 0;
     bool m_needs_redraw = false;
 };
 

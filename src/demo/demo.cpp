@@ -23,7 +23,7 @@ void Demo::close()
     on_close();
     m_twbar = nullptr;
     m_window = nullptr;
-    m_size = vec2i::ZERO;
+    m_size = 0;
     cout << "Done closing demo " << squote(display_name()) << endl;
 }
 
