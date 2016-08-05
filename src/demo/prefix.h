@@ -11,4 +11,8 @@
 #include "resources.h"
 //#include "gl_ext.h"
 
+// Remove spurious defines of Windows.h
+#undef MOD_SHIFT
+#undef MOD_ALT
+
 #endif // KLETCH_DEMO_PREFIX_H

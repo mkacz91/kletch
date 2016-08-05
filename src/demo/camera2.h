@@ -45,7 +45,7 @@ public:
     vec2f canvas2world(int x, int y) const { return canvas2world(vec2i(x, y)); }
 
     vec2f canvas2worldv(const vec2i& v) const { return ndc2worldv(canvas2ndcv(v)); }
-    vec2f canvas2worldv(int x, int y) const;
+    vec2f canvas2worldv(int x, int y) const { return canvas2worldv(vec2i(x, y)); }
 
     vec2f ndc2world(const vec2f& p) const { return inverse_matrix().tform(p); }
     vec2f ndc2world(float x, float y) const { return ndc2world(vec2f(x, y)); }
@@ -76,7 +76,7 @@ private:
     mutable mat3f m_inverse_matrix;
 
     vec2i m_size = vec2i(2, 2);
-    vec2f m_translation;
+    vec2f m_translation = 0;
     float m_scale = 1;
     float m_rotation = 0;
 
