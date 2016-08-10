@@ -3,6 +3,14 @@
 
 namespace kletch {
 
+void AssetPackBase::set_root_dir(string const& root_dir)
+{
+    if (m_root_dir_set)
+        throw std::logic_error("AssetPackBase::root_dir already set");
+    m_root_dir = root_dir;
+    m_root_dir_set = true;
+}
+
 AssetPackBase::AssetStub AssetPackBase::open_asset(string const& name)
 {
     AssetStub stub(name);

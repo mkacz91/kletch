@@ -11,6 +11,7 @@ class Asset
 {
 public:
     explicit Asset(AssetHeader const& header, T const* data);
+    Asset(Asset<T>&& other);
     Asset(Asset<T> const& other) = delete;
     ~Asset();
 
@@ -30,6 +31,12 @@ private:
 template <class T> inline
 Asset<T>::Asset(AssetHeader const& header, T const* data)
     : m_name(header.name), m_source_path(header.source_path), m_data(data)
+{ }
+
+template <class T> inline
+Asset<T>::Asset(Asset<T>&& other) :
+    m_name(std::move(other.m_name)), m_source_path(std::move(other.m_source_path)),
+    m_data(std::move(other.m_data))
 { }
 
 template <class T> inline

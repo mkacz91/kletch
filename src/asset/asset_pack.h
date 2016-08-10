@@ -12,6 +12,9 @@ namespace kletch {
 
 class AssetPackBase
 {
+public:
+    void set_root_dir(string const& root_dir);
+
 protected:
     struct AssetStub
     {
@@ -24,14 +27,15 @@ protected:
     AssetStub open_asset(string const& name);
 
 private:
-    string const m_root_dir;
+    string m_root_dir;
+    bool m_root_dir_set = false;
 };
 
 template <class T>
-class AssetPack
+class AssetPack : public AssetPackBase
 {
 public:
-    explicit AssetPack(string const& root_dir);
+    AssetPack() = default;
     AssetPack(AssetPack<T> const& other) = delete;
 
     Asset<T>& operator [] (string const& name);
@@ -41,22 +45,17 @@ protected:
 
 private:
     std::unordered_map<string, Asset<T>> m_assets;
-    string const m_root_dir;
 };
-
-template <class T>
-AssetPack<T>::AssetPack(string const& root_dir) : m_root_dir(root_dir) { }
 
 template <class T>
 Asset<T>& AssetPack<T>::operator [] (string const& name)
 {
     auto it = m_assets.find(name);
     if (it != m_assets.end() && it->second.has_data())
-        return *it;
+        return it->second;
     AssetStub stub = open_asset(name);
     T const* data = load(stub.header, stub.stream);
-    auto status = m_assets.emplace(stub.header, data); // returns (iterator, bool)
-    return status.fists->second;
+    return m_assets.emplace(name, Asset<T>(stub.header, data)).first->second;
 }
 
 } // namespace kletch

@@ -2,9 +2,7 @@
 
 namespace kletch {
 
-StringAssetPack::StringAssetPack(string const& root_dir) : AssetPack(root_dir) { }
-
-string const* StringAssetPack::load(AssetHeader const& header, std::istream& stream) override
+string const* StringAssetPack::load(AssetHeader const& header, std::istream& stream)
 {
     char* c_data = new char[header.size];
     stream.read(c_data, header.size);

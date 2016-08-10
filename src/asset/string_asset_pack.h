@@ -8,9 +8,6 @@ namespace kletch {
 
 class StringAssetPack : public AssetPack<string>
 {
-public:
-    explicit StringAssetPack(string const& root_dir);
-
 protected:
     string const* load(AssetHeader const& header, std::istream& stream) override;
 };
