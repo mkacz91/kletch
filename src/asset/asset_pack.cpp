@@ -39,7 +39,7 @@ AssetPackBase::AssetStub AssetPackBase::open_asset(string const& name)
 
     // Move to the next 4-byte boundary
     auto pos = stub.stream.tellg();
-    stub.stream.seekg(pos + (4 - pos % 4) % 4));
+    stub.stream.seekg(pos + (4 - pos % 4) % 4);
 
     return stub;
 }
