@@ -2,6 +2,7 @@
 #define KLETH_ASSET_ASSET_H
 
 #include "prefix.h"
+#include "asset_header.h"
 
 namespace kletch {
 
@@ -9,9 +10,12 @@ template <class T>
 class Asset
 {
 public:
-    explicit Asset(string const& name, T const* data);
+    explicit Asset(AssetHeader const& header, T const* data);
     Asset(Asset<T> const& other) = delete;
     ~Asset();
+
+    string const& name() const { return m_name; }
+    string const& source_path() const { return m_source_path; }
 
     T const& operator * () const;
     bool has_data() const;
@@ -19,11 +23,14 @@ public:
 
 private:
     string const m_name;
+    string const m_source_path;
     T const* m_data;
 };
 
 template <class T> inline
-Asset<T>::Asset(string const& name, T const* data) : m_name(name), m_data(data) { }
+Asset<T>::Asset(AssetHeader const& header, T const* data)
+    : m_name(header.name), m_source_path(header.source_path), m_data(data)
+{ }
 
 template <class T> inline
 Asset<T>::~Asset() { release(); }

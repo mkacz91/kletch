@@ -6,18 +6,9 @@
 #include <fstream>
 
 #include "asset.h"
+#include "asset_header.h"
 
 namespace kletch {
-
-struct AssetHeader
-{
-    string const& name; // Asset name
-    string path; // Path to the compiled asset (.ass) file
-    string source_path; // Path to the asset source file. May be empty string.
-    size_t size; // Asset data size.
-
-    AssetHeader(string const& name) : name(name) { }
-};
 
 class AssetPackBase
 {
@@ -64,7 +55,7 @@ Asset<T>& AssetPack<T>::operator [] (string const& name)
         return *it;
     AssetStub stub = open_asset(name);
     T const* data = load(stub.header, stub.stream);
-    auto status = m_assets.emplace(name, data); // returns (iterator, bool)
+    auto status = m_assets.emplace(stub.header, data); // returns (iterator, bool)
     return status.fists->second;
 }
 
