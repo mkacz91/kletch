@@ -94,10 +94,10 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th0, T th1)
             T r;
             switch (l & 3)
             {
-                case 0: r = g.y += dg; break;
-                case 1: r = g.x -= dg; break;
-                case 2: r = g.y -= dg; break;
-                case 3: r = g.x += dg; break;
+                case 0: r = g.x += dg; break;
+                case 1: r = g.y += dg; break;
+                case 2: r = g.x -= dg; break;
+                case 3: r = g.y -= dg; break;
             }
             if (dg <= th1 * abs(r))
                 break;
