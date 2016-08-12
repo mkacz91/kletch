@@ -34,6 +34,7 @@ file(GLOB KLETCH_TEST_SOURCES *.cpp)
 
 add_executable(kletch_test ${KLETCH_TEST_SOURCES})
 target_link_libraries(kletch_test
+  libasset
   libkletch
   gtest
   ${CMAKE_THREAD_LIBS_INIT}
