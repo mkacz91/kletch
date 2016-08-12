@@ -1,8 +1,11 @@
 #ifndef KLETCH_LIB_FRESNEL_HPP
 #define KLETCH_LIB_FRESNEL_HPP
 
+#include "prefix.h"
+
 namespace kletch {
 
+template <class T>
 struct FresnelThresholds;
 
 // Various elementary Fresnel integral evaluation routines.
@@ -10,12 +13,12 @@ struct FresnelCore
 {
     // Evaluates the general Fresnel integral `INT t = 0..s: exp(i (k0 t + 0.5 k1 t^2))`.
     template <class T, class StandardFresnel> static
-    vec2<T> eval(T k0, T k1, T s, FresnelThresholds const& th);
+    vec2<T> eval(T k0, T k1, T s, FresnelThresholds<T> const& th);
 
     // Evaluates the general Fresnel integral `INT t = 0..s: exp(i (k0 t + 0.5 k1 t^2))` assuming
     // `k1` is reasonably large.
     template <class T, class StandardFresnel> static
-    vec2<T> eval_bkg1(T k0, T k1, T s);
+    vec2<T> eval_bgk1(T k0, T k1, T s);
 
     // Evaluates the general Fresnel moment `INT t = 0..s: t^n exp(i (k0 t + 0.5 k1 t^2))` divided
     // by `s^n` assuming `k1` is very small. The `s^n` term is appended when `n` is statically
@@ -25,6 +28,7 @@ struct FresnelCore
 };
 
 // TODO: doc
+template <class T>
 struct FresnelThresholds
 {
     T th_n0 = 0;
@@ -33,14 +37,14 @@ struct FresnelThresholds
 };
 
 template <class T, class StandardFresnel> inline
-vec2<T> FresnelCore::eval(T k0, T k1, T s, FresnelThresholds const& th)
+vec2<T> FresnelCore::eval(T k0, T k1, T s, FresnelThresholds<T> const& th)
 {
     // TODO
     return 0;
 }
 
 template <class T, class StandardFresnel> inline
-vec2<T> FresnelCore::eval_bgk1(T k0, T k1, T s);
+vec2<T> FresnelCore::eval_bgk1(T k0, T k1, T s)
 {
     T c0 = sqrt(abs(k1 / PI));
     T c1 = k0 / k1;
