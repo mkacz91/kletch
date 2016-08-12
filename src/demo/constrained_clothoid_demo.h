@@ -44,7 +44,7 @@ private:
     float m_local_arc_angle0;
     float m_local_arc_angle1;
     vec2f m_local_arc_center;
-    float m_tangent_angle;
+    float m_tangent_angle = 0;
 
     GLuint m_arc_vertices = 0;
     GLuint m_arc_program = 0;

@@ -8,7 +8,10 @@ using std::vector;
 
 bool HelloDemo::on_event(Event const& e)
 {
-    return m_camera.on_event(e);
+    bool result = m_camera.on_event(e);
+    if (result)
+        invalidate();
+    return result;
 }
 
 void HelloDemo::on_render()
