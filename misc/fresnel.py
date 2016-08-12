@@ -31,28 +31,29 @@ def eval_smk1(k0, k1, s, n = 0, th = 1e-5):
     f = complex(0, 0)
     a = complex(0, 0.5 * k1 * s * s)
     b = complex(0, k0 * s)
-    d = n + 1
     m = 0
+    dm = n + 1
     am = complex(1, 0)
     while True:
         g = complex(0, 0)
         l = 0
         bl = complex(1, 0)
+        dl = dm
         while True:
-            dg = bl / d
+            dg = bl / dl
             g += dg
             if abs(dg.real) <= th * abs(g.real) and abs(dg.imag) <= th * abs(g.imag):
                 break
-            d += 1
             l += 1
             bl *= b / l
+            dl += 1
         df = am * g
         f += df
         if abs(df.real) <= th * abs(f.real) and abs(df.imag) <= th * abs(f.imag):
             break
-        d += 2
         m += 1
         am *= a / m
+        dm += 2
     while n >= 0:
         f *= s
         n -= 1
