@@ -121,12 +121,6 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th0, T th1)
     return f;
 }
 
-template <class T, class StandardFresnel> inline
-vec2<T> Fresnel::eval(T s)
-{
-    return s >= 0 ? StandardFresnel::eval(s) : -StandardFresnel::eval(-s);
-}
-
 } // namespace kletch
 
 #endif // KLETCH_LIB_FRESNEL_HPP
