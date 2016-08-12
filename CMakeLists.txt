@@ -30,3 +30,7 @@ endif()
 if (WITH_TEST)
   add_subdirectory(test)
 endif()
+
+if (WITH_BENCH)
+  add_subdirectory(src/bench)
+endif()
