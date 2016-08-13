@@ -33,21 +33,13 @@ struct FresnelCore
     // Zero overhead log that does nothing.
     struct NopLog
     {
-        static NopLog* eval_smk1_core(T k0, T k1, T s, int n, T th) { return nullptr; }
-        void intermediate_result(vec2<T> const& value) { }
-        void nested_iteration() { }
-    };
+        struct eval_smk1_core_log
+        {
+            void intermediate_result(vec2<T> const& value) { }
+            void nested_iteration() { }
+        };
 
-    // Log that records comprehensive information about `eval_smk1_core`.
-    struct FullLog
-    {
-        static std::vector<FullLog> logs;
-        T k0; T k1; T s; int n; T th;
-        std::vector<vec2<T>> intermediate_results;
-        std::vector<int> nested_iterations;
-        static FullLog* eval_smk1_core(T k0, T k1, T s, int n, T th);
-        void intermediate_result(vec2<T> const& value);
-        void nested_iteration() { ++nested_iterations.back(); }
+        static eval_smk1_core_log* eval_smk1_core(T k0, T k1, T s, int n, T th) { return nullptr; }
     };
 };
 
@@ -153,23 +145,6 @@ vec2<T> FresnelCore<T>::eval_smk1_core(T k0, T k1, T s, int n, T th)
 
     f *= s;
     return f;
-}
-
-template <class T>
-std::vector<typename FresnelCore<T>::FullLog> FresnelCore<T>::FullLog::logs;
-
-template <class T> inline typename FresnelCore<T>::FullLog*
-FresnelCore<T>::FullLog::eval_smk1_core(T k0, T k1, T s, int n, T th)
-{
-    logs.push_back({k0, k1, s, n, th});
-    return &logs.back();
-}
-
-template <class T> inline
-void FresnelCore<T>::FullLog::intermediate_result(vec2<T> const& value)
-{
-    intermediate_results.push_back(value);
-    nested_iterations.push_back(0);
 }
 
 } // namespace kletch
