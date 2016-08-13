@@ -24,7 +24,7 @@ struct FresnelCore
     // by `s^n` assuming `k1` is very small. The `s^n` term is appended when `n` is statically
     // known.
     template <class T> static
-    vec2<T> eval_smk1_core(T k0, T k1, T s, int n, T th0, T th1);
+    vec2<T> eval_smk1_core(T k0, T k1, T s, int n, T th);
 };
 
 // TODO: doc
@@ -61,7 +61,7 @@ vec2<T> FresnelCore::eval_bgk1(T k0, T k1, T s)
 }
 
 template <class T> inline
-vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th0, T th1)
+vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th)
 {
     // We compute the integral
     //
@@ -99,7 +99,7 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th0, T th1)
                 case 2: r = g.x -= dg; break;
                 case 3: r = g.y -= dg; break;
             }
-            if (dg <= th1 * abs(r))
+            if (dg <= th * abs(r))
                 break;
             ++l;
             bl *= b / l;
@@ -114,7 +114,7 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th0, T th1)
             case 3: df = {  am * g.y, -am * g.x }; break;
         }
         f += df;
-        if (abs(df.x) <= th0 * abs(f.x) && abs(df.y) <= th0 * abs(f.y))
+        if (abs(df.x) <= th * abs(f.x) && abs(df.y) <= th * abs(f.y))
             break;
         ++m;
         am *= a / m;

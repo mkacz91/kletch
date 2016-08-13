@@ -13,7 +13,7 @@ inline vec2r fresnel_bgk1(real k0, real k1, real s)
 
 inline vec2r fresnel_smk1(real k0, real k1, real s)
 {
-    return FresnelCore::eval_smk1_core<real>(k0, k1, s, 0, rl(0), rl(0));
+    return FresnelCore::eval_smk1_core<real>(k0, k1, s, 0, rl(0));
 }
 
 int smk1_cond(int argc, char** argv)
