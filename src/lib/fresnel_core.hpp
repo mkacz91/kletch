@@ -10,27 +10,27 @@ template <class T>
 struct FresnelThresholds;
 
 // Various elementary Fresnel integral evaluation routines.
+template <class T>
 struct FresnelCore
 {
-    template <class T> struct NopLog;
+    struct NopLog;
 
     // Evaluates the general Fresnel integral `INT t = 0..s: exp(i (k0 t + 0.5 k1 t^2))`.
-    template <class T, class StandardFresnel> static
+    template <class StandardFresnel> static
     vec2<T> eval(T k0, T k1, T s, FresnelThresholds<T> const& th);
 
     // Evaluates the general Fresnel integral `INT t = 0..s: exp(i (k0 t + 0.5 k1 t^2))` assuming
     // `k1` is reasonably large.
-    template <class T, class StandardFresnel> static
+    template <class StandardFresnel> static
     vec2<T> eval_bgk1(T k0, T k1, T s);
 
     // Evaluates the general Fresnel moment `INT t = 0..s: t^n exp(i (k0 t + 0.5 k1 t^2))` divided
     // by `s^n` assuming `k1` is very small. The `s^n` term is appended when `n` is statically
     // known.
-    template <class T, class Log = NopLog<T>> static
+    template <class Log = NopLog> static
     vec2<T> eval_smk1_core(T k0, T k1, T s, int n, T th);
 
     // Zero overhead log that does nothing.
-    template <class T>
     struct NopLog
     {
         static NopLog* eval_smk1_core(T k0, T k1, T s, int n, T th) { return nullptr; }
@@ -39,7 +39,6 @@ struct FresnelCore
     };
 
     // Log that records comprehensive information about `eval_smk1_core`.
-    template <class T>
     struct FullLog
     {
         static std::vector<FullLog> logs;
@@ -61,15 +60,15 @@ struct FresnelThresholds
     T th1_smk1_n0 = inf<T>();
 };
 
-template <class T, class StandardFresnel> inline
-vec2<T> FresnelCore::eval(T k0, T k1, T s, FresnelThresholds<T> const& th)
+template <class T> template <class StandardFresnel> inline
+vec2<T> FresnelCore<T>::eval(T k0, T k1, T s, FresnelThresholds<T> const& th)
 {
     // TODO
     return 0;
 }
 
-template <class T, class StandardFresnel> inline
-vec2<T> FresnelCore::eval_bgk1(T k0, T k1, T s)
+template <class T> template <class StandardFresnel> inline
+vec2<T> FresnelCore<T>::eval_bgk1(T k0, T k1, T s)
 {
     T c0 = sqrt(abs(k1 / PI));
     T c1 = k0 / k1;
@@ -85,8 +84,8 @@ vec2<T> FresnelCore::eval_bgk1(T k0, T k1, T s)
     return f;
 }
 
-template <class T, class Log> inline
-vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th)
+template <class T> template <class Log> inline
+vec2<T> FresnelCore<T>::eval_smk1_core(T k0, T k1, T s, int n, T th)
 {
     // We compute the integral
     //
@@ -157,20 +156,17 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th)
 }
 
 template <class T>
-std::vector<FresnelCore::FullLog<T>> FresnelCore::FullLog<T>::logs;
+std::vector<typename FresnelCore<T>::FullLog> FresnelCore<T>::FullLog::logs;
 
-template <class T> inline
-FresnelCore::FullLog<T>* FresnelCore::FullLog<T>::eval_smk1_core(T k0, T k1, T s, int n, T th)
+template <class T> inline typename FresnelCore<T>::FullLog*
+FresnelCore<T>::FullLog::eval_smk1_core(T k0, T k1, T s, int n, T th)
 {
     logs.push_back({k0, k1, s, n, th});
     return &logs.back();
-    //FullLog& log = logs.back();
-    //log.k0 = k0; log.k1 = k1; log.s = s; log.n = n; log.th = th;
-    //return &log;
 }
 
 template <class T> inline
-void FresnelCore::FullLog<T>::intermediate_result(vec2<T> const& value)
+void FresnelCore<T>::FullLog::intermediate_result(vec2<T> const& value)
 {
     intermediate_results.push_back(value);
     nested_iterations.push_back(0);
