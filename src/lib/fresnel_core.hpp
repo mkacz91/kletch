@@ -2,6 +2,7 @@
 #define KLETCH_LIB_FRESNEL_HPP
 
 #include "prefix.h"
+#include <vector>
 
 namespace kletch {
 
@@ -11,6 +12,8 @@ struct FresnelThresholds;
 // Various elementary Fresnel integral evaluation routines.
 struct FresnelCore
 {
+    template <class T> struct NopLog;
+
     // Evaluates the general Fresnel integral `INT t = 0..s: exp(i (k0 t + 0.5 k1 t^2))`.
     template <class T, class StandardFresnel> static
     vec2<T> eval(T k0, T k1, T s, FresnelThresholds<T> const& th);
@@ -23,8 +26,30 @@ struct FresnelCore
     // Evaluates the general Fresnel moment `INT t = 0..s: t^n exp(i (k0 t + 0.5 k1 t^2))` divided
     // by `s^n` assuming `k1` is very small. The `s^n` term is appended when `n` is statically
     // known.
-    template <class T> static
+    template <class T, class Log = NopLog<T>> static
     vec2<T> eval_smk1_core(T k0, T k1, T s, int n, T th);
+
+    // Zero overhead log that does nothing.
+    template <class T>
+    struct NopLog
+    {
+        static NopLog* eval_smk1_core(T k0, T k1, T s, int n, T th) { return nullptr; }
+        void intermediate_result(vec2<T> const& value) { }
+        void nested_iteration() { }
+    };
+
+    // Log that records comprehensive information about `eval_smk1_core`.
+    template <class T>
+    struct FullLog
+    {
+        static std::vector<FullLog> logs;
+        T k0; T k1; T s; int n; T th;
+        std::vector<vec2<T>> intermediate_results;
+        std::vector<int> nested_iterations;
+        static FullLog* eval_smk1_core(T k0, T k1, T s, int n, T th);
+        void intermediate_result(vec2<T> const& value);
+        void nested_iteration() { ++nested_iterations.back(); }
+    };
 };
 
 // TODO: doc
@@ -60,7 +85,7 @@ vec2<T> FresnelCore::eval_bgk1(T k0, T k1, T s)
     return f;
 }
 
-template <class T> inline
+template <class T, class Log> inline
 vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th)
 {
     // We compute the integral
@@ -75,7 +100,10 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th)
     //
     // and omit initial `s^n` term (as specified at declaration site).
 
+    auto* log = Log::eval_smk1_core(k0, k1, s, n, th);
+
     vec2<T> f = 0;
+    log->intermediate_result(f);
     T a = T(0.5) * k1 * s * s;
     T b = k0 * s;
 
@@ -90,6 +118,7 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th)
         T dl = dm;
         while (true)
         {
+            log->nested_iteration();
             T dg = bl / dl;
             T r;
             switch (l & 3)
@@ -114,6 +143,8 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th)
             case 3: df = {  am * g.y, -am * g.x }; break;
         }
         f += df;
+        log->intermediate_result(f);
+
         if (abs(df.x) <= th * abs(f.x) && abs(df.y) <= th * abs(f.y))
             break;
         ++m;
@@ -123,6 +154,26 @@ vec2<T> FresnelCore::eval_smk1_core(T k0, T k1, T s, int n, T th)
 
     f *= s;
     return f;
+}
+
+template <class T>
+std::vector<FresnelCore::FullLog<T>> FresnelCore::FullLog<T>::logs;
+
+template <class T> inline
+FresnelCore::FullLog<T>* FresnelCore::FullLog<T>::eval_smk1_core(T k0, T k1, T s, int n, T th)
+{
+    logs.push_back({k0, k1, s, n, th});
+    return &logs.back();
+    //FullLog& log = logs.back();
+    //log.k0 = k0; log.k1 = k1; log.s = s; log.n = n; log.th = th;
+    //return &log;
+}
+
+template <class T> inline
+void FresnelCore::FullLog<T>::intermediate_result(vec2<T> const& value)
+{
+    intermediate_results.push_back(value);
+    nested_iterations.push_back(0);
 }
 
 } // namespace kletch
