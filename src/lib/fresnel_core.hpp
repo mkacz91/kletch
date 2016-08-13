@@ -48,15 +48,16 @@ template <class T>
 struct FresnelThresholds
 {
     T th_n0 = 0;
-    T th0_smk1_n0 = inf<T>();
-    T th1_smk1_n0 = inf<T>();
+    T th_smk1_n0 = inf<T>();
 };
 
 template <class T> template <class StandardFresnel> inline
 vec2<T> FresnelCore<T>::eval(T k0, T k1, T s, FresnelThresholds<T> const& th)
 {
-    // TODO
-    return 0;
+    // TODO: find out best condition on k1
+    return abs(k1) > th.th_n0
+        ? eval_bgk1<StandardFresnel>(k0, k1, s)
+        : eval_smk1_core(k0, k1, s, 0, th.th_smk1_n0);
 }
 
 template <class T> template <class StandardFresnel> inline
