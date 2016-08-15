@@ -18,7 +18,8 @@ public:
     string const& name() const { return m_name; }
     string const& source_path() const { return m_source_path; }
 
-    T const& operator * () const;
+    T const* operator -> () const;
+    T const& operator * () const { return *operator->(); }
     bool has_data() const;
     void release();
 
@@ -43,11 +44,11 @@ template <class T> inline
 Asset<T>::~Asset() { release(); }
 
 template <class T> inline
-T const& Asset<T>::operator * () const
+T const* Asset<T>::operator -> () const
 {
     if (!has_data())
         throw std::runtime_error("Asset invalid or released");
-    return *m_data;
+    return m_data;
 }
 
 template <class T> inline
