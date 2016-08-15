@@ -85,9 +85,7 @@ void ConstrainedClothoidDemo::on_open()
         arc_vertices.push_back((float)i / (ARC_VERTEX_COUNT - 1));
     gl::create_buffer(&m_arc_vertices, arc_vertices);
 
-    gl::link_program(&m_arc_program,
-        "shaders/constrained_clothoid_demo_arc_vx.glsl",
-        "shaders/varying3_ft.glsl");
+    gl::link_program(&m_arc_program, "constrained_clothoid_demo_arc_vx", "varying3_ft");
     m_arc_matrix_uniform = gl::get_uniform_location(m_arc_program, "matrix");
     m_arc_center_r_uniform = gl::get_uniform_location(m_arc_program, "center_r");
     m_arc_angle_uniform = gl::get_uniform_location(m_arc_program, "angle");

@@ -11,9 +11,9 @@ bool lost = false;
 
 std::unordered_map<GLuint, string> shader_names;
 
-GLuint load_shader(const string& resname, GLenum shader_type)
+GLuint load_shader(const string& name, GLenum shader_type)
 {
-    const Resource& r = get_resource(resname);
+    ShaderAsset const& source = Assets::shaders[name];
 
     // Create shader object
     GLuint shader = glCreateShader(shader_type);
@@ -21,7 +21,10 @@ GLuint load_shader(const string& resname, GLenum shader_type)
         throw exception("Unable to create new shader");
 
     // Upload source and compile
-    glShaderSource(shader, 1, const_cast<const char**>(&r.value), &r.length);
+    char const** source_data = const_cast<char const**>(reinterpret_cast<char const* const*>(
+        source->c_str()));
+    int source_size = source->size();
+    glShaderSource(shader, 1, source_data, &source_size);
     glCompileShader(shader);
 
     // TODO: Do this only in DEBUG
@@ -34,23 +37,23 @@ GLuint load_shader(const string& resname, GLenum shader_type)
         char log[max_log_length + 1];
         glGetShaderInfoLog(shader, max_log_length, nullptr, (char*)&log);
         glDeleteShader(shader);
-        throw exception("Shader " + squote(r.name) + ", compilation error: " + log);
+        throw exception("Shader " + squote(source.name()) + ", compilation error: " + log);
     }
 
-    shader_names[shader] = r.name;
+    shader_names[shader] = source.name();
     return shader;
 }
 
-void load_vertex_shader(GLuint* shader, const string& resname)
+void load_vertex_shader(GLuint* shader, const string& name)
 {
     assert(lost || *shader == 0);
-    *shader = load_shader(resname, GL_VERTEX_SHADER);
+    *shader = load_shader(name, GL_VERTEX_SHADER);
 }
 
-void load_fragment_shader(GLuint* shader, const string& resname)
+void load_fragment_shader(GLuint* shader, const string& name)
 {
     assert(lost || *shader == 0);
-    *shader = load_shader(resname, GL_FRAGMENT_SHADER);
+    *shader = load_shader(name, GL_FRAGMENT_SHADER);
 }
 
 string shader_name(GLuint shader)
@@ -63,14 +66,14 @@ string shader_name(GLuint shader)
 
 void link_program(
     GLuint* program,
-    const string& vertex_shader_resname, const string& fragment_shader_resname
+    const string& vertex_shader_name, const string& fragment_shader_name
 ) {
     GLuint vertex_shader = 0;
     GLuint fragment_shader = 0;
     try
     {
-        load_vertex_shader(&vertex_shader, vertex_shader_resname);
-        load_fragment_shader(&fragment_shader, fragment_shader_resname);
+        load_vertex_shader(&vertex_shader, vertex_shader_name);
+        load_fragment_shader(&fragment_shader, fragment_shader_name);
         link_program(program, vertex_shader, fragment_shader);
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);

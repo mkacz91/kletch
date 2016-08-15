@@ -22,7 +22,9 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 add_subdirectory(src/lib)
+
 add_subdirectory(src/asset) # TODO: conditionally, depending on BUILD_DEMO and BUILD_TEST
+set(ASSC "${CMAKE_SOURCE_DIR}/src/asset/assc.py")
 
 if (NOT DEFINED BUILD_DEMO)
   set(BUILD_DEMO YES)

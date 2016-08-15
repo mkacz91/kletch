@@ -24,7 +24,7 @@ void HelloDemo::on_open()
 {
     glClearColor(0.5f, 0.9f, 0.5f, 1.0f);
 
-    gl::link_program(&m_program, "shaders/hello_vx.glsl", "shaders/hello_ft.glsl");
+    gl::link_program(&m_program, "hello_vx", "hello_ft");
     glUseProgram(m_program);
     m_position_attrib = gl::get_attrib_location(m_program, "position");
 

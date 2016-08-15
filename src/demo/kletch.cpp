@@ -1,13 +1,17 @@
 #include "prefix.h"
 
 #include <lib/kletch.h>
-namespace kletch { extern void init_resources(); } // TODO: This more elegant
-using namespace kletch;
 
 #include "aimer_demo.h"
 #include "demo.h"
 #include "gl_context_snapshot.h"
 #include "hello_demo.h"
+
+namespace kletch
+{
+    ShaderAssetPack Assets::shaders;
+}
+using namespace kletch;
 
 int init(int argc, char** argv);
 void main_loop();
@@ -22,6 +26,8 @@ int main(int argc, char** argv)
     return quit();
 }
 
+int init_assets();
+int quit_assets();
 int init_glfw();
 int quit_glfw();
 void glfw_error_callback(int error, char const* description);
@@ -58,6 +64,7 @@ typedef int (*quit_fun_t)();
 typedef tuple<init_fun_t, quit_fun_t> subsystem_t;
 subsystem_t subsystems[] =
 {
+    make_tuple(init_assets, quit_assets),
     make_tuple(init_glfw, quit_glfw),
     make_tuple(init_twbar, quit_twbar),
     make_tuple(init_demos, quit_demos)
@@ -79,10 +86,6 @@ int init(int argc, char** argv)
             return result;
         }
     }
-
-    init_resources();
-    cout << "Resource initialization complete" << endl;
-
     cout << "\nIitialization complete\n" << endl;
 
     return 0;
@@ -102,6 +105,16 @@ int quit()
     }
     return result;
 }
+
+int init_assets()
+{
+    cout << "Initializing Assets ... " << flush;
+    Assets::shaders.set_root_dir("assets/shaders");
+    cout << "done" << endl;
+    return 0;
+}
+
+int quit_assets() { return 0; }
 
 int init_glfw()
 {

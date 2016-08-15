@@ -126,7 +126,7 @@ void ControlOverlay::open()
     // Initialize shader programs
 
     // Point program
-    gl::link_program(&m_point_program, "shaders/aimer_point_vx.glsl", "shaders/uniform4_ft.glsl");
+    gl::link_program(&m_point_program, "aimer_point_vx", "uniform4_ft");
     m_point_origin_matrix_uniform = gl::get_uniform_location(m_point_program, "origin_matrix");
     m_point_origin_uniform = gl::get_uniform_location(m_point_program, "origin");
     m_point_offset_scale_uniform = gl::get_uniform_location(m_point_program, "offset_scale");
@@ -134,17 +134,13 @@ void ControlOverlay::open()
     m_point_offset_attrib = gl::get_attrib_location(m_point_program, "offset");
 
     // Vector edge program
-    gl::link_program(
-        &m_vector_edge_program,
-        "shaders/control_overlay_vector_edge_vx.glsl", "shaders/uniform4_ft.glsl");
+    gl::link_program(&m_vector_edge_program, "control_overlay_vector_edge_vx", "uniform4_ft");
     m_vector_edge_transform_uniform = gl::get_uniform_location(m_vector_edge_program, "transform");
     m_vector_edge_color_uniform = gl::get_uniform_location(m_vector_edge_program, "color");
     m_vector_edge_position_attrib = gl::get_attrib_location(m_vector_edge_program, "position");
 
     // Vector cap program
-    gl::link_program(
-        &m_vector_cap_program,
-        "shaders/control_overlay_vector_cap_vx.glsl", "shaders/uniform4_ft.glsl");
+    gl::link_program(&m_vector_cap_program, "control_overlay_vector_cap_vx", "uniform4_ft");
     m_vector_cap_transform_uniform = gl::get_uniform_location(m_vector_cap_program, "transform");
     m_vector_cap_color_uniform = gl::get_uniform_location(m_vector_cap_program, "color");
     m_vector_cap_position_attrib = gl::get_attrib_location(m_vector_cap_program, "position");
