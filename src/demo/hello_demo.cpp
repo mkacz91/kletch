@@ -49,4 +49,4 @@ void HelloDemo::on_close()
     gl::delete_program(&m_program);
 }
 
-} // anamespace keltch
+} // namespace kletch
