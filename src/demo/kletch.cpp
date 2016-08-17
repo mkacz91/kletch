@@ -19,11 +19,19 @@ int quit();
 
 int main(int argc, char** argv)
 {
-    int init_result = init(argc, argv);
-    if (init_result != 0)
-        return init_result;
-    main_loop();
-    return quit();
+    try
+    {
+        int init_result = init(argc, argv);
+        if (init_result != 0)
+            return init_result;
+        main_loop();
+        return quit();
+    }
+    catch (std::exception& e)
+    {
+        cerr << "\n--- FATAL ERROR ---\n\n" << e.what() << endl;
+        return 1;
+    }
 }
 
 int init_assets();
