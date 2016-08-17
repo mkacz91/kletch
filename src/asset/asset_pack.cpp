@@ -1,5 +1,8 @@
 #include "asset_pack.h"
+
 #include <sstream>
+
+#include "exception.h"
 
 namespace kletch {
 
@@ -14,32 +17,33 @@ void AssetPackBase::set_root_dir(string const& root_dir)
 AssetPackBase::AssetStub AssetPackBase::open_asset(string const& name)
 {
     AssetStub stub(name);
-    stub.header.path = m_root_dir + PATH_SEPARATOR + name + ".ass";
-    stub.stream.exceptions(std::ifstream::failbit);
-    stub.stream.open(stub.header.path);
+    string const& path = stub.header.path = m_root_dir + PATH_SEPARATOR + name + ".ass";
+    std::ifstream& stream = stub.stream;
+    stream.open(path);
+    if (!stream.is_open())
+        throw asset_not_found(name, path);
 
     // Read asset data size
     uint32_t size;
-    stub.stream.get(reinterpret_cast<char*>(&size), 4);
+    stream.read(reinterpret_cast<char*>(&size), 4);
+    if (!stream.good())
+        throw asset_bad_format(name, path);
     stub.header.size = size;
 
     // Read asset source file path
-    try
-    {
-        std::ostringstream source_path;
-        stub.stream.get(*source_path.rdbuf(), '\0');
-        stub.header.source_path = source_path.str();
-    }
-    catch (std::ios_base::failure)
-    {
-        // stub.stream.get() will set failbit if it won't read any chars. An empty source_path is
-        // a valid value, meaning that the asset has no corresponding source. Just ignore the
-        // exception.
-    }
+    std::ostringstream source_path;
+    stream.get(*source_path.rdbuf(), '\0');
+    if (stream.bad() || stream.eof())
+        throw asset_bad_format(name, path);
+    if (stream.fail())
+        stream.clear(); // failbit is set when no chars were read, but that's ok
+    if (stream.get() != 0)
+        throw asset_bad_format(name, path);
+    stub.header.source_path = source_path.str();
 
     // Move to the next 4-byte boundary
-    auto pos = stub.stream.tellg();
-    stub.stream.seekg(pos + (4 - pos % 4) % 4);
+    if (!stream.ignore((4 - stream.tellg() % 4) % 4).good())
+        throw asset_bad_format(name, path);
 
     return stub;
 }
