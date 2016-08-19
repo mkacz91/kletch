@@ -44,10 +44,6 @@ include_directories(
 file(GLOB KLETCH_SOURCES *.cpp *.h)
 list(APPEND KLETCH_SOURCES "${GLAD_C}" "${GLAD_H}")
 
-if (APPLE)
-  #list(APPEND KLETCH_SOURCES SDLMain/SDLMain.m)
-endif (APPLE)
-
 add_executable(kletch ${KLETCH_SOURCES} ${KLETCH_ASSETS})
 target_link_libraries(kletch
   libkletch
