@@ -19,7 +19,7 @@ AssetPackBase::AssetStub AssetPackBase::open_asset(string const& name)
     AssetStub stub(name);
     string const& path = stub.header.path = m_root_dir + "/" + name + ".ass";
     std::ifstream& stream = stub.stream;
-    stream.open(path);
+    stream.open(path, std::ios_base::binary);
     if (!stream.is_open())
         throw asset_not_found(name, path);
 
