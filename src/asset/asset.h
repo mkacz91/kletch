@@ -11,7 +11,7 @@ class Asset
 {
 public:
     explicit Asset(AssetHeader const& header, T const* data);
-    Asset(Asset<T>&& other);
+    Asset(Asset<T>&& other) noexcept;
     Asset(Asset<T> const& other) = delete;
     ~Asset();
 
@@ -24,8 +24,8 @@ public:
     void release();
 
 private:
-    string const m_name;
-    string const m_source_path;
+    string m_name;
+    string m_source_path;
     T const* m_data;
 };
 
@@ -35,10 +35,12 @@ Asset<T>::Asset(AssetHeader const& header, T const* data)
 { }
 
 template <class T> inline
-Asset<T>::Asset(Asset<T>&& other) :
+Asset<T>::Asset(Asset<T>&& other) noexcept :
     m_name(std::move(other.m_name)), m_source_path(std::move(other.m_source_path)),
-    m_data(std::move(other.m_data))
-{ }
+    m_data(other.m_data)
+{
+    other.m_data = nullptr;
+}
 
 template <class T> inline
 Asset<T>::~Asset() { release(); }
