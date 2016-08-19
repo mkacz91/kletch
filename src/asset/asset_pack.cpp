@@ -17,7 +17,7 @@ void AssetPackBase::set_root_dir(string const& root_dir)
 AssetPackBase::AssetStub AssetPackBase::open_asset(string const& name)
 {
     AssetStub stub(name);
-    string const& path = stub.header.path = m_root_dir + PATH_SEPARATOR + name + ".ass";
+    string const& path = stub.header.path = m_root_dir + "/" + name + ".ass";
     std::ifstream& stream = stub.stream;
     stream.open(path);
     if (!stream.is_open())
