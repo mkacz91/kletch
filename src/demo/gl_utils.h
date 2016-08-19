@@ -93,9 +93,9 @@ inline void delete_program(GLuint* program)
     *program = 0;
 }
 
-void load_vertex_shader(GLuint* shader, const string& resname);
+void load_vertex_shader(GLuint* shader, const string& name);
 
-void load_fragment_shader(GLuint* shader, const string& resname);
+void load_fragment_shader(GLuint* shader, const string& name);
 
 inline void delete_shader(GLuint* shader)
 {
@@ -110,7 +110,7 @@ void link_program(GLuint* program, GLuint vertex_shader, GLuint fragment_shader)
 
 void link_program(
     GLuint* program,
-    const string& vertex_shader_resname, const string& fragment_shader_resname
+    const string& vertex_shader_name, const string& fragment_shader_name
 );
 
 GLint get_uniform_location(GLuint program, const char* name);

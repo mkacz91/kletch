@@ -88,8 +88,7 @@ void AimerDemo::on_open()
     gl::create_buffer(&m_cloth_vertices);
     m_cloth_ready = false;
 
-    gl::link_program(&m_cloth_program,
-        "shaders/aimer_demo_cloth_vx.glsl", "shaders/uniform4_ft.glsl");
+    gl::link_program(&m_cloth_program, "aimer_demo_cloth_vx", "uniform4_ft");
     m_cloth_matrix_uniform = gl::get_uniform_location(m_cloth_program, "matrix");
     m_cloth_color_uniform = gl::get_uniform_location(m_cloth_program, "color");
     m_cloth_position_attrib = gl::get_attrib_location(m_cloth_program, "position");
@@ -99,7 +98,7 @@ void AimerDemo::on_open()
 
     // Aimer grid and samples
 
-    gl::link_program(&m_aimer_program, "shaders/mat3_pos2_vx.glsl", "shaders/uniform3_ft.glsl");
+    gl::link_program(&m_aimer_program, "mat3_pos2_vx", "uniform3_ft");
     m_aimer_matrix_uniform = gl::get_uniform_location(m_aimer_program, "matrix");
     m_aimer_color_uniform = gl::get_uniform_location(m_aimer_program, "color");
     m_aimer_position_attrib = gl::get_attrib_location(m_aimer_program, "position");

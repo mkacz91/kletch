@@ -6,6 +6,10 @@ set(CMAKE_COLOR_MAKEFILE ON)
 
 project(Kletch)
 
+if (DEFINED WIN32)
+  add_definitions(-DKLETCH_WINDOWS)
+endif()
+
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 if(COMPILER_SUPPORTS_CXX11)
@@ -22,6 +26,9 @@ if (WITH_DOUBLE)
 endif()
 
 add_subdirectory(src/lib)
+
+add_subdirectory(src/asset) # TODO: conditionally, depending on BUILD_DEMO and BUILD_TEST
+set(ASSC "${CMAKE_SOURCE_DIR}/src/asset/assc.py")
 
 if (NOT DEFINED WITH_DEMO OR WITH_DEMO)
   add_subdirectory(src/demo)

@@ -76,7 +76,7 @@ void Camera2::open_grid()
     gl::create_buffer(&m_grid_vertices, grid_vertices);
     m_grid_vertex_count = grid_vertices.size();
 
-    gl::link_program(&m_grid_program, "shaders/grid_vx.glsl", "shaders/uniform4_ft.glsl");
+    gl::link_program(&m_grid_program, "grid_vx", "uniform4_ft");
     m_grid_matrix_uniform = gl::get_uniform_location(m_grid_program, "matrix");
     m_grid_color_uniform = gl::get_uniform_location(m_grid_program, "color");
     m_grid_position_attrib = gl::get_attrib_location(m_grid_program, "position");

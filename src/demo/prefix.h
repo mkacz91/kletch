@@ -8,9 +8,8 @@
 #include <GLFW/glfw3.h>
 #include <math/math.h>
 
+#include "assets.h"
 #include "gl_utils.h"
-#include "resources.h"
-//#include "gl_ext.h"
 
 // Remove spurious defines of Windows.h
 #undef MOD_SHIFT
