@@ -21,10 +21,9 @@ GLuint load_shader(const string& name, GLenum shader_type)
         throw exception("Unable to create new shader");
 
     // Upload source and compile
-    char const** source_data = const_cast<char const**>(reinterpret_cast<char const* const*>(
-        source->c_str()));
+    char const* source_data = source->c_str();
     int source_size = source->size();
-    glShaderSource(shader, 1, source_data, &source_size);
+    glShaderSource(shader, 1, &source_data, &source_size);
     glCompileShader(shader);
 
     // TODO: Do this only in DEBUG
