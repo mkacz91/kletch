@@ -64,6 +64,7 @@ private:
 
     static std::vector<Sample> generate_samples(real kappa0, real delta_theta);
 
+    static mat2r eval_jacobian(real k0, real k1, real s);
     static void newton_refine1(vec2r p, real* a, real* s, int iter_count = 4);
 };
 
