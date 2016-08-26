@@ -15,4 +15,12 @@ vec2r PreciseFresnel::eval(real k0, real k1, real s)
     return FresnelCore<real>::eval<Heald5>(k0, k1, s, th);
 }
 
+vec2r PreciseFresnel::eval_m2(real k0, real k1, real s)
+{
+    FresnelThresholds<real> th;
+    th.th_n0 = rl(1e-2);
+    th.th_smk1_n0 = rl(1e-7);
+    return FresnelCore<real>::eval_m2<Heald5>(k0, k1, s, th);
+}
+
 } // namespace kletch

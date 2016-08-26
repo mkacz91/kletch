@@ -19,6 +19,9 @@ struct FresnelCore
     template <class StandardFresnel> static
     vec2<T> eval(T k0, T k1, T s, FresnelThresholds<T> const& th);
 
+    template <class StandardFresnel> static
+    vec2<T> eval_m2(T k0, T k1, T s, FresnelThresholds<T> const& th);
+
     // Evaluates the general Fresnel integral `INT t = 0..s: exp(i (k0 t + 0.5 k1 t^2))` assuming
     // `k1` is reasonably large.
     template <class StandardFresnel> static
@@ -29,6 +32,11 @@ struct FresnelCore
     // known.
     template <class Log = NopLog> static
     vec2<T> eval_smk1_core(T k0, T k1, T s, int n, T th);
+
+    template <class StandardFresnel> static
+    vec2<T> eval_m2_bgk1(T k0, T k1, T s);
+
+    static vec2<T> eval_m2_smk1(T k0, T k1, T s, T th);
 
     // Zero overhead log that does nothing.
     struct NopLog
@@ -58,6 +66,15 @@ vec2<T> FresnelCore<T>::eval(T k0, T k1, T s, FresnelThresholds<T> const& th)
     return abs(k1) > th.th_n0
         ? eval_bgk1<StandardFresnel>(k0, k1, s)
         : eval_smk1_core(k0, k1, s, 0, th.th_smk1_n0);
+}
+
+template <class T> template <class StandardFresnel> inline
+vec2<T> FresnelCore<T>::eval_m2(T k0, T k1, T s, FresnelThresholds<T> const& th)
+{
+    // TODO: Use separate threshold for n = 2. Or not?
+    return abs(k1) > th.th_n0
+        ? eval_m2_bgk1<StandardFresnel>(k0, k1, s)
+        : eval_m2_smk1(k0, k1, s, th.th_smk1_n0);
 }
 
 template <class T> template <class StandardFresnel> inline
@@ -146,6 +163,21 @@ vec2<T> FresnelCore<T>::eval_smk1_core(T k0, T k1, T s, int n, T th)
 
     f *= s;
     return f;
+}
+
+template <class T> template <class StandardFresnel> inline
+vec2<T> FresnelCore<T>::eval_m2_bgk1(T k0, T k1, T s)
+{
+    vec2<T> e = lhp(dir(s * (k0 + T(0.5) * k1 * s)));
+    vec2<T> f0 = eval_bgk1<StandardFresnel>(k0, k1, s);
+    vec2<T> f1 = (uny2<T>() - e - k0 * f0) / k1;
+    return (lhp(f0) - k0 * f1 - s * e) / k1;
+}
+
+template <class T>
+vec2<T> FresnelCore<T>::eval_m2_smk1(T k0, T k1, T s, T th)
+{
+    return s * s * eval_smk1_core(k0, k1, s, 2, th);
 }
 
 } // namespace kletch
