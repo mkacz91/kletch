@@ -5,6 +5,7 @@
 
 #include "aimer_demo.h"
 #include "demo.h"
+#include "fitter_demo.h"
 #include "gl_context_snapshot.h"
 #include "hello_demo.h"
 
@@ -350,6 +351,7 @@ int init_demos()
     demos.push_back(nullptr);
     demos.push_back(new HelloDemo);
     demos.push_back(new AimerDemo);
+    demos.push_back(new FitterDemo);
     // Add more demos here
 
     // Create AntTweakBar combo box
