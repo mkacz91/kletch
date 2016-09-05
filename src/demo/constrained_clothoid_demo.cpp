@@ -6,6 +6,13 @@ ConstrainedClothoidDemo::ConstrainedClothoidDemo(const string& display_name) :
     Demo(display_name)
 {
     m_control_overlay.set_camera(&m_camera);
+
+    m_control_overlay.add_point(&m_origin);
+    m_control_overlay.add_point(&m_tangent_tip);
+    m_control_overlay.add_vector(&m_origin, &m_tangent_tip);
+    //m_control_overlay.add_point(&m_local_arc_end);
+    m_control_overlay.add_point(&m_arc_end);
+
     update_local_arc();
 }
 
@@ -69,12 +76,6 @@ void ConstrainedClothoidDemo::on_open()
     m_control_overlay.open();
 
     m_camera.set_size(width(), height());
-
-    m_control_overlay.add_point(&m_origin);
-    m_control_overlay.add_point(&m_tangent_tip);
-    m_control_overlay.add_vector(&m_origin, &m_tangent_tip);
-    //m_control_overlay.add_point(&m_local_arc_end);
-    m_control_overlay.add_point(&m_arc_end);
 
     // Init arc
 
