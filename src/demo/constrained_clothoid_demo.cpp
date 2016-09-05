@@ -71,7 +71,6 @@ void ConstrainedClothoidDemo::on_open()
     m_camera.set_size(width(), height());
 
     m_control_overlay.add_point(&m_origin);
-    m_control_overlay.add_point(&m_target);
     m_control_overlay.add_point(&m_tangent_tip);
     m_control_overlay.add_vector(&m_origin, &m_tangent_tip);
     //m_control_overlay.add_point(&m_local_arc_end);

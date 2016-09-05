@@ -8,6 +8,7 @@ AimerDemo::AimerDemo() :
     ConstrainedClothoidDemo("Clothoid Aim")
 {
     //m_control_overlay.add_point(&m_aim_eval);
+    m_control_overlay.add_point(&m_target);
 }
 
 void AimerDemo::on_render()
@@ -168,7 +169,7 @@ void AimerDemo::aim()
 {
     real theta0 = tangent_angle();
     real kappa0 = rl(1) / rl(arc_radius());
-    m_aim_result = m_aimer.aim(origin(), theta0, kappa0, target());
+    m_aim_result = m_aimer.aim(origin(), theta0, kappa0, m_target);
     real a = m_aim_result.a;
     real s = m_aim_result.s;
     m_a = float(a); m_s = float(s);

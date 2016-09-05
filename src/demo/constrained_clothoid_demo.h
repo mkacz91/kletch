@@ -15,7 +15,6 @@ public:
     ConstrainedClothoidDemo(const string& display_name);
 
     const vec2f origin() const { return m_origin; }
-    const vec2f target() const { return m_target; }
     float arc_radius() const { return m_arc_radius; }
     float tangent_angle() const { return m_tangent_angle; }
 
@@ -35,7 +34,6 @@ protected: // TODO: This is temporary
 
 private:
     vec2f m_origin = 0;
-    vec2f m_target = vec2f(2, 2);
     vec2f m_tangent_tip = vec2f(1, 0);
     vec2f m_arc_end = vec2f(-1, 1);
     vec2f m_local_arc_end;
