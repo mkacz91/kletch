@@ -20,7 +20,7 @@ public:
 
     int add_point(vec2f* point);
     int add_vector(vec2f* start, vec2f* end);
-    int points_count() const { return m_points.size(); }
+    int point_count() const { return m_points.size(); }
     vec2f* point(int i) { return m_points.at(i); }
     int point_index(const vec2f* point) const;
     void remove_point(int i) { m_points.erase(m_points.begin() + i); }
