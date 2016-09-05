@@ -1,11 +1,11 @@
-#ifndef KLETCH_FRESNEL_H
-#define KLETCH_FRESNEL_H
+#ifndef KLETCH_DISPLAY_FRESNEL_H
+#define KLETCH_DISPLAY_FRESNEL_H
 
 #include "prefix.h"
 
 namespace kletch {
 
-class Fresnel
+class DisplayFresnel
 {
 public:
     static real eval_c(real s);
@@ -33,17 +33,17 @@ private:
     static real eval_r(real s);
 };
 
-inline real Fresnel::eval_c(real s)
+inline real DisplayFresnel::eval_c(real s)
 {
     return rl(0.5) - eval_r(s) * sin(HALF_PI * (eval_a(s) - s * s));
 }
 
-inline real Fresnel::eval_s(real s)
+inline real DisplayFresnel::eval_s(real s)
 {
     return rl(0.5) - eval_r(s) * cos(HALF_PI * (eval_a(s) - s * s));
 }
 
-inline vec2r Fresnel::eval(real s)
+inline vec2r DisplayFresnel::eval(real s)
 {
     real sgn_s = sgn(s);
     s = abs(s);
@@ -52,14 +52,14 @@ inline vec2r Fresnel::eval(real s)
     return sgn_s * vec2r(rl(0.5) - r * sin(u), rl(0.5) - r * cos(u));
 }
 
-inline real Fresnel::eval_a(real s)
+inline real DisplayFresnel::eval_a(real s)
 {
     real ntor = rl(1.0);
     real dtor = rl(2.0) + s * (rl(2.524) + s * (rl(1.886) + s * rl(0.803)));
     return ntor / dtor;
 }
 
-inline real Fresnel::eval_r(real s)
+inline real DisplayFresnel::eval_r(real s)
 {
     real ntor = rl(0.506) * s + rl(1.0);
     real dtor = SQRT_2 + s * (rl(2.054) + s * rl(1.790));
@@ -68,4 +68,4 @@ inline real Fresnel::eval_r(real s)
 
 } // namespace kletch
 
-#endif // KLETCH_FRESNEL_H
+#endif // KLETCH_DISPLAY_FRESNEL_H

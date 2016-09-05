@@ -6,6 +6,7 @@
 #include <AntTweakBar.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <math/math.h>
 
 #include "assets.h"
 #include "gl_utils.h"

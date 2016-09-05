@@ -1,4 +1,5 @@
 #include "demo.h"
+#include "printing.h"
 
 namespace kletch {
 

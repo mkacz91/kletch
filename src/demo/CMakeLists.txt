@@ -32,7 +32,6 @@ endforeach(SHADER_SOURCE)
 
 # Executable 'kletch'
 
-message(STATUS "GLFW3_INCLUDE_DIR: ${GLFW3_INCLUDE_DIR}")
 include_directories(
   ../
   ${GLFW3_INCLUDE_DIR}

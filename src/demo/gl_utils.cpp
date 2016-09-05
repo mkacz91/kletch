@@ -1,4 +1,5 @@
 #include "gl_utils.h"
+#include "printing.h"
 
 #include <fstream>
 #include <sstream>

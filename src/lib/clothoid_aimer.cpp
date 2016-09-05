@@ -3,7 +3,7 @@
 #include <queue>
 #include <stack>
 
-#include "fresnel.h"
+#include "precise_fresnel.h"
 
 namespace kletch {
 
@@ -138,7 +138,7 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, 
         for (int i = 0; i <= initial_partition; ++i)
         {
             real a = lerp(a0, a1, rl(i) / rl(initial_partition));
-            samples.emplace_back(a, s, Fresnel::eval(0, kappa0, a, s));
+            samples.emplace_back(a, s, PreciseFresnel::eval(kappa0, a, s));
         }
         for (int i = 1; i <= initial_partition; ++i)
             ranges.emplace(samples.size() - i, samples.size() - i - 1);
@@ -154,7 +154,7 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, 
                 real a = rl(0.5) * (s0.a + s1.a);
                 real s = s0.s;
                 assert(s == s1.s);
-                samples.emplace_back(a, s, Fresnel::eval(0, kappa0, a, s));
+                samples.emplace_back(a, s, PreciseFresnel::eval(kappa0, a, s));
                 ranges.emplace(j0, j);
                 ranges.emplace(j, j1);
             }
@@ -182,13 +182,31 @@ inline int ClothoidAimer::to_grid(int n, real v0, real v1, real v)
     return min(n - 1, n * (v - v0) / (v1 - v0));
 }
 
+mat2r ClothoidAimer::eval_jacobian(real k0, real k1, real s)
+{
+    // The d/k1 gradient of `F(k0, k1; s)` is computed as
+    //
+    //     DER k1: F(k0, k1; s) = 0.5 i F_2(k0, k1; s),
+    //
+    // whereas the d/ds is yielded by
+    //
+    //     DER s: F(k0, k1; s) = exp(i (k0 s + 0.5 k1 s^2)).
+
+    vec2r fk1 = rl(0.5) * lhp(PreciseFresnel::eval_m2(k0, k1, s));
+    vec2r fs = dir(s * (k0 + rl(0.5) * k1 * s));
+    return mat2r(
+        fk1.x, fs.x,
+        fk1.y, fs.y
+    );
+}
+
 void ClothoidAimer::newton_refine1(vec2r p, real* a, real* s, int iter_count)
 {
     vec2r as = { *a, *s };
     while (iter_count --> 0)
     {
-        vec2r q = p - Fresnel::eval1(as.x, as.y);
-        mat2r J = Fresnel::jacobian1(as.x, as.y);
+        vec2r q = p - PreciseFresnel::eval(1, as.x, as.y);
+        mat2r J = eval_jacobian(1, as.x, as.y);
         J.invert();
         as += J.transform(q);
     }

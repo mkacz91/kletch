@@ -21,21 +21,23 @@ endif()
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
+if (WITH_DOUBLE)
+  add_definitions(-DKLETCH_WITH_DOUBLE)
+endif()
+
 add_subdirectory(src/lib)
 
 add_subdirectory(src/asset) # TODO: conditionally, depending on BUILD_DEMO and BUILD_TEST
 set(ASSC "${CMAKE_SOURCE_DIR}/src/asset/assc.py")
 
-if (NOT DEFINED BUILD_DEMO)
-  set(BUILD_DEMO YES)
-endif (NOT DEFINED BUILD_DEMO)
-if (BUILD_DEMO)
+if (NOT DEFINED WITH_DEMO OR WITH_DEMO)
   add_subdirectory(src/demo)
-endif (BUILD_DEMO)
+endif()
 
-if (NOT DEFINED BUILD_TEST)
-  set (BUILD_TEST NO)
-endif (NOT DEFINED BUILD_TEST)
-if (BUILD_TEST)
+if (WITH_TEST)
   add_subdirectory(test)
-endif (BUILD_TEST)
+endif()
+
+if (WITH_BENCH)
+  add_subdirectory(src/bench)
+endif()

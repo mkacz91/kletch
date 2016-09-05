@@ -29,7 +29,7 @@ public:
     void invalidate() { m_needs_redraw = true; }
     bool needs_redraw() const { return m_needs_redraw; }
 
-    virtual bool on_event(Event const& e) { unused(e); return false; }
+    virtual bool on_event(Event const& e) { ignore(e); return false; }
 
 protected:
     Demo(string const& display_name) : m_display_name(display_name) { }
