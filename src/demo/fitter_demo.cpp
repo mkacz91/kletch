@@ -1,5 +1,6 @@
 #include "fitter_demo.h"
 #include <lib/display_fresnel.h>
+#include <lib/precise_fresnel.h>
 
 namespace kletch {
 
@@ -125,14 +126,18 @@ void FitterDemo::aim()
     real k0 = rl(1) / arc_radius;
     m_aim_results.clear();
     real k1_sum = 0;
+    real w_sum = 0;
     std::vector<vec2f> poly_vertices { {0, 0} };
     for (vec2f* target : m_targets)
     {
-        m_aim_results.push_back(m_aimer.aim(origin, theta0, k0, *target));
-        k1_sum += m_aim_results.back().a;
+        auto aim_result = m_aimer.aim(origin, theta0, k0, *target);
+        m_aim_results.push_back(aim_result);
+        real w = PreciseFresnel::eval_m2(k0, aim_result.a, aim_result.s).len_sq();
+        k1_sum += w * m_aim_results.back().a;
+        w_sum += w;
         poly_vertices.push_back(*target);
     }
-    m_aim_results.push_back({ k1_sum / m_targets.size(), m_aim_results.back().s });
+    m_aim_results.push_back({ k1_sum / w_sum, m_aim_results.back().s });
 
     std::vector<vec2f> cloth_vertices;
     for (auto const& result : m_aim_results)
@@ -141,7 +146,7 @@ void FitterDemo::aim()
         for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
         {
             real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
-            cloth_vertices.push_back(origin + arc_radius * DisplayFresnel::eval(theta0, 1, k1, si));
+            cloth_vertices.push_back(origin + arc_radius * PreciseFresnel::eval(1, k1, si).rot(theta0));
         }
     }
 
