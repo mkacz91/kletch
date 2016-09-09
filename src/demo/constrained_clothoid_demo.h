@@ -9,7 +9,7 @@
 
 namespace kletch {
 
-class ConstrainedClothoidDemo : public Demo
+class ConstrainedClothoidDemo : public ControlOverlay
 {
 public:
     ConstrainedClothoidDemo(const string& display_name);
@@ -30,7 +30,6 @@ private:
 
 protected: // TODO: This is temporary
     Camera2 m_camera;
-    ControlOverlay m_control_overlay;
 
 private:
     vec2f m_origin = 0;

@@ -10,6 +10,8 @@ const int_range ControlOverlay::VECTOR_EDGE_VERTEX_RANGE
 const int_range ControlOverlay::VECTOR_CAP_VERTEX_RANGE
     = { ControlOverlay::VECTOR_EDGE_VERTEX_RANGE.end(), 3 };
 
+ControlOverlay::ControlOverlay(string const& display_name) : Demo(display_name) { }
+
 int ControlOverlay::add_point(vec2f* point)
 {
     m_points.push_back(point);
@@ -33,7 +35,7 @@ int ControlOverlay::point_index(const vec2f* point) const
     throw std::invalid_argument("Given point is not member of this ControlOverlay");
 }
 
-void ControlOverlay::render()
+void ControlOverlay::on_render()
 {
     if (m_point_program == 0)
         return;
@@ -91,7 +93,7 @@ void ControlOverlay::render()
     glDisableVertexAttribArray(m_vector_cap_position_attrib);
 }
 
-void ControlOverlay::open()
+void ControlOverlay::on_open()
 {
     glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
 
@@ -146,7 +148,7 @@ void ControlOverlay::open()
     m_vector_cap_position_attrib = gl::get_attrib_location(m_vector_cap_program, "position");
 }
 
-void ControlOverlay::close()
+void ControlOverlay::on_close()
 {
     gl::delete_program(&m_vector_cap_program);
     gl::delete_program(&m_vector_edge_program);

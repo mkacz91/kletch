@@ -8,7 +8,7 @@ AimerDemo::AimerDemo() :
     ConstrainedClothoidDemo("Clothoid Aim")
 {
     //m_control_overlay.add_point(&m_aim_eval);
-    m_control_overlay.add_point(&m_target);
+    add_point(&m_target);
 }
 
 void AimerDemo::on_render()

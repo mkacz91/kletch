@@ -50,7 +50,7 @@ bool FitterDemo::on_event(Event const& e)
         if (e.button != MOUSE_LEFT)
             return false;
         m_targets.push_back(new vec2f(m_camera.canvas2world(e.pos)));
-        m_control_overlay.add_point(m_targets.back());
+        add_point(m_targets.back());
         aim();
         return true;
     }

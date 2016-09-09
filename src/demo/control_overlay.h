@@ -5,13 +5,18 @@
 #include <unordered_set>
 
 #include "camera2.h"
+#include "demo.h"
 
 namespace kletch {
 
-// TODO: Make this a demo base class
-class ControlOverlay
+class ControlOverlay : public Demo
 {
 public:
+    bool on_event(Event const& e);
+
+protected:
+    ControlOverlay(const string& display_name);
+
     const Camera2* camera() const { return m_camera; }
     void set_camera(const Camera2* camera) { m_camera = camera; }
 
@@ -27,14 +32,12 @@ public:
     void remove_point(const vec2f* point) { remove_point(point_index(point)); }
     void clear_points() { m_points.clear(); }
 
-    void render();
-    void open();
-    void close();
+    virtual void on_render() override;
+    virtual void on_open() override;
+    virtual void on_close() override;
 
     vec2f* pick_point(const vec2i& canvas_pos);
     vec2f* pick_point(int cx, int cy) { return pick_point(vec2i(cx, cy)); }
-
-    bool on_event(Event const& e);
 
 private:
     static const int CIRCLE_SEGMENT_COUNT;

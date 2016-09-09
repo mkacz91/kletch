@@ -3,15 +3,15 @@
 namespace kletch {
 
 ConstrainedClothoidDemo::ConstrainedClothoidDemo(const string& display_name) :
-    Demo(display_name)
+    ControlOverlay(display_name)
 {
-    m_control_overlay.set_camera(&m_camera);
+    set_camera(&m_camera);
 
-    m_control_overlay.add_point(&m_origin);
-    m_control_overlay.add_point(&m_tangent_tip);
-    m_control_overlay.add_vector(&m_origin, &m_tangent_tip);
+    add_point(&m_origin);
+    add_point(&m_tangent_tip);
+    add_vector(&m_origin, &m_tangent_tip);
     //m_control_overlay.add_point(&m_local_arc_end);
-    m_control_overlay.add_point(&m_arc_end);
+    add_point(&m_arc_end);
 
     update_local_arc();
 }
@@ -37,7 +37,7 @@ void ConstrainedClothoidDemo::on_render()
 
     glDisableVertexAttribArray(m_arc_param_attrib);
 
-    m_control_overlay.render();
+    ControlOverlay::on_render();
 }
 
 bool ConstrainedClothoidDemo::on_event(Event const& e)
@@ -51,7 +51,7 @@ bool ConstrainedClothoidDemo::on_event(Event const& e)
     vec2f origin = m_origin;
     vec2f tangent_tip = m_tangent_tip;
     vec2f arc_end = m_arc_end;
-    if (m_control_overlay.on_event(e))
+    if (ControlOverlay::on_event(e))
     {
         if (origin != m_origin)
             m_tangent_tip = tangent_tip + m_origin - origin;
@@ -71,10 +71,10 @@ bool ConstrainedClothoidDemo::on_event(Event const& e)
 
 void ConstrainedClothoidDemo::on_open()
 {
+    ControlOverlay::on_open();
+
     glClearColor(0.9f, 0.9f, 0.9f, 0);
     m_camera.open_grid();
-    m_control_overlay.open();
-
     m_camera.set_size(width(), height());
 
     // Init arc
@@ -103,10 +103,10 @@ void ConstrainedClothoidDemo::on_close()
     gl::delete_buffer(&m_arc_vertices);
     gl::delete_program(&m_arc_program);
 
-    m_control_overlay.clear_points();
-    m_control_overlay.close();
-
     m_camera.close_grid();
+
+    clear_points();
+    ControlOverlay::on_close();
 }
 
 void ConstrainedClothoidDemo::update_local_arc()
