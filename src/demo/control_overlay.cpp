@@ -200,7 +200,11 @@ bool ControlOverlay::on_event(Event const& e)
             vec2f mouse_world_pos = m_camera->canvas2world(e.pos);
             vec2f translation = mouse_world_pos - m_prev_mouse_world_pos;
             for (vec2f* point : m_selected_points)
+            {
+                vec2f prev_pos = *point;
                 *point += translation;
+                on_point_move(point, prev_pos);
+            }
             m_prev_mouse_world_pos = mouse_world_pos;
             return true;
         }

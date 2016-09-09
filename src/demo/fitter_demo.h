@@ -21,6 +21,7 @@ protected:
     virtual void on_render() override;
     virtual void on_open() override;
     virtual void on_close() override;
+    virtual void on_point_move(vec2f* point, vec2f prev_pos) override;
 
 private:
     static const int CLOTHOID_VERTEX_COUNT = 40;

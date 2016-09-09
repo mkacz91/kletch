@@ -78,6 +78,31 @@ void FitterDemo::on_close()
     ConstrainedClothoidDemo::on_close();
 }
 
+void FitterDemo::on_point_move(vec2f* point, vec2f prev_pos)
+{
+    ConstrainedClothoidDemo::on_point_move(point, prev_pos);
+
+    int index = -1;
+    for (int i = 0; i < m_targets.size(); ++i)
+    {
+        if (point == m_targets[i])
+        {
+            index = i;
+            break;
+        }
+    }
+    if (index == -1)
+        return;
+
+    vec2f dp = span(prev_pos, *point);
+    for (int i = 0; i < m_targets.size(); ++i)
+    {
+        if (i == index)
+            continue;
+        *m_targets[i] += dp / (2 << abs(i - index));
+    }
+}
+
 void FitterDemo::aim()
 {
     if (m_targets.empty())

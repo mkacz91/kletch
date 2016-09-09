@@ -39,6 +39,8 @@ protected:
     vec2f* pick_point(const vec2i& canvas_pos);
     vec2f* pick_point(int cx, int cy) { return pick_point(vec2i(cx, cy)); }
 
+    virtual void on_point_move(vec2f* point, vec2f prev_pos) { }
+
 private:
     static const int CIRCLE_SEGMENT_COUNT;
     static const float TAU;
