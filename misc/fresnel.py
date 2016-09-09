@@ -15,6 +15,11 @@ def eval_int(k0, k1, s):
     im, _ = integrate.quad(lambda t: sin(t * (k0 + 0.5 * k1 * t)), 0, s)
     return complex(re, im)
 
+def eval_int_m2(k0, k1, s):
+    re, _ = integrate.quad(lambda t: t * t * cos(t * (k0 + 0.5 * k1 * t)), 0, s)
+    im, _ = integrate.quad(lambda t: t * t * sin(t * (k0 + 0.5 * k1 * t)), 0, s)
+    return complex(re, im)
+
 def eval_bgk1(k0, k1, s):
     c0 = sqrt(abs(k1 / math.pi))
     c1 = k0 / k1
