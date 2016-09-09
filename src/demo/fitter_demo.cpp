@@ -23,11 +23,16 @@ void FitterDemo::on_render()
     {
         glUseProgram(m_cloth_program);
         glUniformMatrix3fv(m_cloth_matrix_uniform, m_camera.matrix());
-        glUniform4f(m_cloth_color_uniform, 0, 0, 0, 1);
-        glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
         glEnableVertexAttribArray(m_cloth_position_attrib);
-        glVertexAttribPointer(m_cloth_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
+        glBindBuffer(GL_ARRAY_BUFFER, m_poly_vertices);
+        glVertexAttribPointer(m_cloth_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glUniform4f(m_cloth_color_uniform, 0.7f, 0.7f, 0.7f, 1);
+        glDrawArrays(GL_LINE_STRIP, 0, m_targets.size() + 1);
+
+        glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
+        glVertexAttribPointer(m_cloth_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glUniform4f(m_cloth_color_uniform, 0.4f, 0.4f, 0.4f, 1);
         for (int i = 0; i < m_aim_results.size(); ++i)
         {
             if (i == m_aim_results.size() - 1)
@@ -67,6 +72,7 @@ void FitterDemo::on_open()
     ConstrainedClothoidDemo::on_open();
 
     gl::create_buffer(&m_cloth_vertices);
+    gl::create_buffer(&m_poly_vertices);
 
     gl::link_program(&m_cloth_program, "aimer_demo_cloth_vx", "uniform4_ft");
     m_cloth_matrix_uniform = gl::get_uniform_location(m_cloth_program, "matrix");
@@ -78,6 +84,7 @@ void FitterDemo::on_close()
 {
     gl::delete_program(&m_cloth_program);
     gl::delete_buffer(&m_cloth_vertices);
+    gl::delete_buffer(&m_poly_vertices);
 
     ConstrainedClothoidDemo::on_close();
 }
@@ -118,10 +125,12 @@ void FitterDemo::aim()
     real k0 = rl(1) / arc_radius;
     m_aim_results.clear();
     real k1_sum = 0;
+    std::vector<vec2f> poly_vertices { {0, 0} };
     for (vec2f* target : m_targets)
     {
         m_aim_results.push_back(m_aimer.aim(origin, theta0, k0, *target));
         k1_sum += m_aim_results.back().a;
+        poly_vertices.push_back(*target);
     }
     m_aim_results.push_back({ k1_sum / m_targets.size(), m_aim_results.back().s });
 
@@ -135,9 +144,11 @@ void FitterDemo::aim()
             cloth_vertices.push_back(origin + arc_radius * DisplayFresnel::eval(theta0, 1, k1, si));
         }
     }
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_poly_vertices);
+    glBufferData(GL_ARRAY_BUFFER, poly_vertices);
     glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
     glBufferData(GL_ARRAY_BUFFER, cloth_vertices);
-
 }
 
 } // namespace kletch

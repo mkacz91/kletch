@@ -31,6 +31,7 @@ private:
     std::vector<ClothoidAimer::Result> m_aim_results;
 
     GLuint m_cloth_vertices = 0;
+    GLuint m_poly_vertices = 0;
     GLuint m_cloth_program = 0;
     GLint m_cloth_matrix_uniform ;
     GLint m_cloth_color_uniform;
