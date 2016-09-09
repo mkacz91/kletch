@@ -29,7 +29,11 @@ void FitterDemo::on_render()
         glVertexAttribPointer(m_cloth_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
         for (int i = 0; i < m_aim_results.size(); ++i)
+        {
+            if (i == m_aim_results.size() - 1)
+                glUniform4f(m_cloth_color_uniform, 1, 0, 0, 1);
             glDrawArrays(GL_LINE_STRIP, i * CLOTHOID_VERTEX_COUNT, CLOTHOID_VERTEX_COUNT);
+        }
 
         glDisableVertexAttribArray(m_cloth_position_attrib);
     }
