@@ -57,6 +57,7 @@ bool FitterDemo::on_event(Event const& e)
 
     switch (e.type) {
     case MOUSE_PRESS:
+    {
         if (e.button != MOUSE_LEFT)
             return false;
         m_targets.push_back(new vec2f(m_camera.canvas2world(e.pos)));
@@ -64,6 +65,10 @@ bool FitterDemo::on_event(Event const& e)
         aim();
         return true;
     }
+    default:
+    {
+        break;
+    }}
 
     return false;
 }
