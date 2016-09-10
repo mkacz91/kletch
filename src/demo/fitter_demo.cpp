@@ -137,8 +137,8 @@ void FitterDemo::aim()
     {
         auto aim_result = m_aimer.aim(origin, theta0, k0, *target);
         m_aim_results.push_back(aim_result);
-        real w = PreciseFresnel::eval_m2(k0, aim_result.a, aim_result.s).len_sq();
-        k1_sum += w * m_aim_results.back().a;
+        real w = PreciseFresnel::eval_m2(k0, aim_result.k1, aim_result.s).len_sq();
+        k1_sum += w * m_aim_results.back().k1;
         w_sum += w;
         poly_vertices.push_back(*target);
     }
@@ -147,7 +147,7 @@ void FitterDemo::aim()
     std::vector<vec2f> cloth_vertices;
     for (auto const& result : m_aim_results)
     {
-        real k1 = result.a, s = result.s;
+        real k1 = result.k1, s = result.s;
         for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
         {
             real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);

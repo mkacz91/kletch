@@ -11,23 +11,21 @@ class ClothoidAimer
 public:
     struct Result
     {
-        real a;
+        real k1;
         real s;
         bool success;
     };
 
     struct Sample
     {
-        real a;
+        real k1;
         real s;
         vec2r p;
-
-        Sample(real a, real s, vec2r const& p) : a(a), s(s), p(p) { }
     };
 
     ClothoidAimer(real delta_theta = rl(3.14159265359));
 
-    Result aim(const vec2r& p0, real theta0, real kappa0, const vec2r& p1) const;
+    Result aim(vec2r const& p0, real theta0, real k0, vec2r const& p1) const;
 
     int refine_steps() const { return m_refine_steps; }
     void set_refine_steps(int refine_steps) { m_refine_steps = refine_steps; }
@@ -41,7 +39,7 @@ private:
 
     struct Cell
     {
-        real a;
+        real k1;
         real s;
 
         bool empty() { return s < 0; }
@@ -59,13 +57,13 @@ private:
 
     static int to_grid(int n, real v0, real v1, real v);
 
-    static real get_max_s(real kappa0, real a, real delta_theta);
-    static bool get_a_range(real kappa0, real s, real delta_theta, real* a0, real* a1);
+    static real get_max_s(real k0, real k1, real delta_theta);
+    static bool get_k1_range(real k0, real s, real delta_theta, real* k1_start, real* k1_end);
 
-    static std::vector<Sample> generate_samples(real kappa0, real delta_theta);
+    static std::vector<Sample> generate_samples(real k0, real delta_theta);
 
     static mat2r eval_jacobian(real k0, real k1, real s);
-    static void newton_refine1(vec2r p, real* a, real* s, int iter_count = 4);
+    static void newton_refine1(vec2r p, real* k1, real* s, int iter_count = 4);
 };
 
 } // namespace kletch

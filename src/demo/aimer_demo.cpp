@@ -77,7 +77,7 @@ void AimerDemo::on_open()
     ConstrainedClothoidDemo::on_open();
 
     // Alter TwBar
-    TwAddVarRO(twbar(), "a", TW_TYPE_FLOAT, &m_a, nullptr);
+    TwAddVarRO(twbar(), "k1", TW_TYPE_FLOAT, &m_k1, nullptr);
     TwAddVarRO(twbar(), "s", TW_TYPE_FLOAT, &m_s, nullptr);
     TwAddVarCB(
         twbar(), "Iters", TW_TYPE_INT32,
@@ -147,7 +147,7 @@ void AimerDemo::on_close()
 
     TwRemoveVar(twbar(), "Iters");
     TwRemoveVar(twbar(), "s");
-    TwRemoveVar(twbar(), "a");
+    TwRemoveVar(twbar(), "k1");
 
     ConstrainedClothoidDemo::on_close();
 }
@@ -170,18 +170,18 @@ void AimerDemo::aim()
     real theta0 = tangent_angle();
     real kappa0 = rl(1) / rl(arc_radius());
     m_aim_result = m_aimer.aim(origin(), theta0, kappa0, m_target);
-    real a = m_aim_result.a;
+    real k1 = m_aim_result.k1;
     real s = m_aim_result.s;
-    m_a = float(a); m_s = float(s);
+    m_k1 = float(k1); m_s = float(s);
 
-    m_aim_eval = origin() + arc_radius() * DisplayFresnel::eval(theta0, 1, a, s); // TODO
+    m_aim_eval = origin() + arc_radius() * DisplayFresnel::eval(theta0, 1, k1, s); // TODO
 
     std::vector<vec2f> cloth_vertices;
     for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
     {
         real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
         cloth_vertices.push_back(
-            origin() + arc_radius() * DisplayFresnel::eval(theta0, 1, a, si)
+            origin() + arc_radius() * DisplayFresnel::eval(theta0, 1, k1, si)
         );
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);

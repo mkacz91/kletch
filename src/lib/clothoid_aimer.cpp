@@ -13,18 +13,14 @@ ClothoidAimer::ClothoidAimer(real delta_theta)
 }
 
 ClothoidAimer::Result ClothoidAimer::aim(
-    const vec2r& p0,
-    real theta0,
-    real kappa0,
-    const vec2r& p1
-) const
+    vec2r const& p0, real theta0, real k0, vec2r const& p1) const
 {
-    vec2r p = kappa0 * span(p0, p1).rot(-theta0);
+    vec2r p = k0 * span(p0, p1).rot(-theta0);
     vec2i grid_p = to_grid(p);
     Cell cell = m_grid[grid_p.y][grid_p.x];
-    real a = cell.a, s = cell.s;
-    newton_refine1(p, &a, &s, refine_steps());
-    return { a, s, true };
+    real k1 = cell.k1, s = cell.s;
+    newton_refine1(p, &k1, &s, refine_steps());
+    return { k1, s, true };
 }
 
 inline real ClothoidAimer::get_max_s(real kappa0, real a, real delta_theta)
@@ -36,13 +32,13 @@ inline real ClothoidAimer::get_max_s(real kappa0, real a, real delta_theta)
         : -(sqrt(-two_a * theta) + kappa0) / a;
 }
 
-bool ClothoidAimer::get_a_range(real kappa0, real s, real delta_theta, real* a0, real* a1)
+bool ClothoidAimer::get_k1_range(real k0, real s, real delta_theta, real* k1_start, real* k1_end)
 {
-    assert(kappa0 >= 0);
+    assert(k0 >= 0);
     assert(s > 0);
     assert(delta_theta > 0);
 
-    real c0 = kappa0 * s;
+    real c0 = k0 * s;
     real delta = c0 * (2 * delta_theta - c0) + sq(delta_theta);
     if (delta <= 0)
         return false;
@@ -58,8 +54,8 @@ bool ClothoidAimer::get_a_range(real kappa0, real s, real delta_theta, real* a0,
 
     real b2 = 2 * (delta_theta - c0) / s_sq;
 
-    *a0 = b0;
-    *a1 = (b2 * s < -kappa0) ? b1 : b2;
+    *k1_start = b0;
+    *k1_end = (b2 * s < -k0) ? b1 : b2;
     return true;
 }
 
@@ -86,7 +82,7 @@ void ClothoidAimer::init_grid(real delta_theta)
         int i = grid_p.y, j = grid_p.x;
         if (m_grid[i][j].empty())
         {
-            m_grid[i][j] = { sample.a, sample.s };
+            m_grid[i][j] = { sample.k1, sample.s };
             frontier.push(grid_p);
             assert(!m_grid[i][j].empty());
         }
@@ -121,24 +117,24 @@ void ClothoidAimer::init_grid(real delta_theta)
     }
 }
 
-std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, real delta_theta)
+std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real delta_theta)
 {
     const real ref_sample_dist = rl(0.1);
     const real ref_sample_dist_sq = sq(ref_sample_dist);
     const int initial_partition = 7;
 
     std::vector<Sample> samples;
-    samples.emplace_back(0, 0, 0);
+    samples.push_back({ 0, 0, 0 });
 
     real s = rl(0.1);
-    real a0, a1;
+    real k1_start, k1_end;
     std::stack<tuple<int, int>> ranges;
-    while (get_a_range(kappa0, s, delta_theta, &a0, &a1))
+    while (get_k1_range(k0, s, delta_theta, &k1_start, &k1_end))
     {
         for (int i = 0; i <= initial_partition; ++i)
         {
-            real a = lerp(a0, a1, rl(i) / rl(initial_partition));
-            samples.emplace_back(a, s, PreciseFresnel::eval(kappa0, a, s));
+            real k1 = lerp(k1_start, k1_end, rl(i) / rl(initial_partition));
+            samples.push_back({ k1, s, PreciseFresnel::eval(k0, k1, s) });
         }
         for (int i = 1; i <= initial_partition; ++i)
             ranges.emplace(samples.size() - i, samples.size() - i - 1);
@@ -151,10 +147,10 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real kappa0, 
             if (2 * ref_sample_dist_sq < dist_sq(s0.p, s1.p))
             {
                 int j = samples.size();
-                real a = rl(0.5) * (s0.a + s1.a);
+                real k1 = rl(0.5) * (s0.k1 + s1.k1);
                 real s = s0.s;
                 assert(s == s1.s);
-                samples.emplace_back(a, s, PreciseFresnel::eval(kappa0, a, s));
+                samples.push_back({ k1, s, PreciseFresnel::eval(k0, k1, s) });
                 ranges.emplace(j0, j);
                 ranges.emplace(j, j1);
             }
@@ -200,17 +196,17 @@ mat2r ClothoidAimer::eval_jacobian(real k0, real k1, real s)
     );
 }
 
-void ClothoidAimer::newton_refine1(vec2r p, real* a, real* s, int iter_count)
+void ClothoidAimer::newton_refine1(vec2r p, real* k1, real* s, int iter_count)
 {
-    vec2r as = { *a, *s };
+    vec2r u = { *k1, *s };
     while (iter_count --> 0)
     {
-        vec2r q = p - PreciseFresnel::eval(1, as.x, as.y);
-        mat2r J = eval_jacobian(1, as.x, as.y);
+        vec2r q = p - PreciseFresnel::eval(1, u.x, u.y);
+        mat2r J = eval_jacobian(1, u.x, u.y);
         J.invert();
-        as += J.transform(q);
+        u += J.transform(q);
     }
-    *a = as.x, *s = as.y;
+    *k1 = u.x, *s = u.y;
 }
 
 } // namespace kletch

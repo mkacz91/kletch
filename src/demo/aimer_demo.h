@@ -28,7 +28,7 @@ private:
     ClothoidAimer::Result m_aim_result;
     vec2f m_target = { 2.0f, 2.0f };
     vec2f m_aim_eval = { 0.0f, 0.5f };
-    float m_a = 0;
+    float m_k1 = 0;
     float m_s = 0;
 
     bool m_cloth_ready = false;
