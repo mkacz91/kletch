@@ -12,7 +12,7 @@ namespace kletch {
 class ControlOverlay : public Demo
 {
 public:
-    bool on_event(Event const& e);
+    virtual bool on_event(Event const& e) override;
 
 protected:
     ControlOverlay(const string& display_name);
