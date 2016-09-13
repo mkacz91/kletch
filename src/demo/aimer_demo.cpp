@@ -39,7 +39,7 @@ void AimerDemo::on_render()
     glUniform3f(m_cloth_color_uniform, 0.5f, 0.5f, 0.8f);
     glBindBuffer(GL_ARRAY_BUFFER, m_sample_vertices);
     glVertexAttribPointer(m_cloth_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glDrawArrays(GL_LINES, 0, m_aimer.m_samples.size() * 4);
+    glDrawArrays(GL_LINES, 0, m_sample_vertex_count);
 
     glDisableVertexAttribArray(m_aimer_position_attrib);
 
@@ -122,15 +122,16 @@ void AimerDemo::on_open()
 
     const float SAMPLE_SIZE = 0.02f;
     std::vector<vec2f> sample_vertices;
-    for (const ClothoidAimer::Sample& sample : m_aimer.m_samples)
+    for (vec2r const& sample : m_aimer.get_samples())
     {
-        float x = sample.p.x, y = sample.p.y;
+        float x = sample.x, y = sample.y;
         sample_vertices.emplace_back(x - SAMPLE_SIZE, y);
         sample_vertices.emplace_back(x + SAMPLE_SIZE, y);
         sample_vertices.emplace_back(x, y - SAMPLE_SIZE);
         sample_vertices.emplace_back(x, y + SAMPLE_SIZE);
     }
     gl::create_buffer(&m_sample_vertices, sample_vertices);
+    m_sample_vertex_count = sample_vertices.size();
 
     aim();
 }

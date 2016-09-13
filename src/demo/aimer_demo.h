@@ -45,6 +45,7 @@ private:
 
     GLuint m_grid_vertices = 0;
     GLuint m_sample_vertices = 0;
+    int m_sample_vertex_count;
 
     static void TW_CALL set_refine_steps_cb(const void* value, void* client_data);
     static void TW_CALL get_refine_steps_cb(void* value, void* client_data);

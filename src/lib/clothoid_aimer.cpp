@@ -23,6 +23,26 @@ ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target) const
     return result;
 }
 
+std::vector<vec2r> ClothoidAimer::get_samples()
+{
+    std::vector<vec2r> samples;
+    for (int i = 1; i <= GRID_SIZE; ++i)
+    {
+        for (int j = 1; j <= GRID_SIZE; ++j)
+        {
+            auto result = m_grid[i][j];
+            if (!result.success)
+                continue;
+            vec2r sample = PreciseFresnel::eval(1, result.k1, result.s);
+            // Filter out samples the were carried over from neighboring cells
+            vec2i coords = to_grid(sample);
+            if (coords.x == j && coords.y == i)
+                samples.push_back(sample);
+        }
+    }
+    return samples;
+}
+
 inline real ClothoidAimer::get_max_s(real kappa0, real a, real delta_theta)
 {
     real two_a = rl(2) * a;
@@ -66,13 +86,13 @@ void ClothoidAimer::init_grid(real delta_theta)
     std::fill_n((bool*)visited, (GRID_SIZE + 2) * (GRID_SIZE + 2), false);
 
     // Generate samples and compute bounding box
-    m_samples = generate_samples(1, delta_theta);
+    std::vector<Sample> samples = generate_samples(1, delta_theta);
     m_grid_box = box2r::EMPTY;
-    for (Sample& sample : m_samples)
+    for (Sample& sample : samples)
         m_grid_box.expand(sample.p);
 
     // Distribute samples to cells. If a cell contains a sample, it is marked as successful.
-    for (Sample& sample : m_samples)
+    for (Sample& sample : samples)
     {
         vec2i grid_p = to_grid(sample.p);
         int i = grid_p.y, j = grid_p.x;

@@ -16,13 +16,6 @@ public:
         bool success;
     };
 
-    struct Sample
-    {
-        real k1;
-        real s;
-        vec2r p;
-    };
-
     ClothoidAimer(real delta_theta = rl(3.14159265359));
 
     Result aim(real k0, vec2r target) const;
@@ -30,13 +23,21 @@ public:
     int refine_steps() const { return m_refine_steps; }
     void set_refine_steps(int refine_steps) { m_refine_steps = refine_steps; }
 
-    std::vector<Sample> m_samples; // TODO: temporary
+    // Retrieves the sampled points used for the initial `aim` result guess. For debug and
+    // visualization purposes.
+    std::vector<vec2r> get_samples();
 
 private:
 public: // TODO: tmp
     static const int GRID_SIZE = 100;
     box2f m_grid_box;
 private:
+    struct Sample
+    {
+        real k1;
+        real s;
+        vec2r p;
+    };
     Result m_grid[GRID_SIZE + 2][GRID_SIZE + 2];
     int m_refine_steps = 4;
 
