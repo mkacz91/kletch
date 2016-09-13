@@ -179,14 +179,14 @@ void AimerDemo::aim()
     real s = m_aim_result.s;
     m_k1 = float(k1); m_s = float(s);
 
-    m_aim_eval = origin() + arc_radius() * DisplayFresnel::eval(angle, 1, k1, s); // TODO
+    m_aim_eval = origin() + DisplayFresnel::eval(angle, k0, k1, s); // TODO
 
     std::vector<vec2f> cloth_vertices;
     for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
     {
         real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
         cloth_vertices.push_back(
-            origin() + arc_radius() * DisplayFresnel::eval(angle, 1, k1, si)
+            origin() + DisplayFresnel::eval(angle, k0, k1, si)
         );
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);

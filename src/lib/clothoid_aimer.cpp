@@ -15,11 +15,12 @@ ClothoidAimer::ClothoidAimer(real delta_theta)
 
 ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target) const
 {
-    target *= k0;
-    vec2i grid_target = to_grid(target);
-    Result result = m_grid[grid_target.y][grid_target.x];
+    vec2i grid_coords = to_grid(k0 * target);
+    Result result = m_grid[grid_coords.y][grid_coords.x];
+    result.k1 *= k0 * k0;
+    result.s /= k0;
     if (result.success)
-        newton_refine1(target, &result.k1, &result.s, refine_steps());
+        newton_refine(k0, &result.k1, &result.s, target, refine_steps());
     return result;
 }
 
@@ -215,15 +216,13 @@ mat2r ClothoidAimer::eval_jacobian(real k0, real k1, real s)
     );
 }
 
-void ClothoidAimer::newton_refine1(vec2r p, real* k1, real* s, int iter_count)
+void ClothoidAimer::newton_refine(real k0, real* k1, real* s, vec2r target, int iter_count)
 {
     vec2r u = { *k1, *s };
     while (iter_count --> 0)
     {
-        vec2r q = p - PreciseFresnel::eval(1, u.x, u.y);
-        mat2r J = eval_jacobian(1, u.x, u.y);
-        J.invert();
-        u += J.transform(q);
+        mat2r inverse_jacobian = eval_jacobian(k0, u.x, u.y).invert();
+        u += inverse_jacobian.transform(target - PreciseFresnel::eval(k0, u.x, u.y));
     }
     *k1 = u.x, *s = u.y;
 }
