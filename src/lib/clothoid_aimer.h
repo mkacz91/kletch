@@ -25,7 +25,7 @@ public:
 
     ClothoidAimer(real delta_theta = rl(3.14159265359));
 
-    Result aim(vec2r const& p0, real theta0, real k0, vec2r const& p1) const;
+    Result aim(real k0, vec2r target) const;
 
     int refine_steps() const { return m_refine_steps; }
     void set_refine_steps(int refine_steps) { m_refine_steps = refine_steps; }
@@ -49,7 +49,6 @@ private:
 public:// TODO: tmp
     box2f m_grid_box;
 private:
-
     int m_refine_steps = 4;
 
     void init_grid(real delta_theta);

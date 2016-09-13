@@ -167,21 +167,22 @@ void AimerDemo::get_refine_steps_cb(void* value, void* client_data)
 
 void AimerDemo::aim()
 {
-    real theta0 = tangent_angle();
-    real kappa0 = rl(1) / rl(arc_radius());
-    m_aim_result = m_aimer.aim(origin(), theta0, kappa0, m_target);
+    real angle = tangent_angle();
+    real k0 = rl(1) / rl(arc_radius());
+    vec2r target = (m_target - origin()).rot(-angle);
+    m_aim_result = m_aimer.aim(k0, target);
     real k1 = m_aim_result.k1;
     real s = m_aim_result.s;
     m_k1 = float(k1); m_s = float(s);
 
-    m_aim_eval = origin() + arc_radius() * DisplayFresnel::eval(theta0, 1, k1, s); // TODO
+    m_aim_eval = origin() + arc_radius() * DisplayFresnel::eval(angle, 1, k1, s); // TODO
 
     std::vector<vec2f> cloth_vertices;
     for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
     {
         real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
         cloth_vertices.push_back(
-            origin() + arc_radius() * DisplayFresnel::eval(theta0, 1, k1, si)
+            origin() + arc_radius() * DisplayFresnel::eval(angle, 1, k1, si)
         );
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);

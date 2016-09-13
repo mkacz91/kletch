@@ -12,14 +12,13 @@ ClothoidAimer::ClothoidAimer(real delta_theta)
     init_grid(delta_theta);
 }
 
-ClothoidAimer::Result ClothoidAimer::aim(
-    vec2r const& p0, real theta0, real k0, vec2r const& p1) const
+ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target) const
 {
-    vec2r p = k0 * span(p0, p1).rot(-theta0);
-    vec2i grid_p = to_grid(p);
-    Cell cell = m_grid[grid_p.y][grid_p.x];
+    target *= k0;
+    vec2i grid_target = to_grid(target);
+    Cell cell = m_grid[grid_target.y][grid_target.x];
     real k1 = cell.k1, s = cell.s;
-    newton_refine1(p, &k1, &s, refine_steps());
+    newton_refine1(target, &k1, &s, refine_steps());
     return { k1, s, true };
 }
 
