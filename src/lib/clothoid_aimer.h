@@ -35,26 +35,14 @@ public:
 private:
 public: // TODO: tmp
     static const int GRID_SIZE = 100;
-private:
-
-    struct Cell
-    {
-        real k1;
-        real s;
-
-        bool empty() { return s < 0; }
-    };
-
-    Cell m_grid[GRID_SIZE][GRID_SIZE];
-public:// TODO: tmp
     box2f m_grid_box;
 private:
+    Result m_grid[GRID_SIZE + 2][GRID_SIZE + 2];
     int m_refine_steps = 4;
 
     void init_grid(real delta_theta);
     vec2i to_grid(const vec2r& point) const;
-
-    static int to_grid(int n, real v0, real v1, real v);
+    static int to_grid(real v0, real v1, real v);
 
     static real get_max_s(real k0, real k1, real delta_theta);
     static bool get_k1_range(real k0, real s, real delta_theta, real* k1_start, real* k1_end);

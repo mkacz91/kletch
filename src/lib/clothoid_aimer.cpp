@@ -1,5 +1,6 @@
 #include "clothoid_aimer.h"
 
+#include <iostream>
 #include <queue>
 #include <stack>
 
@@ -16,10 +17,10 @@ ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target) const
 {
     target *= k0;
     vec2i grid_target = to_grid(target);
-    Cell cell = m_grid[grid_target.y][grid_target.x];
-    real k1 = cell.k1, s = cell.s;
-    newton_refine1(target, &k1, &s, refine_steps());
-    return { k1, s, true };
+    Result result = m_grid[grid_target.y][grid_target.x];
+    if (result.success)
+        newton_refine1(target, &result.k1, &result.s, refine_steps());
+    return result;
 }
 
 inline real ClothoidAimer::get_max_s(real kappa0, real a, real delta_theta)
@@ -60,58 +61,58 @@ bool ClothoidAimer::get_k1_range(real k0, real s, real delta_theta, real* k1_sta
 
 void ClothoidAimer::init_grid(real delta_theta)
 {
-    // Clear cells
-    for (int i = 0; i < GRID_SIZE; ++i)
-    {
-        for (int j = 0; j < GRID_SIZE; ++j)
-            m_grid[i][j] = { -1, -1 };
-    }
+    // Each grid cell has indicator wheterh it has been visited
+    bool visited[GRID_SIZE + 2][GRID_SIZE + 2];
+    std::fill_n((bool*)visited, (GRID_SIZE + 2) * (GRID_SIZE + 2), false);
 
     // Generate samples and compute bounding box
     m_samples = generate_samples(1, delta_theta);
-    m_grid_box = box2f::EMPTY;
+    m_grid_box = box2r::EMPTY;
     for (Sample& sample : m_samples)
         m_grid_box.expand(sample.p);
 
-    // Distribute samples to cells
-    std::queue<vec2i> frontier;
+    // Distribute samples to cells. If a cell contains a sample, it is marked as successful.
     for (Sample& sample : m_samples)
     {
         vec2i grid_p = to_grid(sample.p);
         int i = grid_p.y, j = grid_p.x;
-        if (m_grid[i][j].empty())
+        if (!visited[i][j])
         {
-            m_grid[i][j] = { sample.k1, sample.s };
-            frontier.push(grid_p);
-            assert(!m_grid[i][j].empty());
+            m_grid[i][j] = { sample.k1, sample.s, true };
+            visited[i][j] = true;
         }
     }
 
-    // Fill empty cells
+    // Cells that contain no samples nor are surrounded by sample-containing cells are marked as
+    // failing. The whole grid has a 1-cell wide margin that wasn't visited yet, so the failing
+    // cells are exactly those reachable from (0, 0) along 4-neighborhood.
+    std::queue<vec2i> frontier;
+    frontier.emplace(0, 0);
     while (!frontier.empty())
     {
-        int i = frontier.front().y, j = frontier.front().x;
-        frontier.pop();
-        assert(!m_grid[i][j].empty());
-        if (0 < i && m_grid[i - 1][j].empty())
+        int i = frontier.front().x, j = frontier.front().y; frontier.pop();
+        if (i < 0 || GRID_SIZE + 1 < i || j < 0 || GRID_SIZE + 1 < j || visited[i][j])
+            continue;
+        visited[i][j] = true;
+        m_grid[i][j] = { 0, 0, false };
+        frontier.emplace(i - 1, j);
+        frontier.emplace(i + 1, j);
+        frontier.emplace(i, j - 1);
+        frontier.emplace(i, j + 1);
+    }
+
+    // Unvisited areas bounded by successful cells become successfull with an arbitrary sample
+    // from the border. Normally one would assign the nearest border sample, but those areas
+    // consist of one or two cells, so it won't make much difference if we just copy the left
+    // neighbor.
+    for (int i = 1; i <= GRID_SIZE; ++i)
+    {
+        for (int j = 1; j <= GRID_SIZE; ++j)
         {
-            m_grid[i - 1][j] = m_grid[i][j];
-            frontier.emplace(j, i - 1);
-        }
-        if (i < GRID_SIZE - 1 && m_grid[i + 1][j].empty())
-        {
-            m_grid[i + 1][j] = m_grid[i][j];
-            frontier.emplace(j, i + 1);
-        }
-        if (0 < j && m_grid[i][j - 1].empty())
-        {
-            m_grid[i][j - 1] = m_grid[i][j];
-            frontier.emplace(j - 1, i);
-        }
-        if (j < GRID_SIZE - 1 && m_grid[i][j - 1].empty())
-        {
-            m_grid[i][j + 1] = m_grid[i][j];
-            frontier.emplace(j + 1, i);
+            if (visited[i][j])
+                continue;
+            visited[i][j] = true;
+            m_grid[i][j] = m_grid[i][j - 1];
         }
     }
 }
@@ -163,18 +164,17 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real
 vec2i ClothoidAimer::to_grid(const vec2r& point) const
 {
     return vec2i(
-        to_grid(GRID_SIZE, m_grid_box.y0, m_grid_box.y1, point.y),
-        to_grid(GRID_SIZE, m_grid_box.x0, m_grid_box.x1, point.x)
-    );
+        to_grid(m_grid_box.x0, m_grid_box.x1, point.x),
+        to_grid(m_grid_box.y0, m_grid_box.y1, point.y));
 }
 
-inline int ClothoidAimer::to_grid(int n, real v0, real v1, real v)
+int ClothoidAimer::to_grid(real v0, real v1, real v)
 {
-    if (v <= v0)
+    if (v < v0)
         return 0;
-    if (v1 <= v)
-        return n - 1;
-    return min(n - 1, n * (v - v0) / (v1 - v0));
+    if (v1 < v)
+        return GRID_SIZE + 1;
+    return clamp<int>(1, GRID_SIZE, 1 + GRID_SIZE * (v - v0) / (v1 - v0));
 }
 
 mat2r ClothoidAimer::eval_jacobian(real k0, real k1, real s)

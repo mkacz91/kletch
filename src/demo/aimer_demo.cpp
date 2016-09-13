@@ -170,7 +170,10 @@ void AimerDemo::aim()
     real angle = tangent_angle();
     real k0 = rl(1) / rl(arc_radius());
     vec2r target = (m_target - origin()).rot(-angle);
-    m_aim_result = m_aimer.aim(k0, target);
+    auto aim_result = m_aimer.aim(k0, target);
+    if (!aim_result.success)
+        return;
+    m_aim_result = aim_result;
     real k1 = m_aim_result.k1;
     real s = m_aim_result.s;
     m_k1 = float(k1); m_s = float(s);
