@@ -8,6 +8,9 @@ namespace kletch {
 // High precision evaluation of Fresnel-related integrals used by core algorithms
 struct PreciseFresnel
 {
+    // Evaluates the stardard Fresnel integral `INT t = 0..s: exp(0.5 i t^2) dt`.
+    static vec2r eval(real s);
+
     // Evaluates the general Fresnel integral `INT t = 0..s: exp(i (k0 t + 0.5 k1 t^2))`.
     static vec2r eval(real k0, real k1, real s);
 

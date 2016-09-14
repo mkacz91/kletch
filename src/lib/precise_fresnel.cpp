@@ -5,6 +5,11 @@
 
 namespace kletch {
 
+vec2r PreciseFresnel::eval(real s)
+{
+    return Heald::eval5(s);
+}
+
 vec2r PreciseFresnel::eval(real k0, real k1, real s)
 {
     // TODO: Find proper thresholds
