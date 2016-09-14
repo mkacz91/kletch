@@ -1,6 +1,6 @@
 #include "clothoid_aimer.h"
 
-#include <iostream>
+#include <algorithm>
 #include <queue>
 #include <stack>
 
@@ -11,17 +11,51 @@ namespace kletch {
 ClothoidAimer::ClothoidAimer(real delta_theta)
 {
     init_grid(delta_theta);
+    init_slope_buckets();
 }
 
 ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target) const
 {
-    vec2i grid_coords = to_grid(k0 * target);
-    Result result = m_grid[grid_coords.y][grid_coords.x];
-    result.k1 *= k0 * k0;
-    result.s /= k0;
+    real target_dist = len(target);
+    if (target_dist < MIN_TARGET_DIST) // TODO
+    // There is no work to do if the target is already practically at origin
+        return { 0, 0, true };
+
+    Result result = get_initial_aim_guess(k0, target);
     if (result.success)
         newton_refine(k0, &result.k1, &result.s, target, refine_steps());
     return result;
+}
+
+inline ClothoidAimer::Result ClothoidAimer::get_initial_aim_guess(real k0, vec2r target) const
+{
+    if (abs(k0) < SLOPE_VS_GRID_TH)
+    // Almost nil initial curvature. Use the slope buckets.
+    {
+        float slope = abs(target.y / target.x);
+        if (target.x < 0 || slope > m_max_slope)
+            return { 0, 0, false };
+        int bucket_index = map_slope_to_bucket_index(slope);
+        if (bucket_index == 0)
+        // The 0 bucket is bad for Newton refinement and scale correction. Here's a better guess.
+            return { 0, target.x, true };
+        SlopeBucket bucket = m_slope_buckets[bucket_index];
+        // Scale correction
+        real scale = len(target) / bucket.distance;
+        real s = bucket.s * scale;
+        real k1 = copysign(pi<real>() / (scale * scale), target.y);
+        return { k1, s, true };
+    }
+    else
+    // Non-negligable initial curvature. Use grid.
+    {
+        vec2i coords = to_grid(k0 * target);
+        Result result = m_grid[coords.y][coords.x];
+        // Scale correction
+        result.k1 *= k0 * k0;
+        result.s /= k0;
+        return result;
+    }
 }
 
 std::vector<vec2r> ClothoidAimer::get_samples()
@@ -196,6 +230,41 @@ int ClothoidAimer::to_grid(real v0, real v1, real v)
     if (v1 < v)
         return GRID_SIZE + 1;
     return clamp<int>(1, GRID_SIZE, 1 + GRID_SIZE * (v - v0) / (v1 - v0));
+}
+
+void ClothoidAimer::init_slope_buckets()
+{
+    std::vector<bool> visited(SLOPE_BUCKET_COUNT, false); // Indicate whether bucket is initialized
+    real const k1 = pi<real>(); // This is the standard slope
+    real const max_s = sqrt(rl(2)); // Evaluate up to the point where the tangent angle is pi
+    vec2r terminal_f = PreciseFresnel::eval(max_s);
+    m_max_slope = terminal_f.y / terminal_f.x;
+
+    // Sample the standard clothoid
+    m_slope_buckets[0] = { 0, 0 };
+    for (int i = 1; i <= 2 * SLOPE_BUCKET_COUNT; ++i)
+    {
+        real s = i * max_s / (2 * SLOPE_BUCKET_COUNT);
+        vec2r f = PreciseFresnel::eval(s);
+        int j = map_slope_to_bucket_index(f.y / f.x);
+        if (!visited[j])
+        {
+            m_slope_buckets[j] = { s, len(f) };
+            visited[j] = true;
+        }
+    }
+
+    // Fill holes
+    for (int j = SLOPE_BUCKET_COUNT - 1; j > 0; --j)
+    {
+        if (!visited[j])
+            m_slope_buckets[j] = m_slope_buckets[j + 1];
+    }
+}
+
+inline int ClothoidAimer::map_slope_to_bucket_index(real slope) const
+{
+    return min<int>(SLOPE_BUCKET_COUNT - 1, slope * SLOPE_BUCKET_COUNT / m_max_slope);
 }
 
 mat2r ClothoidAimer::eval_jacobian(real k0, real k1, real s)

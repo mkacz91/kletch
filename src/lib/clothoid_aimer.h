@@ -30,20 +30,38 @@ public:
 private:
 public: // TODO: tmp
     static const int GRID_SIZE = 100;
+    static const int SLOPE_BUCKET_COUNT = 100;
     box2f m_grid_box;
 private:
+    static constexpr real SLOPE_VS_GRID_TH = rl(1e-2);
+    static constexpr real MIN_TARGET_DIST = rl(1e-6);
+
     struct Sample
     {
         real k1;
         real s;
         vec2r p;
     };
+
+    struct SlopeBucket
+    {
+        real s;        // Arc length parameter value
+        real distance; // Distance of the avaluated point to the origin
+    };
+
     Result m_grid[GRID_SIZE + 2][GRID_SIZE + 2];
+    SlopeBucket m_slope_buckets[SLOPE_BUCKET_COUNT];
+    real m_max_slope;
     int m_refine_steps = 4;
+
+    Result get_initial_aim_guess(real k0, vec2r target) const;
 
     void init_grid(real delta_theta);
     vec2i to_grid(const vec2r& point) const;
     static int to_grid(real v0, real v1, real v);
+
+    void init_slope_buckets();
+    int map_slope_to_bucket_index(real slope) const;
 
     static real get_max_s(real k0, real k1, real delta_theta);
     static bool get_k1_range(real k0, real s, real delta_theta, real* k1_start, real* k1_end);
