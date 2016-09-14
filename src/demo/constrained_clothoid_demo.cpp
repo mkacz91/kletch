@@ -116,7 +116,6 @@ void ConstrainedClothoidDemo::update_local_arc()
     {
         m_local_arc_end.x = 0;
         update_arc();
-        return;
     }
 
     float dx = abs(m_local_arc_end.x), dy = abs(m_local_arc_end.y);
