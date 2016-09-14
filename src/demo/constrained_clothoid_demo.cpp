@@ -121,7 +121,7 @@ void ConstrainedClothoidDemo::update_local_arc()
     float dx = abs(m_local_arc_end.x), dy = abs(m_local_arc_end.y);
     m_arc_radius = 0.5f * (sq(dx) / dy + dy);
     float arc_angle_span = atan2(dx, m_arc_radius - dy);
-    m_local_arc_angle0 = -1.57079632679f;
+    m_local_arc_angle0 = -half_pi<float>();
     m_local_arc_angle1 = m_local_arc_angle0 - arc_angle_span;
     m_local_arc_center = vec2f(0, m_arc_radius);
     if (m_local_arc_end.y < 0)
