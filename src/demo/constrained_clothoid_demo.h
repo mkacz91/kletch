@@ -38,22 +38,21 @@ private:
     vec2f m_local_arc_end;
 
     float m_arc_radius;
-    float m_local_arc_angle0;
-    float m_local_arc_angle1;
-    vec2f m_local_arc_center;
     float m_tangent_angle = 0;
 
     GLuint m_arc_vertices = 0;
     GLuint m_arc_program = 0;
     GLint m_arc_matrix_uniform;
-    GLint m_arc_center_r_uniform;
-    GLint m_arc_angle_uniform;
     GLint m_arc_color0_uniform;
     GLint m_arc_color1_uniform;
-    GLint m_arc_param_attrib;
+    GLint m_arc_position_param_attrib;
 
     void update_local_arc();
     void update_arc();
+
+    bool m_arc_vertices_valid = false;
+    void invalidate_arc_vertices() { m_arc_vertices_valid = false; }
+    void ensure_arc_vertices_valid();
 
     vec2f to_tangent_coords(vec2f const& v) const;
     vec2f from_tangent_coords(vec2f const& v) const;
