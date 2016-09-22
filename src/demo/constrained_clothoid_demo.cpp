@@ -110,6 +110,7 @@ void ConstrainedClothoidDemo::update_local_arc()
 
     float dx = abs(m_local_arc_end.x), dy = abs(m_local_arc_end.y);
     m_arc_radius = 0.5f * (sq(dx) / dy + dy);
+    m_initial_curvature = copysign(1.0f / m_arc_radius, m_local_arc_end.y);
 
     invalidate_arc_vertices();
 }

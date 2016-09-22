@@ -16,7 +16,9 @@ public:
 
     const vec2f origin() const { return m_origin; }
     float arc_radius() const { return m_arc_radius; }
+    float signed_arc_radius() const { return copysign(m_arc_radius, m_initial_curvature); }
     float tangent_angle() const { return m_tangent_angle; }
+    float initial_curvature() const { return m_initial_curvature; }
 
     virtual bool on_event(Event const& e) override;
 
@@ -38,6 +40,7 @@ private:
     vec2f m_local_arc_end;
 
     float m_arc_radius;
+    float m_initial_curvature;
     float m_tangent_angle = 0;
 
     GLuint m_arc_vertices = 0;

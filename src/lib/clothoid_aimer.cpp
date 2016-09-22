@@ -49,11 +49,16 @@ inline ClothoidAimer::Result ClothoidAimer::get_initial_aim_guess(real k0, vec2r
     else
     // Non-negligable initial curvature. Use grid.
     {
-        vec2i coords = to_grid(k0 * target);
+        real abs_k0 = abs(k0);
+        vec2i coords = to_grid(abs_k0 * target.x, k0 * target.y);
         Result result = m_grid[coords.y][coords.x];
+        if (!result.success)
+            return result;
+        if (result.s == 0) // TODO: This is poor man's check
+            return { 0, target.x, true };
         // Scale correction
-        result.k1 *= k0 * k0;
-        result.s /= k0;
+        result.k1 *= abs_k0 * k0;
+        result.s /= abs_k0;
         return result;
     }
 }
@@ -216,11 +221,11 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real
     return samples;
 }
 
-vec2i ClothoidAimer::to_grid(const vec2r& point) const
+vec2i ClothoidAimer::to_grid(real x, real y) const
 {
     return vec2i(
-        to_grid(m_grid_box.x0, m_grid_box.x1, point.x),
-        to_grid(m_grid_box.y0, m_grid_box.y1, point.y));
+        to_grid(m_grid_box.x0, m_grid_box.x1, x),
+        to_grid(m_grid_box.y0, m_grid_box.y1, y));
 }
 
 int ClothoidAimer::to_grid(real v0, real v1, real v)

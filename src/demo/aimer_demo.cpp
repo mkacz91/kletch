@@ -19,7 +19,7 @@ void AimerDemo::on_render()
 
     glUseProgram(m_aimer_program);
     mat3f aimer_matrix = mat3f::eye()
-        .scale(arc_radius(), arc_radius())
+        .scale(arc_radius(), signed_arc_radius())
         .rotate(tangent_angle())
         .translate(origin())
         .premul(m_camera.matrix());
@@ -169,7 +169,7 @@ void AimerDemo::get_refine_steps_cb(void* value, void* client_data)
 void AimerDemo::aim()
 {
     real angle = tangent_angle();
-    real k0 = rl(1) / rl(arc_radius());
+    real k0 = initial_curvature();
     vec2r target = (m_target - origin()).rot(-angle);
     auto aim_result = m_aimer.aim(k0, target);
     if (!aim_result.success)

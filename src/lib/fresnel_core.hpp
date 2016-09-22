@@ -137,7 +137,7 @@ vec2<T> FresnelCore<T>::eval_smk1_core(T k0, T k1, T s, int n, T th)
                 case 2: r = g.x -= dg; break;
                 case 3: r = g.y -= dg; break;
             }
-            if (dg <= th * abs(r))
+            if (abs(dg) <= th * abs(r))
                 break;
             ++l;
             bl *= b / l;
