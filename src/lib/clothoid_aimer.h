@@ -70,7 +70,9 @@ private:
     static std::vector<Sample> generate_samples(real k0, real delta_theta);
 
     static mat2r eval_jacobian(real k0, real k1, real s);
-    static void newton_refine(real k0, real* k1, real* s, vec2r target, int iter_count);
+    static bool newton_refine(
+        real k0, real* k1, real* s, vec2r target,
+        int iter_count, int max_subdiv);
 };
 
 } // namespace kletch

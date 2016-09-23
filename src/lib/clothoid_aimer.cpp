@@ -23,7 +23,7 @@ ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target) const
 
     Result result = get_initial_aim_guess(k0, target);
     if (result.success)
-        newton_refine(k0, &result.k1, &result.s, target, refine_steps());
+        result.success = newton_refine(k0, &result.k1, &result.s, target, refine_steps(), 3);
     return result;
 }
 
@@ -290,15 +290,47 @@ mat2r ClothoidAimer::eval_jacobian(real k0, real k1, real s)
     );
 }
 
-void ClothoidAimer::newton_refine(real k0, real* k1, real* s, vec2r target, int iter_count)
+bool ClothoidAimer::newton_refine(
+    real k0, real* k1, real* s, vec2r target,
+    int iter_count, int max_subdiv)
 {
-    vec2r u = { *k1, *s };
+    vec2r x = { *k1, *s };
+    vec2r y = PreciseFresnel::eval(k0, x.x, x.y);
+
     while (iter_count --> 0)
     {
-        mat2r inverse_jacobian = eval_jacobian(k0, u.x, u.y).invert();
-        u += inverse_jacobian.transform(target - PreciseFresnel::eval(k0, u.x, u.y));
+        mat2r inverse_jacobian = eval_jacobian(k0, x.x, x.y).invert();
+        vec2r dy = target - y;
+        real dist_sq = len_sq(dy);
+        real step = rl(1);
+        int subdiv = 0;
+        while (true)
+        {
+            vec2r new_x = x + inverse_jacobian.transform(dy * step);
+            vec2r new_y = PreciseFresnel::eval(k0, new_x.x, new_x.y);
+            vec2r new_dy = target - new_y;
+            real new_dist_sq = len_sq(new_dy);
+            if (new_dist_sq < dist_sq)
+            {
+                x = new_x;
+                y = new_y;
+                dy = new_dy;
+                dist_sq = new_dist_sq;
+                if (--subdiv < 0)
+                    break;
+                step *= rl(2.0);
+            }
+            else
+            {
+                if (++subdiv > max_subdiv)
+                    return false;
+                step *= rl(0.5);
+            }
+        }
     }
-    *k1 = u.x, *s = u.y;
+
+    *k1 = x.x, *s = x.y;
+    return true;
 }
 
 } // namespace kletch
