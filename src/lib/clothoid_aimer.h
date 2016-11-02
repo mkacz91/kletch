@@ -33,7 +33,7 @@ public: // TODO: tmp
     static const int SLOPE_BUCKET_COUNT = 100;
     box2f m_grid_box;
 private:
-    static constexpr real SLOPE_VS_GRID_TH = rl(1e-2);
+    static constexpr real SLOPE_VS_GRID_TH = rl(2e-2);
     static constexpr real MIN_TARGET_DIST = rl(1e-6);
 
     struct Sample
@@ -57,7 +57,8 @@ private:
     Result get_initial_aim_guess(real k0, vec2r target) const;
 
     void init_grid(real delta_theta);
-    vec2i to_grid(const vec2r& point) const;
+    vec2i to_grid(real x, real y) const;
+    vec2i to_grid(vec2r const& point) const { return to_grid(point.x, point.y); }
     static int to_grid(real v0, real v1, real v);
 
     void init_slope_buckets();
