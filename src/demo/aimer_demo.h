@@ -43,9 +43,8 @@ private:
     GLint m_aimer_color_uniform = -1;
     GLint m_aimer_position_attrib = -1;
 
-    GLuint m_grid_vertices = 0;
-    GLuint m_sample_vertices = 0;
-    int m_sample_vertex_count;
+    GLuint m_kd_tree_vertices = 0; int m_kd_tree_vertex_count;
+    GLuint m_sample_vertices = 0; int m_sample_vertex_count;
 
     static void TW_CALL set_refine_steps_cb(const void* value, void* client_data);
     static void TW_CALL get_refine_steps_cb(void* value, void* client_data);
