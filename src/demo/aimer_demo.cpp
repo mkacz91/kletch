@@ -26,13 +26,13 @@ void AimerDemo::on_render()
     glEnableVertexAttribArray(m_aimer_position_attrib);
 
     // Draw grid
-
+/*
     glUniformMatrix3fv(m_aimer_matrix_uniform, aimer_matrix * m_aimer.m_grid_box.matrix_to());
     glUniform3f(m_aimer_color_uniform, 0.8f, 0.8f, 0.8f);
     glBindBuffer(GL_ARRAY_BUFFER, m_grid_vertices);
     glVertexAttribPointer(m_aimer_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glDrawArrays(GL_LINES, 0, 4 * (ClothoidAimer::GRID_SIZE + 1));
-
+*/
     // Draw samples
 
     glUniformMatrix3fv(m_aimer_matrix_uniform, aimer_matrix);
@@ -107,6 +107,7 @@ void AimerDemo::on_open()
     // Grid
 
     std::vector<vec2f> grid_vertices;
+/*
     grid_vertices.reserve(4 * (ClothoidAimer::GRID_SIZE + 1));
     for (int i = 0; i <= ClothoidAimer::GRID_SIZE; ++i)
     {
@@ -117,7 +118,7 @@ void AimerDemo::on_open()
         grid_vertices.emplace_back( 1,  t);
     }
     gl::create_buffer(&m_grid_vertices, grid_vertices);
-
+*/
     // Samples
 
     const float SAMPLE_SIZE = 0.02f;
