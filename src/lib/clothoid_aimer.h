@@ -37,7 +37,8 @@ private:
     struct Sample
     {
         static constexpr int COMPONENT_COUNT = 2;
-        typedef real scalar_type;
+        typedef real scalar_t;
+        typedef real float_t;
 
         vec2r p; // Value. Keep it at the beginning to save on arithmetic in [] operator.
         real k1; // Initial curvature
@@ -47,7 +48,7 @@ private:
         Sample(vec2r const& p) : p(p) { }
 
         real operator [] (int c) const { return *(reinterpret_cast<real const*>(&p) + c); }
-        real dist_sq(Sample const& other) const { return ::kletch::dist_sq(p, other.p); }
+        static real dist_sq(Sample const& a, Sample const& b) { return vec2r::dist_sq(a.p, b.p); }
     };
 
     struct SlopeBucket

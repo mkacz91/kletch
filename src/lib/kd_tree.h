@@ -3,6 +3,7 @@
 
 #include "prefix.h"
 #include <stack>
+#include <vector>
 
 namespace kletch {
 
@@ -40,7 +41,8 @@ template <class T> void KdTree::build(std::vector<T>& items)
         Range r = s.top(); s.pop();
         if (r.end - r.begin > MAX_LEAF_SIZE)
         {
-            std::sort(data + r.begin, data + r.end, CompareComponent<T>(r.level % T::COMPONENT_COUNT));
+            int c = r.level % T::COMPONENT_COUNT;
+            std::sort(data + r.begin, data + r.end, CompareComponent<T>(c));
             int mid = r.mid();
             s.emplace(mid + 1,   r.end, r.level + 1);
             s.emplace(r.begin, mid - 1, r.level + 1);
@@ -50,11 +52,11 @@ template <class T> void KdTree::build(std::vector<T>& items)
 
 template <class T> T const& KdTree::get_nearest(std::vector<T> const& items, T const& item)
 {
-    auto best_dist_sq = inf<typename T::scalar_type>();
+    auto best_dist_sq = inf<typename T::scalar_t>();
     int best_i = -1;
     auto try_item = [&](int i)
     {
-        auto dist_sq = item.dist_sq(items[i]);
+        auto dist_sq = T::dist_sq(item, items[i]);
         if (dist_sq < best_dist_sq)
         {
             best_dist_sq = dist_sq;
