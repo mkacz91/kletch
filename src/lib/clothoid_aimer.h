@@ -31,7 +31,7 @@ private:
 public: // TODO: tmp3
     static const int SLOPE_BUCKET_COUNT = 100;
 private:
-    static constexpr real SLOPE_VS_GRID_TH = rl(2e-2);
+    static constexpr real SLOPE_VS_SAMPLE_TH = rl(1e-2);
     static constexpr real MIN_TARGET_DIST = rl(1e-6);
 
     struct Sample

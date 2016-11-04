@@ -30,7 +30,7 @@ ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target) const
 
 inline ClothoidAimer::Result ClothoidAimer::get_initial_aim_guess(real k0, vec2r target) const
 {
-    if (abs(k0) < SLOPE_VS_GRID_TH)
+    if (sq(k0) * len_sq(target) < SLOPE_VS_SAMPLE_TH)
     // Almost nil initial curvature. Use the slope buckets.
     {
         float slope = abs(target.y / target.x);
@@ -122,7 +122,7 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real
     std::vector<Sample> samples;
     samples.emplace_back(0, 0, 0);
 
-    real s = ds0;
+    real s = sqrt(SLOPE_VS_SAMPLE_TH);
     real ds = ds0;
     real k1_start, k1_end;
     std::stack<tuple<int, int>> ranges;
