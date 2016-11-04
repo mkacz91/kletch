@@ -115,14 +115,15 @@ void ClothoidAimer::init_samples(real delta_theta)
 
 std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real delta_theta)
 {
-    const real ref_sample_dist = rl(0.1);
-    const real ref_sample_dist_sq = sq(ref_sample_dist);
-    const int initial_partition = 7;
+    constexpr real ds0 = rl(0.1);
+    constexpr real ds_factor = rl(1.1);
+    constexpr int initial_partition = 7;
 
     std::vector<Sample> samples;
     samples.emplace_back(0, 0, 0);
 
-    real s = rl(0.1);
+    real s = ds0;
+    real ds = ds0;
     real k1_start, k1_end;
     std::stack<tuple<int, int>> ranges;
     while (get_k1_range(k0, s, delta_theta, &k1_start, &k1_end))
@@ -134,13 +135,14 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real
         }
         for (int i = 1; i <= initial_partition; ++i)
             ranges.emplace(samples.size() - i, samples.size() - i - 1);
+        const real two_ds_sq = 2 * sq(ds);
         while (!ranges.empty())
         {
             int j0 = get<0>(ranges.top()), j1 = get<1>(ranges.top());
             ranges.pop();
             const Sample& s0 = samples[j0];
             const Sample& s1 = samples[j1];
-            if (2 * ref_sample_dist_sq < dist_sq(s0.p, s1.p))
+            if (two_ds_sq < dist_sq(s0.p, s1.p))
             {
                 int j = samples.size();
                 real k1 = rl(0.5) * (s0.k1 + s1.k1);
@@ -151,7 +153,8 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real
                 ranges.emplace(j, j1);
             }
         }
-        s += ref_sample_dist;
+        ds *= ds_factor;
+        s += ds;
     }
 
     return samples;
