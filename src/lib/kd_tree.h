@@ -26,35 +26,35 @@ private:
         bool operator () (T const& a, T const& b) { return a[index] < b[index]; }
     };
 
-    struct Range
-    {
-        int begin, end, level;
-        Range(int begin, int end, int level) : begin(begin), end(end), level(level) { }
-        int mid() { return (begin + end) / 2; }
-    };
+    template <class Range> static int size(Range const& r) { return r.end - r.begin; }
+    template <class Range> static int mid(Range const& r) { return (r.begin + r.end) >> 1; }
 };
 
 template <class T> void KdTree::build(std::vector<T>& items)
 {
+    struct Range { int begin, end, level; };
+
     T* const data = items.data();
-    std::stack<Range> s;
-    s.emplace(0, items.size(), 0);
-    while (!s.empty())
+    std::stack<Range> rs;
+    rs.push({ 0, (int)items.size(), 0 });
+    while (!rs.empty())
     {
-        Range r = s.top(); s.pop();
-        if (r.end - r.begin > MAX_LEAF_SIZE)
+        auto r = rs.top(); rs.pop();
+        if (size(r) > MAX_LEAF_SIZE)
         {
             int c = r.level % T::COMPONENT_COUNT;
+            int mid = KdTree::mid(r);
             std::sort(data + r.begin, data + r.end, CompareComponent<T>(c));
-            int mid = r.mid();
-            s.emplace(mid + 1,   r.end, r.level + 1);
-            s.emplace(r.begin, mid - 1, r.level + 1);
+            rs.push({ mid + 1, r.end, r.level + 1 });
+            rs.push({ r.begin,   mid, r.level + 1 });
         }
     }
 }
 
 template <class T> T const& KdTree::get_nearest(std::vector<T> const& items, T const& item)
 {
+    struct Range { int begin, end, level; typename T::scalar_t delta; };
+
     auto best_dist_sq = inf<typename T::scalar_t>();
     int best_i = -1;
     auto try_item = [&](int i)
@@ -67,26 +67,27 @@ template <class T> T const& KdTree::get_nearest(std::vector<T> const& items, T c
         }
     };
 
-    std::stack<Range> s;
-    s.emplace(0, items.size(), 0);
-    while (!s.empty())
+    std::stack<Range> rs;
+    rs.push({ 0, (int)items.size(), 0, 0 });
+    while (!rs.empty())
     {
-        Range r = s.top(); s.pop();
-        if (r.end - r.begin > MAX_LEAF_SIZE)
+        auto r = rs.top(); rs.pop();
+        if (r.delta <= 0 || sq(r.delta) < best_dist_sq)
         {
-            int mid = r.mid();
-            int c = r.level % T::COMPONENT_COUNT;
-            auto c_dist = item[c] - items[mid][c];
-            if (c_dist >= 0 || sq(c_dist) < best_dist_sq)
-                s.emplace(mid + 1,   r.end, r.level + 1);
-            if (c_dist <= 0 || sq(c_dist) < best_dist_sq)
-                s.emplace(r.begin, mid - 1, r.level + 1);
-            try_item(mid);
-        }
-        else
-        {
-            for (int i = r.begin; i < r.end; ++i)
-                try_item(i);
+            if (size(r) > MAX_LEAF_SIZE)
+            {
+                int c = r.level % T::COMPONENT_COUNT;
+                int mid = KdTree::mid(r);
+                auto delta = item[c] - items[mid][c];
+                rs.push({ mid + 1, r.end, r.level + 1, -delta });
+                rs.push({ r.begin,   mid, r.level + 1,  delta });
+                try_item(mid);
+            }
+            else
+            {
+                for (int i = r.begin; i < r.end; ++i)
+                    try_item(i);
+            }
         }
     }
 
@@ -97,6 +98,8 @@ template <class T> std::vector<float>
 KdTree::get_lines(std::vector<T> const& items, float rel_margin)
 {
     assert(T::COMPONENT_COUNT == 2);
+
+    struct Range { int begin, end, level; box2f box; };
 
     std::vector<float> lines;
     auto add_hline = [&lines](float x0, float x1, float y)
@@ -122,39 +125,34 @@ KdTree::get_lines(std::vector<T> const& items, float rel_margin)
     add_vline(box.y0, box.y1, box.x0);
     add_vline(box.y0, box.y1, box.x1);
 
-    std::stack<Range> ranges;
-    std::stack<box2f> boxes;
-    ranges.emplace(0, items.size(), 0);
-    boxes.push(box);
-    while (!ranges.empty())
+    std::stack<Range> rs;
+    rs.push({ 0, (int)items.size(), 0, box });
+    while (!rs.empty())
     {
-        Range r = ranges.top(); ranges.pop();
-        box2f b = boxes.top(); boxes.pop();
-        if (r.end - r.begin > MAX_LEAF_SIZE)
+        auto r = rs.top(); rs.pop();
+        if (size(r) > MAX_LEAF_SIZE)
         {
-            box2f b0 = b, b1 = b;
-            int mid = r.mid();
+            box2f box0 = r.box, box1 = r.box;
+            int mid = KdTree::mid(r);
             int c = r.level % 2;
             T const& pivot = items[mid];
             switch (c) {
             case 0:
             {
                 float x = pivot[0];
-                add_vline(b.y0, b.y1, x);
-                b0.x1 = b1.x0 = x;
+                add_vline(r.box.y0, r.box.y1, x);
+                box0.x1 = box1.x0 = x;
                 break;
             }
             case 1:
             {
                 float y = pivot[1];
-                add_hline(b.x0, b.x1, y);
-                b0.y1 = b1.y0 = y;
+                add_hline(r.box.x0, r.box.x1, y);
+                box0.y1 = box1.y0 = y;
                 break;
             }}
-            ranges.emplace(mid + 1,   r.end, r.level + 1);
-            ranges.emplace(r.begin, mid - 1, r.level + 1);
-            boxes.push(b1);
-            boxes.push(b0);
+            rs.push({ mid + 1, r.end, r.level + 1, box1 });
+            rs.push({ r.begin,   mid, r.level + 1, box0 });
         }
     }
 
