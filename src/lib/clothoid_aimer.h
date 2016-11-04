@@ -25,22 +25,30 @@ public:
 
     // Retrieves the sampled points used for the initial `aim` result guess. For debug and
     // visualization purposes.
-    std::vector<vec2r> get_samples();
+    std::vector<vec2r> get_samples() const;
 
 private:
-public: // TODO: tmp
-    static const int GRID_SIZE = 100;
+public: // TODO: tmp3
     static const int SLOPE_BUCKET_COUNT = 100;
-    box2f m_grid_box;
 private:
-    static constexpr real SLOPE_VS_GRID_TH = rl(2e-2);
+    static constexpr real SLOPE_VS_SAMPLE_TH = rl(1e-2);
     static constexpr real MIN_TARGET_DIST = rl(1e-6);
 
     struct Sample
     {
-        real k1;
-        real s;
-        vec2r p;
+        static constexpr int COMPONENT_COUNT = 2;
+        typedef real scalar_t;
+        typedef real float_t;
+
+        vec2r p; // Value. Keep it at the beginning to save on arithmetic in [] operator.
+        real k1; // Initial curvature
+        real s;  // Arc length
+
+        Sample(real k1, real s, vec2r p) : p(p), k1(k1), s(s) { }
+        Sample(vec2r const& p) : p(p) { }
+
+        real operator [] (int c) const { return *(reinterpret_cast<real const*>(&p) + c); }
+        static real dist_sq(Sample const& a, Sample const& b) { return vec2r::dist_sq(a.p, b.p); }
     };
 
     struct SlopeBucket
@@ -49,17 +57,14 @@ private:
         real distance; // Distance of the avaluated point to the origin
     };
 
-    Result m_grid[GRID_SIZE + 2][GRID_SIZE + 2];
+    std::vector<Sample> m_samples;
     SlopeBucket m_slope_buckets[SLOPE_BUCKET_COUNT];
     real m_max_slope;
     int m_refine_steps = 4;
 
     Result get_initial_aim_guess(real k0, vec2r target) const;
 
-    void init_grid(real delta_theta);
-    vec2i to_grid(real x, real y) const;
-    vec2i to_grid(vec2r const& point) const { return to_grid(point.x, point.y); }
-    static int to_grid(real v0, real v1, real v);
+    void init_samples(real delta_theta);
 
     void init_slope_buckets();
     int map_slope_to_bucket_index(real slope) const;

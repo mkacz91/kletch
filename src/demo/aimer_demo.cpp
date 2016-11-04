@@ -1,6 +1,7 @@
 #include "aimer_demo.h"
 #include <vector>
 #include <lib/display_fresnel.h>
+#include <lib/kd_tree.h>
 
 namespace kletch {
 
@@ -25,13 +26,13 @@ void AimerDemo::on_render()
         .premul(m_camera.matrix());
     glEnableVertexAttribArray(m_aimer_position_attrib);
 
-    // Draw grid
+    // Draw kd-tree structure
 
-    glUniformMatrix3fv(m_aimer_matrix_uniform, aimer_matrix * m_aimer.m_grid_box.matrix_to());
+    glUniformMatrix3fv(m_aimer_matrix_uniform, aimer_matrix);
     glUniform3f(m_aimer_color_uniform, 0.8f, 0.8f, 0.8f);
-    glBindBuffer(GL_ARRAY_BUFFER, m_grid_vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, m_kd_tree_vertices);
     glVertexAttribPointer(m_aimer_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glDrawArrays(GL_LINES, 0, 4 * (ClothoidAimer::GRID_SIZE + 1));
+    glDrawArrays(GL_LINES, 0, m_kd_tree_vertex_count);
 
     // Draw samples
 
@@ -77,6 +78,7 @@ void AimerDemo::on_open()
     ConstrainedClothoidDemo::on_open();
 
     // Alter TwBar
+
     TwAddVarRO(twbar(), "k1", TW_TYPE_FLOAT, &m_k1, nullptr);
     TwAddVarRO(twbar(), "s", TW_TYPE_FLOAT, &m_s, nullptr);
     TwAddVarCB(
@@ -86,6 +88,7 @@ void AimerDemo::on_open()
     );
 
     // Clothoid
+
     gl::create_buffer(&m_cloth_vertices);
     m_cloth_ready = false;
 
@@ -97,32 +100,22 @@ void AimerDemo::on_open()
     glUseProgram(m_cloth_program);
     glUniform4f(m_cloth_color_uniform, 0, 0, 0, 1);
 
-    // Aimer grid and samples
+    // Aimer kd-tree and samples
+
+    std::vector<vec2f> samples = m_aimer.get_samples();
 
     gl::link_program(&m_aimer_program, "mat3_pos2_vx", "uniform3_ft");
     m_aimer_matrix_uniform = gl::get_uniform_location(m_aimer_program, "matrix");
     m_aimer_color_uniform = gl::get_uniform_location(m_aimer_program, "color");
     m_aimer_position_attrib = gl::get_attrib_location(m_aimer_program, "position");
 
-    // Grid
-
-    std::vector<vec2f> grid_vertices;
-    grid_vertices.reserve(4 * (ClothoidAimer::GRID_SIZE + 1));
-    for (int i = 0; i <= ClothoidAimer::GRID_SIZE; ++i)
-    {
-        float t = lerp(-1.0f, 1.0f, float(i) / float(ClothoidAimer::GRID_SIZE));
-        grid_vertices.emplace_back( t, -1);
-        grid_vertices.emplace_back( t,  1);
-        grid_vertices.emplace_back(-1,  t);
-        grid_vertices.emplace_back( 1,  t);
-    }
-    gl::create_buffer(&m_grid_vertices, grid_vertices);
-
-    // Samples
+    std::vector<float> grid_vertices = KdTree::get_lines(samples, 0.02f);
+    gl::create_buffer(&m_kd_tree_vertices, grid_vertices);
+    m_kd_tree_vertex_count = grid_vertices.size() / 2;
 
     const float SAMPLE_SIZE = 0.02f;
     std::vector<vec2f> sample_vertices;
-    for (vec2r const& sample : m_aimer.get_samples())
+    for (vec2r const& sample : samples)
     {
         float x = sample.x, y = sample.y;
         sample_vertices.emplace_back(x - SAMPLE_SIZE, y);
@@ -144,7 +137,7 @@ void AimerDemo::on_close()
     gl::delete_program(&m_aimer_program);
     gl::delete_buffer(&m_cloth_vertices);
     gl::delete_buffer(&m_sample_vertices);
-    gl::delete_buffer(&m_grid_vertices);
+    gl::delete_buffer(&m_kd_tree_vertices);
 
     TwRemoveVar(twbar(), "Iters");
     TwRemoveVar(twbar(), "s");
