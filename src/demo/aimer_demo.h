@@ -31,6 +31,7 @@ private:
     vec2f m_aim_eval = { 0.0f, 0.5f };
     float m_k1 = 0;
     float m_s = 0;
+    bool m_aim_success = false;
 
     bool m_cloth_ready = false;
     GLuint m_cloth_vertices = 0;

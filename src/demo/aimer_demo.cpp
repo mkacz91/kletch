@@ -53,7 +53,10 @@ void AimerDemo::on_render()
 
     if (m_cloth_ready)
     {
-        glUniform4f(m_cloth_color_uniform, 1, 0, 0, 1);
+        if (m_aim_success)
+            glUniform4f(m_cloth_color_uniform, 0, 0.7f, 0, 1);
+        else
+            glUniform4f(m_cloth_color_uniform, 1, 0, 0, 1);
         glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
         glVertexAttribPointer(m_cloth_position_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
         glDrawArrays(GL_LINE_STRIP, 0, CLOTHOID_VERTEX_COUNT);
@@ -166,7 +169,8 @@ void AimerDemo::aim()
     real k0 = initial_curvature();
     vec2r target = (m_target - origin()).rot(-angle);
     auto aim_result = m_aimer.aim(k0, target);
-    if (!equal(aim_result.p, target, AIM_TOL))
+    m_aim_success = equal(aim_result.p, target, AIM_TOL);
+    if (!m_aim_success)
         aim_result = m_aimer.aim(k0, target, 0);
 
     m_aim_result = aim_result;
