@@ -169,7 +169,7 @@ void AimerDemo::aim()
     real k0 = initial_curvature();
     vec2r target = (m_target - origin()).rot(-angle);
     auto aim_result = m_aimer.aim(k0, target);
-    m_aim_success = equal(aim_result.p, target, AIM_TOL);
+    m_aim_success = equal(aim_result.eval, target, AIM_TOL);
     if (!m_aim_success)
         aim_result = m_aimer.aim(k0, target, 0);
 

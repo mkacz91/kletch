@@ -23,7 +23,7 @@ ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target, int refine_steps
     // Determine seed
 
     real k1, s;
-    vec2r p;
+    vec2r eval;
     if (abs_k0 * target_dist < SLOPE_VS_SAMPLE_TH)
     // Initial curvature relatively small. Use slope buckets
     {
@@ -46,7 +46,7 @@ ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target, int refine_steps
             s = bucket.s * scale;
             k1 = copysign(pi<real>() / (scale * scale), target.y);
         }
-        p = PreciseFresnel::eval(k0, k1, s);
+        eval = PreciseFresnel::eval(k0, k1, s);
     }
     else
     // Use samples
@@ -55,21 +55,21 @@ ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target, int refine_steps
         real inv_abs_k0 = rl(1) / abs_k0;
         k1 = nearest.k1 * abs_k0 * k0;
         s = nearest.s * inv_abs_k0;
-        p = nearest.p * inv_abs_k0;
+        eval = nearest.p * inv_abs_k0;
     }
 
     // Refine using Newton method
 
     while (refine_steps --> 0)
     {
-        vec2r du = eval_jacobian(k0, k1, s).invert().transform(target - p);
+        vec2r du = eval_jacobian(k0, k1, s).invert().transform(target - eval);
         if (du.any_broken())
             break;
-        k1 += du.x; s += du.y;
-        p = PreciseFresnel::eval(k0, k1, s);
+        k1 += du[0]; s += du[1];
+        eval = PreciseFresnel::eval(k0, k1, s);
     }
 
-    return { k1, s, p };
+    return { eval, k1, s };
 }
 
 std::vector<vec2r> ClothoidAimer::get_samples() const

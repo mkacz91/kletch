@@ -6,21 +6,28 @@
 
 namespace kletch {
 
+// Provides means of finding clothoids passing through given points.
 class ClothoidAimer
 {
 public:
+    // Carries the aim result.
     struct Result
     {
-        real k1;
-        real s;
-        vec2r p;
+        vec2r eval; // Evaluated value
+        real k1;    // Curvature slope
+        real s;     // Arc length
     };
 
-    ClothoidAimer(real delta_theta = rl(3.14159265359));
+    ClothoidAimer(real delta_theta = pi<real>());
 
+    // Given the initial curvature `k0`, determines missing clothoid parameters that evaluate to
+    // the specified `target`. Success not guaranteed -- result accuracy check required on user
+    // side. The `refine_steps` overload overrides the corresponging instance-wide setting.
     Result aim(real k0, vec2r target) const { return aim(k0, target, m_refine_steps); }
     Result aim(real k0, vec2r target, int refine_steps) const;
 
+    // Determines the number of Newton refine steps that are applied to the initial aim guess.
+    // Higher value yields more accurate results.
     int refine_steps() const { return m_refine_steps; }
     void set_refine_steps(int refine_steps) { m_refine_steps = refine_steps; }
 
@@ -29,11 +36,9 @@ public:
     std::vector<vec2r> get_samples() const;
 
 private:
-public: // TODO: tmp3
-    static const int SLOPE_BUCKET_COUNT = 100;
-private:
     static constexpr real SLOPE_VS_SAMPLE_TH = rl(1e-1);
     static constexpr real MIN_TARGET_DIST = rl(1e-6);
+    static constexpr int SLOPE_BUCKET_COUNT = 100;
 
     struct Sample
     {
