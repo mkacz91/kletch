@@ -13,12 +13,13 @@ public:
     {
         real k1;
         real s;
-        bool success;
+        vec2r p;
     };
 
     ClothoidAimer(real delta_theta = rl(3.14159265359));
 
-    Result aim(real k0, vec2r target) const;
+    Result aim(real k0, vec2r target) const { return aim(k0, target, m_refine_steps); }
+    Result aim(real k0, vec2r target, int refine_steps) const;
 
     int refine_steps() const { return m_refine_steps; }
     void set_refine_steps(int refine_steps) { m_refine_steps = refine_steps; }
@@ -31,7 +32,7 @@ private:
 public: // TODO: tmp3
     static const int SLOPE_BUCKET_COUNT = 100;
 private:
-    static constexpr real SLOPE_VS_SAMPLE_TH = rl(1e-2);
+    static constexpr real SLOPE_VS_SAMPLE_TH = rl(1e-1);
     static constexpr real MIN_TARGET_DIST = rl(1e-6);
 
     struct Sample
@@ -62,10 +63,7 @@ private:
     real m_max_slope;
     int m_refine_steps = 4;
 
-    Result get_initial_aim_guess(real k0, vec2r target) const;
-
     void init_samples(real delta_theta);
-
     void init_slope_buckets();
     int map_slope_to_bucket_index(real slope) const;
 
@@ -75,7 +73,6 @@ private:
     static std::vector<Sample> generate_samples(real k0, real delta_theta);
 
     static mat2r eval_jacobian(real k0, real k1, real s);
-    static void newton_refine(real k0, real* k1, real* s, vec2r target, int iter_count);
 };
 
 } // namespace kletch

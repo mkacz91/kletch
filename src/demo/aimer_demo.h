@@ -22,7 +22,8 @@ protected:
     virtual void on_close() override;
 
 private:
-    static const int CLOTHOID_VERTEX_COUNT = 40;
+    static constexpr int CLOTHOID_VERTEX_COUNT = 40;
+    static constexpr real AIM_TOL = rl(1e-4);
 
     ClothoidAimer m_aimer;
     ClothoidAimer::Result m_aim_result;

@@ -2,6 +2,7 @@
 #include <vector>
 #include <lib/display_fresnel.h>
 #include <lib/kd_tree.h>
+#include <math/fuzzy.h>
 
 namespace kletch {
 
@@ -165,8 +166,9 @@ void AimerDemo::aim()
     real k0 = initial_curvature();
     vec2r target = (m_target - origin()).rot(-angle);
     auto aim_result = m_aimer.aim(k0, target);
-    if (!aim_result.success)
-        return;
+    if (!equal(aim_result.p, target, AIM_TOL))
+        aim_result = m_aimer.aim(k0, target, 0);
+
     m_aim_result = aim_result;
     real k1 = m_aim_result.k1;
     real s = m_aim_result.s;

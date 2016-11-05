@@ -15,51 +15,61 @@ ClothoidAimer::ClothoidAimer(real delta_theta)
     init_slope_buckets();
 }
 
-ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target) const
+ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target, int refine_steps) const
 {
-    real target_dist = len(target);
-    if (target_dist < MIN_TARGET_DIST) // TODO
-    // There is no work to do if the target is already practically at origin
-        return { 0, 0, true };
+    real const target_dist = len(target);
+    real const abs_k0 = abs(k0);
 
-    Result result = get_initial_aim_guess(k0, target);
-    if (result.success)
-        newton_refine(k0, &result.k1, &result.s, target, refine_steps());
-    return result;
-}
+    // Determine seed
 
-inline ClothoidAimer::Result ClothoidAimer::get_initial_aim_guess(real k0, vec2r target) const
-{
-    if (sq(k0) * len_sq(target) < SLOPE_VS_SAMPLE_TH)
-    // Almost nil initial curvature. Use the slope buckets.
+    real k1, s;
+    vec2r p;
+    if (abs_k0 * target_dist < SLOPE_VS_SAMPLE_TH)
+    // Initial curvature relatively small. Use slope buckets
     {
         float slope = abs(target.y / target.x);
-        if (target.x < 0 || slope > m_max_slope)
-            return { 0, 0, false };
         int bucket_index = map_slope_to_bucket_index(slope);
-        if (bucket_index == 0)
-        // The 0 bucket is bad for Newton refinement and scale correction. Here's a better guess.
-            return { 0, target.x, true };
-        SlopeBucket bucket = m_slope_buckets[bucket_index];
-        // Scale correction
-        real scale = len(target) / bucket.distance;
-        real s = bucket.s * scale;
-        real k1 = copysign(pi<real>() / (scale * scale), target.y);
-        return { k1, s, true };
+        if (target.x < 0 || slope > m_max_slope)
+        {
+            k1 = 0;
+            s = 0;
+        }
+        else if (bucket_index == 0)
+        {
+            k1 = 0;
+            s = target.x;
+        }
+        else
+        {
+            SlopeBucket bucket = m_slope_buckets[bucket_index];
+            real scale = target_dist / bucket.distance;
+            s = bucket.s * scale;
+            k1 = copysign(pi<real>() / (scale * scale), target.y);
+        }
+        p = PreciseFresnel::eval(k0, k1, s);
     }
     else
-    // Non-negligable initial curvature. Use grid.
+    // Use samples
     {
-        real abs_k0 = abs(k0);
         Sample const& nearest = KdTree::get_nearest<Sample>(m_samples, abs_k0 * target);
-        Result result = { nearest.k1, nearest.s, true };
-        if (result.s == 0) // TODO: This is poor man's check
-            return { 0, target.x, true };
-        // Scale correction
-        result.k1 *= abs_k0 * k0;
-        result.s /= abs_k0;
-        return result;
+        real inv_abs_k0 = rl(1) / abs_k0;
+        k1 = nearest.k1 * abs_k0 * k0;
+        s = nearest.s * inv_abs_k0;
+        p = nearest.p * inv_abs_k0;
     }
+
+    // Refine using Newton method
+
+    while (refine_steps --> 0)
+    {
+        vec2r du = eval_jacobian(k0, k1, s).invert().transform(target - p);
+        if (du.any_broken())
+            break;
+        k1 += du.x; s += du.y;
+        p = PreciseFresnel::eval(k0, k1, s);
+    }
+
+    return { k1, s, p };
 }
 
 std::vector<vec2r> ClothoidAimer::get_samples() const
@@ -122,7 +132,7 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real
     std::vector<Sample> samples;
     samples.emplace_back(0, 0, 0);
 
-    real s = sqrt(SLOPE_VS_SAMPLE_TH);
+    real s = SLOPE_VS_SAMPLE_TH;
     real ds = ds0;
     real k1_start, k1_end;
     std::stack<tuple<int, int>> ranges;
@@ -211,17 +221,6 @@ mat2r ClothoidAimer::eval_jacobian(real k0, real k1, real s)
         fk1.x, fs.x,
         fk1.y, fs.y
     );
-}
-
-void ClothoidAimer::newton_refine(real k0, real* k1, real* s, vec2r target, int iter_count)
-{
-    vec2r u = { *k1, *s };
-    while (iter_count --> 0)
-    {
-        mat2r inverse_jacobian = eval_jacobian(k0, u.x, u.y).invert();
-        u += inverse_jacobian.transform(target - PreciseFresnel::eval(k0, u.x, u.y));
-    }
-    *k1 = u.x, *s = u.y;
 }
 
 } // namespace kletch
