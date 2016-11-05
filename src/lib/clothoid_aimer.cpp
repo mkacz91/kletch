@@ -9,6 +9,17 @@
 
 namespace kletch {
 
+template <> struct KdTreeTraits<ClothoidAimer::Result>
+{
+    typedef vec2r::scalar_t scalar_t;
+    typedef vec2r vector_t;
+    static constexpr int COMPONENT_COUNT = vec2r::COMPONENT_COUNT;
+    static scalar_t component(ClothoidAimer::Result const& r, int i) { return r.eval[i]; }
+    static scalar_t component(vector_t const& u, int i) { return u[i]; }
+    static scalar_t dist_sq(vector_t const& u, ClothoidAimer::Result const& r) {
+        return vec2r::dist_sq(u, r.eval); }
+};
+
 ClothoidAimer::ClothoidAimer(real delta_theta)
 {
     init_samples(delta_theta);
@@ -51,11 +62,11 @@ ClothoidAimer::Result ClothoidAimer::aim(real k0, vec2r target, int refine_steps
     else
     // Use samples
     {
-        Sample const& nearest = KdTree::get_nearest<Sample>(m_samples, abs_k0 * target);
+        Result const& nearest = KdTree::get_nearest(m_samples, abs_k0 * target);
         real inv_abs_k0 = rl(1) / abs_k0;
         k1 = nearest.k1 * abs_k0 * k0;
         s = nearest.s * inv_abs_k0;
-        eval = nearest.p * inv_abs_k0;
+        eval = nearest.eval * inv_abs_k0;
     }
 
     // Refine using Newton method
@@ -77,7 +88,7 @@ std::vector<vec2r> ClothoidAimer::get_samples() const
     std::vector<vec2r> samples;
     samples.reserve(m_samples.size());
     for (auto& sample : m_samples)
-        samples.push_back(sample.p);
+        samples.push_back(sample.eval);
     return samples;
 }
 
@@ -123,14 +134,14 @@ void ClothoidAimer::init_samples(real delta_theta)
     KdTree::build(m_samples);
 }
 
-std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real delta_theta)
+std::vector<ClothoidAimer::Result> ClothoidAimer::generate_samples(real k0, real delta_theta)
 {
     constexpr real ds0 = rl(0.1);
     constexpr real ds_factor = rl(1.1);
     constexpr int initial_partition = 7;
 
-    std::vector<Sample> samples;
-    samples.emplace_back(0, 0, 0);
+    std::vector<Result> samples;
+    samples.push_back({ 0, 0, 0 });
 
     real s = SLOPE_VS_SAMPLE_TH;
     real ds = ds0;
@@ -141,7 +152,7 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real
         for (int i = 0; i <= initial_partition; ++i)
         {
             real k1 = lerp(k1_start, k1_end, rl(i) / rl(initial_partition));
-            samples.emplace_back(k1, s, PreciseFresnel::eval(k0, k1, s));
+            samples.push_back({ PreciseFresnel::eval(k0, k1, s), k1, s });
         }
         for (int i = 1; i <= initial_partition; ++i)
             ranges.emplace(samples.size() - i, samples.size() - i - 1);
@@ -150,15 +161,15 @@ std::vector<ClothoidAimer::Sample> ClothoidAimer::generate_samples(real k0, real
         {
             int j0 = get<0>(ranges.top()), j1 = get<1>(ranges.top());
             ranges.pop();
-            const Sample& s0 = samples[j0];
-            const Sample& s1 = samples[j1];
-            if (two_ds_sq < dist_sq(s0.p, s1.p))
+            Result const& s0 = samples[j0];
+            Result const& s1 = samples[j1];
+            if (two_ds_sq < dist_sq(s0.eval, s1.eval))
             {
                 int j = samples.size();
                 real k1 = rl(0.5) * (s0.k1 + s1.k1);
                 real s = s0.s;
                 assert(s == s1.s);
-                samples.emplace_back(k1, s, PreciseFresnel::eval(k0, k1, s));
+                samples.push_back({ PreciseFresnel::eval(k0, k1, s), k1, s });
                 ranges.emplace(j0, j);
                 ranges.emplace(j, j1);
             }

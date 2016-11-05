@@ -40,30 +40,13 @@ private:
     static constexpr real MIN_TARGET_DIST = rl(1e-6);
     static constexpr int SLOPE_BUCKET_COUNT = 100;
 
-    struct Sample
-    {
-        static constexpr int COMPONENT_COUNT = 2;
-        typedef real scalar_t;
-        typedef real float_t;
-
-        vec2r p; // Value. Keep it at the beginning to save on arithmetic in [] operator.
-        real k1; // Initial curvature
-        real s;  // Arc length
-
-        Sample(real k1, real s, vec2r p) : p(p), k1(k1), s(s) { }
-        Sample(vec2r const& p) : p(p) { }
-
-        real operator [] (int c) const { return *(reinterpret_cast<real const*>(&p) + c); }
-        static real dist_sq(Sample const& a, Sample const& b) { return vec2r::dist_sq(a.p, b.p); }
-    };
-
     struct SlopeBucket
     {
         real s;        // Arc length parameter value
         real distance; // Distance of the avaluated point to the origin
     };
 
-    std::vector<Sample> m_samples;
+    std::vector<Result> m_samples;
     SlopeBucket m_slope_buckets[SLOPE_BUCKET_COUNT];
     real m_max_slope;
     int m_refine_steps = 4;
@@ -75,7 +58,7 @@ private:
     static real get_max_s(real k0, real k1, real delta_theta);
     static bool get_k1_range(real k0, real s, real delta_theta, real* k1_start, real* k1_end);
 
-    static std::vector<Sample> generate_samples(real k0, real delta_theta);
+    static std::vector<Result> generate_samples(real k0, real delta_theta);
 
     static mat2r eval_jacobian(real k0, real k1, real s);
 };
