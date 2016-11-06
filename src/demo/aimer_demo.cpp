@@ -178,15 +178,15 @@ void AimerDemo::aim()
     real s = m_aim_result.s;
     m_k1 = float(k1); m_s = float(s);
 
-    m_aim_eval = origin() + DisplayFresnel::eval(angle, k0, k1, s); // TODO
+    vec2f display_eval = DisplayFresnel::eval(0, k0, k1, s);
+    mat3f adjustment = eye3f().map(display_eval, aim_result.eval).translate(origin());
+    //m_aim_eval = origin() + DisplayFresnel::eval(angle, k0, k1, s); // TODO
 
     std::vector<vec2f> cloth_vertices;
     for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
     {
         real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
-        cloth_vertices.push_back(
-            origin() + DisplayFresnel::eval(angle, k0, k1, si)
-        );
+        cloth_vertices.push_back(adjustment.tform(DisplayFresnel::eval(angle, k0, k1, si)));
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);
     glBufferData(GL_ARRAY_BUFFER, cloth_vertices);
