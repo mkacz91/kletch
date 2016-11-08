@@ -12,7 +12,12 @@ namespace kletch {
 template <typename T>
 int byte_size(const std::vector<T>& xs) { return xs.size() * sizeof(T); }
 
-template <typename T>
+void inline glBufferData(GLenum target, int size, void const* data, GLenum usage = GL_STATIC_DRAW)
+{
+    ::glBufferData(target, size, data, usage);
+}
+
+template <typename T> inline
 void glBufferData(GLenum target, const std::vector<T>& data, GLenum usage = GL_STATIC_DRAW)
 {
     ::glBufferData(target, byte_size(data), data.data(), usage);
