@@ -1,5 +1,5 @@
-#ifndef KLETCH_DEMO_FITTER_DEMO_H
-#define KLETCH_DEMO_FITTER_DEMO_H
+#ifndef KLETCH_DEMO_CONSTRAINED_FITTER_DEMO_H
+#define KLETCH_DEMO_CONSTRAINED_FITTER_DEMO_H
 
 #include "prefix.h"
 
@@ -9,11 +9,11 @@
 
 namespace kletch {
 
-class FitterDemo : public ConstrainedClothoidDemo
+class ConstrainedFitterDemo : public ConstrainedClothoidDemo
 {
 public:
-    FitterDemo();
-    ~FitterDemo();
+    ConstrainedFitterDemo();
+    ~ConstrainedFitterDemo();
 
     virtual bool on_event(Event const& e) override;
 
@@ -42,4 +42,4 @@ private:
 
 } // namespace kletch
 
-#endif // KLETCH_DEMO_FITTER_DEMO_H
+#endif // KLETCH_DEMO_CONSTRAINED_FITTER_DEMO_H

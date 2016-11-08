@@ -1,22 +1,22 @@
-#include "fitter_demo.h"
+#include "constrained_fitter_demo.h"
 #include <lib/display_fresnel.h>
 #include <lib/precise_fresnel.h>
 
 namespace kletch {
 
-FitterDemo::FitterDemo() :
-    ConstrainedClothoidDemo("Clothoid Fit")
+ConstrainedFitterDemo::ConstrainedFitterDemo() :
+    ConstrainedClothoidDemo("Constrained Clothoid Fit")
 {
 
 }
 
-FitterDemo::~FitterDemo()
+ConstrainedFitterDemo::~ConstrainedFitterDemo()
 {
     for (vec2f* target : m_targets)
         delete target;
 }
 
-void FitterDemo::on_render()
+void ConstrainedFitterDemo::on_render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -47,7 +47,7 @@ void FitterDemo::on_render()
     ConstrainedClothoidDemo::on_render();
 }
 
-bool FitterDemo::on_event(Event const& e)
+bool ConstrainedFitterDemo::on_event(Event const& e)
 {
     if (ConstrainedClothoidDemo::on_event(e))
     {
@@ -73,7 +73,7 @@ bool FitterDemo::on_event(Event const& e)
     return false;
 }
 
-void FitterDemo::on_open()
+void ConstrainedFitterDemo::on_open()
 {
     ConstrainedClothoidDemo::on_open();
 
@@ -86,7 +86,7 @@ void FitterDemo::on_open()
     m_cloth_position_attrib = gl::get_attrib_location(m_cloth_program, "position");
 }
 
-void FitterDemo::on_close()
+void ConstrainedFitterDemo::on_close()
 {
     gl::delete_program(&m_cloth_program);
     gl::delete_buffer(&m_cloth_vertices);
@@ -95,7 +95,7 @@ void FitterDemo::on_close()
     ConstrainedClothoidDemo::on_close();
 }
 
-void FitterDemo::on_point_move(vec2f* point, vec2f prev_pos)
+void ConstrainedFitterDemo::on_point_move(vec2f* point, vec2f prev_pos)
 {
     ConstrainedClothoidDemo::on_point_move(point, prev_pos);
 
@@ -120,7 +120,7 @@ void FitterDemo::on_point_move(vec2f* point, vec2f prev_pos)
     }
 }
 
-void FitterDemo::aim()
+void ConstrainedFitterDemo::aim()
 {
     if (m_targets.empty())
         return;
