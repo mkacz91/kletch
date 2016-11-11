@@ -24,21 +24,10 @@ public:
     Result fit() const;
 
 private:
-    struct LineFitter
-    {
-        int n;
-        real sx, sy, sxx, sxy;
-
-        void clear();
-        void push(real x, real y);
-        void push(vec2r const& p) { return push(p.x, p.y); }
-        fline2r fit() const;
-    };
-
     struct Sample { real s; vec2r p; };
 
     std::vector<Sample> m_samples;
-    LineFitter m_line_fitter;
+    real m_sum_k, m_sum_s, m_sum_kk, m_sum_ks; // Curvature line fitting accumulators
 };
 
 } // namespace kletch
