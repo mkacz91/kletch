@@ -28,7 +28,7 @@ void ClothoidFitter::push(vec2r const& p)
 ClothoidFitter::Result ClothoidFitter::fit() const
 {
     auto line = m_line_fitter.fit();
-    real k0 = line.a * m_samples[1].s + line.b;
+    real k0 = line.b;
     real k1 = line.a;
     real s = m_samples.back().s;
 
