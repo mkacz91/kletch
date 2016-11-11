@@ -24,10 +24,9 @@ public:
     Result fit() const;
 
 private:
-    struct Sample { real s; vec2r p; };
+    struct Sample { real k, s; vec2r p; };
 
     std::vector<Sample> m_samples;
-    real m_sum_k, m_sum_s, m_sum_kk, m_sum_ks; // Curvature line fitting accumulators
 };
 
 } // namespace kletch
