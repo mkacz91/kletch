@@ -4,8 +4,6 @@
 #include "prefix.h"
 #include <vector>
 
-#include "line_fitter.h"
-
 namespace kletch {
 
 class ClothoidFitter
@@ -19,11 +17,24 @@ public:
         mat23r matrix;
     };
 
+    ClothoidFitter();
+
     void clear();
     void push(vec2r const& p);
     Result fit() const;
 
 private:
+    struct LineFitter
+    {
+        int n;
+        real sx, sy, sxx, sxy;
+
+        void clear();
+        void push(real x, real y);
+        void push(vec2r const& p) { return push(p.x, p.y); }
+        fline2r fit() const;
+    };
+
     struct Sample { real s; vec2r p; };
 
     std::vector<Sample> m_samples;

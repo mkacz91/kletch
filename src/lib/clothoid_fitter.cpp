@@ -2,6 +2,17 @@
 
 namespace kletch {
 
+ClothoidFitter::ClothoidFitter()
+{
+    clear();
+}
+
+void ClothoidFitter::clear()
+{
+    m_samples.clear();
+    m_line_fitter.clear();
+}
+
 void ClothoidFitter::push(vec2r const& p)
 {
     int i = m_samples.size();
@@ -33,6 +44,28 @@ ClothoidFitter::Result ClothoidFitter::fit() const
     real s = m_samples.back().s;
 
     return { k0, k1, s, eye23f() };
+}
+
+inline void ClothoidFitter::LineFitter::clear()
+{
+    n = 0;
+    sx = sy = sxx = sxy = 0;
+}
+
+inline void ClothoidFitter::LineFitter::push(real x, real y)
+{
+    ++n;
+    sx += x;
+    sy += y;
+    sxx += x * x;
+    sxy += x * y;
+}
+
+inline fline2r ClothoidFitter::LineFitter::fit() const
+{
+    real a = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    real b = (sy - sx * a) / n;
+    return { a, b };
 }
 
 } // namespace kletch
