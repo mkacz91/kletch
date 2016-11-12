@@ -45,17 +45,17 @@ ClothoidFitter::Result ClothoidFitter::fit() const
 
     // Fit curvature line. Only the inner samples have curvature estimate.
     int inner_count = m_samples.size() - 2;
-    real sum_k = 0, sum_s = 0, sum_kk = 0, sum_ks = 0;
+    real sum_s = 0, sum_k = 0, sum_ss = 0, sum_sk = 0;
     for (int i = 1; i <= inner_count; ++i)
     {
         Sample const& sample = m_samples[i];
-        sum_k += sample.k;
         sum_s += sample.s;
-        sum_kk += sample.k * sample.k;
-        sum_ks += sample.k * sample.s;
+        sum_k += sample.k;
+        sum_ss += sample.s * sample.s;
+        sum_sk += sample.s * sample.k;
     }
-    real k1 = (inner_count * sum_ks - sum_k * sum_s) / (inner_count * sum_kk - sum_k * sum_k);
-    real k0 = (sum_s - sum_k * k1) / inner_count;
+    real k1 = (inner_count * sum_sk - sum_s * sum_k) / (inner_count * sum_ss - sum_s * sum_s);
+    real k0 = (sum_k - sum_s * k1) / inner_count;
 
     return { k0, k1, s, eye23f() };
 }
