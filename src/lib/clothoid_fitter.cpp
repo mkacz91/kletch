@@ -1,6 +1,8 @@
 #include "clothoid_fitter.h"
 #include "printing.h"
 
+#include <lib/precise_fresnel.h>
+
 namespace kletch {
 
 ClothoidFitter::Sample ClothoidFitter::ORIGIN_SAMPLE = { 0, 0, 0 };
@@ -48,10 +50,10 @@ void ClothoidFitter::push(vec2r const& p)
 ClothoidFitter::Result ClothoidFitter::fit() const
 {
     if (m_samples.size() == 0)
-        return { 0, 0, 0, eye2r() };
+        return { 0, 0, 0, unx2r() };
     real s = m_samples.back().s;
     if (m_samples.size() == 1)
-        return { 0, 0, s, eye2r().rotate((m_samples[0].p / s).fix(unx2r())) };
+        return { 0, 0, s, (m_samples[0].p / s).fix(unx2r()) };
 
     // Fit curvature line minimizing the vertical least square error. Last sample has no curvature
     // estimate.
@@ -73,7 +75,22 @@ ClothoidFitter::Result ClothoidFitter::fit() const
         k1 = 0;
     }
 
-    return { k0, k1, s, eye2r() };
+    // Find rotation of evals `u_i` optimizing the least squares error against samples `v_i`. The
+    // rotation angle `alpha` yields local extrema when
+    //
+    //     X sin(alpha) = Y cos(alpha), X = SUM dot(u_i, v_i), Y = SUM per(u_i, v_i).
+    //
+    // We solve for `sin(alpha)` and `cos(alpha)` directly by noting they lie on unit circle.
+    vec2r rotation = 0;
+    for (Sample const& sample : m_samples)
+    {
+        vec2r u = PreciseFresnel::eval(k0, k1, sample.s), v = sample.p;
+        rotation.x += dot(u, v);
+        rotation.y += per(u, v);
+    }
+    rotation.norm();
+
+    return { k0, k1, s, rotation };
 }
 
 } // namespace kletch

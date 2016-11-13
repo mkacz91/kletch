@@ -92,10 +92,10 @@ void FitterDemo::fit()
     auto result = m_fitter.fit();
     float k0 = result.k0, k1 = result.k1, s = result.s;
 
-    // Adjust transformation matrix to match ends of precise and display evaluation
+    // Adjust transformation matrix to match ends of precise and display evaluation together
     vec2f display_eval = DisplayFresnel::eval(0, k0, k1, s);
     vec2r precise_eval = PreciseFresnel::eval(result.k0, result.k1, result.s);
-    mat3f matrix = eye3f().map(display_eval, precise_eval);//.premul(result.matrix);
+    mat3f matrix = eye3f().map(display_eval, precise_eval).rotate(result.rotation);
 
     // Evaluate resulting clothoid for rendering
     std::vector<vec2f> cloth_vertices; cloth_vertices.reserve(CLOTHOID_VERTEX_COUNT);

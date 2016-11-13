@@ -14,7 +14,7 @@ public:
         real k0;
         real k1;
         real s;
-        mat2r matrix;
+        vec2r rotation;
     };
 
     ClothoidFitter();
