@@ -14,7 +14,7 @@ public:
         real k0;
         real k1;
         real s;
-        mat23r matrix;
+        mat2r matrix;
     };
 
     ClothoidFitter();
@@ -25,6 +25,7 @@ public:
 
 private:
     struct Sample { real k, s; vec2r p; };
+    static Sample ORIGIN_SAMPLE; // This is a de facto constant but can't be marked as such
 
     std::vector<Sample> m_samples;
 };
