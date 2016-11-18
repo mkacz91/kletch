@@ -88,7 +88,7 @@ ClothoidFitter::Result ClothoidFitter::fit() const
         rotation.x += dot(u, v);
         rotation.y += per(u, v);
     }
-    rotation.norm();
+    rotation.normalize();
 
     return { k0, k1, s, rotation };
 }

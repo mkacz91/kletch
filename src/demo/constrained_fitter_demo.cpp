@@ -135,7 +135,7 @@ void ConstrainedFitterDemo::aim()
     std::vector<vec2f> poly_vertices { {0, 0} };
     for (vec2f* target : m_targets)
     {
-        auto aim_result = m_aimer.aim(k0, (*target - origin).rot(-angle));
+        auto aim_result = m_aimer.aim(k0, (*target - origin).rotate(-angle));
         m_aim_results.push_back(aim_result);
         real w = PreciseFresnel::eval_m2(k0, aim_result.k1, aim_result.s).len_sq();
         k1_sum += w * m_aim_results.back().k1;
@@ -151,7 +151,7 @@ void ConstrainedFitterDemo::aim()
         for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
         {
             real si = i * s / (CLOTHOID_VERTEX_COUNT - 1);
-            cloth_vertices.push_back(origin + arc_radius * PreciseFresnel::eval(1, k1, si).rot(angle));
+            cloth_vertices.push_back(origin + arc_radius * PreciseFresnel::eval(1, k1, si).rotate(angle));
         }
     }
 

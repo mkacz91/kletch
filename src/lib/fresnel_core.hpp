@@ -90,7 +90,7 @@ vec2<T> FresnelCore<T>::eval_bgk1(T k0, T k1, T s)
     vec2<T> f = (f1 - f0) / c0;
     if (k1 < 0)
         f.y = -f.y;
-    f.rot(c2);
+    f.rotate(c2);
     return f;
 }
 
