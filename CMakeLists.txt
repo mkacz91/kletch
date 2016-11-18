@@ -6,6 +6,17 @@ set(CMAKE_COLOR_MAKEFILE ON)
 
 project(Kletch)
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  add_definitions(-DKLETCH_CLANG)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  add_definitions(-DKLETCH_GNU)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  add_definitions(-DKLETCH_MSVC)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  add_definitions(-DKLETCH_CLANG)
+  add_definitions(-DKLETCH_APPLECLANG)
+endif()
+
 if (DEFINED WIN32)
   add_definitions(-DKLETCH_WINDOWS)
 endif()

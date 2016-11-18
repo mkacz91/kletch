@@ -6,6 +6,7 @@
 #include "aimer_demo.h"
 #include "demo.h"
 #include "fitter_demo.h"
+#include "constrained_fitter_demo.h"
 #include "gl_context_snapshot.h"
 #include "hello_demo.h"
 
@@ -253,9 +254,9 @@ void on_mouse_move(GLFWwindow* window, double x, double y)
 {
     ignore(window);
     Event e(MOUSE_MOVE);
-    e.pos = mouse_pos = vec2i(x, y);
+    e.pos = mouse_pos = vec2i((int)x, (int)y);
     e.mod = keyboard_mod;
-    if (mouse_focus != MOUSE_FOCUS_DEMO && TwMouseMotion(x, y))
+    if (mouse_focus != MOUSE_FOCUS_DEMO && TwMouseMotion(mouse_pos.x, mouse_pos.y))
         redraw = true;
     else if (mouse_focus != MOUSE_FOCUS_TWBAR && demo)
         demo->on_event(e);
@@ -352,6 +353,7 @@ int init_demos()
     demos.push_back(new HelloDemo);
     demos.push_back(new AimerDemo);
     demos.push_back(new FitterDemo);
+    demos.push_back(new ConstrainedFitterDemo);
     // Add more demos here
 
     // Create AntTweakBar combo box

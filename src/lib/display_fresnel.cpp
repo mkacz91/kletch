@@ -18,7 +18,7 @@ vec2r DisplayFresnel::eval(real theta0, real kappa0, real a, real s)
             // Note that negative kappa is handled magically by itself
             real angle = s * kappa0;
             vec2r result = { r * sin(angle), r - r * cos(angle) };
-            result.rot(theta0);
+            result.rotate(theta0);
             return result;
         }
     }
@@ -30,7 +30,7 @@ vec2r DisplayFresnel::eval(real theta0, real kappa0, real a, real s)
         vec2r result = (eval(s0) - eval(s1)) / c0;
         if (a < 0)
             result.y = -result.y;
-        result.rot(theta0 - kappa0 * kappa0 / (rl(2.0) * a));
+        result.rotate(theta0 - kappa0 * kappa0 / (rl(2.0) * a));
         return result;
     }
 }
@@ -52,7 +52,7 @@ vec2r DisplayFresnel::eval1(real a, real s)
     vec2r result = (eval(s0) - eval(s1)) / c0;
     if (a < 0)
         result.y = -result.y;
-    result.rot(-rl(1) / (rl(2) * a));
+    result.rotate(-rl(1) / (rl(2) * a));
     return result;
 }
 
