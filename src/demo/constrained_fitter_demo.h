@@ -4,6 +4,7 @@
 #include "prefix.h"
 
 #include <lib/clothoid_aimer.h>
+#include <lib/constrained_clothoid_fitter.h>
 
 #include "constrained_clothoid_demo.h"
 
@@ -27,8 +28,9 @@ private:
     static const int CLOTHOID_VERTEX_COUNT = 40;
 
     ClothoidAimer m_aimer;
+    ConstrainedClothoidFitter m_fitter;
     std::vector<vec2f*> m_targets;
-    std::vector<ClothoidAimer::Result> m_aim_results;
+    std::vector<ClothoidAimer::Result> m_cloths; // TODO(mkc): Use more appropriate type
 
     GLuint m_cloth_vertices = 0;
     GLuint m_poly_vertices = 0;
@@ -37,7 +39,7 @@ private:
     GLint m_cloth_color_uniform;
     GLint m_cloth_position_attrib;
 
-    void aim();
+    void fit();
 };
 
 } // namespace kletch
