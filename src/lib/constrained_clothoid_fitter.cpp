@@ -37,6 +37,8 @@ bool ConstrainedClothoidFitter::push(vec2r p)
     m_sum_w += w;
     m_sum_wk += w * k1;
     m_sum_wkk += w * k1 * k1;
+
+    return true;
 }
 
 ConstrainedClothoidFitter::Result ConstrainedClothoidFitter::fit() const
