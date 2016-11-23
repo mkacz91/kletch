@@ -1,5 +1,6 @@
 #include "fitter_demo.h"
 
+#include <math/printing.h>
 #include <lib/display_fresnel.h>
 #include <lib/precise_fresnel.h>
 
@@ -86,22 +87,26 @@ void FitterDemo::on_close()
 void FitterDemo::fit()
 {
     // Fit clothoid to sample points
-    m_fitter.clear();
+    m_curve.clear();
     for (vec2f const* sample : m_samples)
-        m_fitter.push(*sample);
-    auto result = m_fitter.fit();
-    float k0 = result.k0, k1 = result.k1, s = result.s;
+        m_curve.push(*sample);
+    auto fit = m_fitter.fit(m_curve, 0, m_curve.size());
+    float k0 = fit.k0, k1 = fit.k1, s = fit.s;
 
     // Adjust transformation matrix to match ends of precise and display evaluation together
     vec2f display_eval = DisplayFresnel::eval(0, k0, k1, s);
-    vec2r precise_eval = PreciseFresnel::eval(result.k0, result.k1, result.s);
-    mat3f matrix = eye3f().map(display_eval, precise_eval).rotate(result.rotation);
+    vec2r precise_eval = PreciseFresnel::eval(fit.k0, fit.k1, fit.s);
+    vec2f origin = m_curve.empty() ? 0 : m_curve[0].p;
+    mat3f matrix = eye3f()
+        .map(display_eval, precise_eval)
+        .rotate(fit.rotation)
+        .translate(origin);
 
     // Evaluate resulting clothoid for rendering
     std::vector<vec2f> cloth_vertices; cloth_vertices.reserve(CLOTHOID_VERTEX_COUNT);
     for (int i = 0; i < CLOTHOID_VERTEX_COUNT; ++i)
     {
-        float si = (i * float(result.s)) / (CLOTHOID_VERTEX_COUNT - 1);
+        float si = (i * s) / (CLOTHOID_VERTEX_COUNT - 1);
         cloth_vertices.push_back(matrix.tform(DisplayFresnel::eval(0, k0, k1, si)));
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_cloth_vertices);

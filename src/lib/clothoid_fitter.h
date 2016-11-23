@@ -4,6 +4,8 @@
 #include "prefix.h"
 #include <vector>
 
+#include "curve_window.h"
+
 namespace kletch {
 
 class ClothoidFitter
@@ -15,19 +17,12 @@ public:
         real k1;
         real s;
         vec2r rotation;
+        real cost;
     };
 
     ClothoidFitter();
 
-    void clear();
-    void push(vec2r const& p);
-    Result fit() const;
-
-private:
-    struct Sample { real k, s; vec2r p; };
-    static Sample ORIGIN_SAMPLE; // This is a de facto constant but can't be marked as such
-
-    std::vector<Sample> m_samples;
+    Result fit(CurveWindow const& curve, int start, int end);
 };
 
 } // namespace kletch
