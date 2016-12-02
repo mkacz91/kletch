@@ -1,8 +1,6 @@
 #include "prefix.h"
 #include "printing.h"
 
-#include <lib/kletch.h>
-
 #include "aimer_demo.h"
 #include "demo.h"
 #include "fitter_demo.h"

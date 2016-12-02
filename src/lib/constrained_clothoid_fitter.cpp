@@ -19,6 +19,7 @@ void ConstrainedClothoidFitter::init(vec2r p0, real th0, real k0)
     m_rotation = dir(-th0);
     m_s = 0;
     m_sum_w = m_sum_wk = m_sum_wkk = 0;
+    m_point_count = 0;
 }
 
 bool ConstrainedClothoidFitter::push(vec2r p)
@@ -37,6 +38,7 @@ bool ConstrainedClothoidFitter::push(vec2r p)
     m_sum_w += w;
     m_sum_wk += w * k1;
     m_sum_wkk += w * k1 * k1;
+    ++m_point_count;
 
     return true;
 }
@@ -45,8 +47,8 @@ ConstrainedClothoidFitter::Result ConstrainedClothoidFitter::fit() const
 {
     real k1 = m_sum_wk / m_sum_w;
     real s = m_s;
-    real penalty = m_sum_wkk - k1 * m_sum_wk;
-    return { k1, s, penalty };
+    real cost = m_sum_wkk - k1 * m_sum_wk;
+    return { k1, s, cost };
 }
 
 } // namespace kletch
