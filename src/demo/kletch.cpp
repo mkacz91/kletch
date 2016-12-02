@@ -1,12 +1,13 @@
 #include "prefix.h"
 #include "printing.h"
 
-#include "aimer_demo.h"
 #include "demo.h"
-#include "fitter_demo.h"
+#include "aimer_demo.h"
 #include "constrained_fitter_demo.h"
-#include "gl_context_snapshot.h"
+#include "fitter_demo.h"
 #include "hello_demo.h"
+#include "kletch_demo.h"
+#include "gl_context_snapshot.h"
 
 namespace kletch
 {
@@ -348,10 +349,11 @@ int init_demos()
 {
     cout << "Initializing demos ..." << endl;
     demos.push_back(nullptr);
-    demos.push_back(new HelloDemo);
+    demos.push_back(new KletchDemo);
     demos.push_back(new AimerDemo);
     demos.push_back(new FitterDemo);
     demos.push_back(new ConstrainedFitterDemo);
+    demos.push_back(new HelloDemo);
     // Add more demos here
 
     // Create AntTweakBar combo box
