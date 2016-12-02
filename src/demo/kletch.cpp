@@ -138,6 +138,7 @@ int init_glfw()
         return glfw_last_error;
     }
 
+    glfwWindowHint(GLFW_SAMPLES, 8);
     window = glfwCreateWindow(800, 600, "Kletch", nullptr, nullptr);
     if (!window)
     {

@@ -32,6 +32,7 @@ public:
     void set_horizon(real value) { m_horizon = value; }
     Segment const* last_segment() const { return &m_last_segment; }
 
+    void clear();
     void push(vec2r const& p) { m_curve.push(p); }
     Segment const* try_advance();
 
@@ -49,14 +50,14 @@ private:
     struct Extensor
     {
         bool active;
-        SegmentStub* stub;
+        int stub;
         ConstrainedClothoidFitter fitter;
         real base_cost, cost_multiplier;
 
         Extensor(ClothoidAimer const* aimer) : fitter(aimer) { }
     };
 
-    static constexpr real DEFAULT_HORIZON = rl(1);
+    static constexpr real DEFAULT_HORIZON = rl(3);
 
     CurveWindow m_curve;
     ClothoidAimer m_aimer;
@@ -64,12 +65,12 @@ private:
     ConstrainedClothoidFitter m_constrained_starter;
     std::vector<Extensor> m_extensors;
     std::vector<SegmentStub> m_stubs;
-    bool m_free_start = true;
+    bool m_free_start;
     int m_progress;
     real m_horizon = DEFAULT_HORIZON;
-    Segment m_last_segment = { 0, 0, 0, 0, 0, 0, 0 };
+    Segment m_last_segment;
 
-    void init_advancement(bool free_start);
+    void init_advancement();
     bool step_sample();
     void advance();
 };
