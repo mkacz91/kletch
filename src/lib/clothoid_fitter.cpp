@@ -15,11 +15,11 @@ ClothoidFitter::Result ClothoidFitter::fit(CurveWindow const& curve, int start, 
 {
     int count = end - start;
     if (count <= 1)
-        return { 0, 0, 0, unx2r(), 0 };
+        return { 0, 0, 0, 0, 0 };
     vec2r p0 = curve[start].p;
     auto const& last_sample = curve[end - 1];
     if (count == 2)
-        return { 0, 0, last_sample.s, span(p0, last_sample.p) / last_sample.s, 0 };
+        return { angle(span(p0, last_sample.p)), 0, 0, last_sample.s, 0 };
 
     // Fit curvature line minimizing the vertical least square error. Only inner samples have valid
     // curvature estimate.
@@ -64,11 +64,9 @@ ClothoidFitter::Result ClothoidFitter::fit(CurveWindow const& curve, int start, 
         rotation.y += per(u, v);
         cost += len_sq(u) + len_sq(v);
     }
-    real rlen = len(rotation);
-    rotation /= rlen;
-    cost -= 2 * rlen;
+    cost -= 2 * len(rotation);
 
-    return { k0, k1, last_sample.s, rotation, cost };
+    return { rotation.angle(), k0, k1, last_sample.s, cost };
 }
 
 } // namespace kletch

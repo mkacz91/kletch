@@ -99,7 +99,7 @@ void FitterDemo::fit()
     vec2f origin = m_curve.empty() ? 0 : m_curve[0].p;
     mat3f matrix = eye3f()
         .map(display_eval, precise_eval)
-        .rotate(fit.rotation)
+        .rotate(fit.th0)
         .translate(origin);
 
     // Evaluate resulting clothoid for rendering

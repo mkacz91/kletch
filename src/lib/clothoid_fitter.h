@@ -13,10 +13,10 @@ class ClothoidFitter
 public:
     struct Result
     {
+        real th0;
         real k0;
         real k1;
         real s;
-        vec2r rotation;
         real cost;
     };
 
